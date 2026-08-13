@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/doc/CMakeLists.txt
+C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/doc/conf.py
+C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/cmake/FindSphinx.cmake
+G:/Program Files/CMake/share/cmake-4.3/Modules/FindLATEX.cmake
+G:/Program Files/CMake/share/cmake-4.3/Modules/FindPackageHandleStandardArgs.cmake
+G:/Program Files/CMake/share/cmake-4.3/Modules/FindPackageMessage.cmake

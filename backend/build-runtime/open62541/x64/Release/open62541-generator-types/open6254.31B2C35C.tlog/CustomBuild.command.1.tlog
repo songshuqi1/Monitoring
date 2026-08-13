@@ -1,0 +1,28 @@
+^C:\USERS\NEU\DESKTOP\MONITORING - 7\BACKEND\BUILD-RUNTIME\CMAKEFILES\A51D13DAA8BE959D94DA206794DECD60\TYPES_GENERATED.C.RULE
+setlocal
+C:\Users\NEU\AppData\Local\Programs\Python\Python314\python.exe "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/generate_datatypes.py" --namespace=0 "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_minimal.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_method.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_subscriptions.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_dataaccess.txt" "--type-bsd=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/Opc.Ua.Types.bsd" "--type-csv=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/NodeIds.csv" "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/src_generated/open62541/types"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING - 7\BACKEND\BUILD-RUNTIME\CMAKEFILES\E1A0A0E5639D2A20DF4E0ED99A43DBF3\OPEN62541-GENERATOR-TYPES.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING - 7\OPEN62541-1.0\CMAKELISTS.TXT
+setlocal
+"G:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/NEU/Desktop/Monitoring - 7/backend" "-BC:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime" --check-stamp-file "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,48 @@
+^C:\USERS\NEU\DESKTOP\MONITORING\BACKEND\BUILD\CMAKEFILES\1A66B1C6BC71FDD5BF4179D55B554879\NODEIDS.H.RULE
+setlocal
+C:\Users\NEU\AppData\Local\Programs\Python\Python314\python.exe C:/Users/NEU/Desktop/Monitoring/open62541-1.0/tools/generate_nodeid_header.py C:/Users/NEU/Desktop/Monitoring/open62541-1.0/tools/schema/NodeIds.csv C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/nodeids NS0
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING\BACKEND\BUILD\CMAKEFILES\1A66B1C6BC71FDD5BF4179D55B554879\STATUSCODES.H.RULE
+setlocal
+C:\Users\NEU\AppData\Local\Programs\Python\Python314\python.exe C:/Users/NEU/Desktop/Monitoring/open62541-1.0/tools/generate_statuscode_descriptions.py C:/Users/NEU/Desktop/Monitoring/open62541-1.0/tools/schema/StatusCode.csv C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/statuscodes
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING\BACKEND\BUILD\CMAKEFILES\FAA058B9F8E78D9F0A92738387A9F516\OPEN62541.H.RULE
+setlocal
+C:\Users\NEU\AppData\Local\Programs\Python\Python314\python.exe C:/Users/NEU/Desktop/Monitoring/open62541-1.0/tools/amalgamate.py undefined C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/open62541.h C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/config.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/architecture_base.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/arch/win32/ua_architecture.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/deps/ms_stdint.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/architecture_definitions.h C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/statuscodes.h C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/nodeids.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/constants.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/types.h C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/types_generated.h C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/src_generated/open62541/types_generated_handling.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/util.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/server.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/log.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/network.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/accesscontrol.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/pki.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/securitypolicy.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/server_pubsub.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/pubsub.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/deps/ziptree.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/plugin/nodestore.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/server_config.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/client_config.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/client.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/client_highlevel.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/client_subscriptions.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/client_highlevel_async.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/plugin/accesscontrol_default.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/plugin/pki_default.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/plugin/log_stdout.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/server_config_default.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/client_config_default.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/plugin/securitypolicy_default.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/plugins/include/open62541/plugin/securitypolicy_mbedtls_common.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/network_tcp.h C:/Users/NEU/Desktop/Monitoring/open62541-1.0/include/open62541/architecture_functions.h
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING\BACKEND\BUILD\CMAKEFILES\4E0DECAFBF921A3CA8FEA8B0D1135201\OPEN62541-AMALGAMATION-HEADER.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\NEU\DESKTOP\MONITORING\OPEN62541-1.0\CMAKELISTS.TXT
+setlocal
+"G:\Program Files\CMake\bin\cmake.exe" -SC:/Users/NEU/Desktop/Monitoring/backend -BC:/Users/NEU/Desktop/Monitoring/backend/build --check-stamp-file C:/Users/NEU/Desktop/Monitoring/backend/build/open62541/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

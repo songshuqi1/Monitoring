@@ -1,0 +1,2 @@
+# username	salt	hash	role	status	createdAtMs	remark
+admin	d34da2c82e7d850c7a8233d81afb8820	308d645d842de709cb3ff0a0a60c52b5d68416b7914da77244b0b35314dc26a1	admin	active	1782439105407	Hardcoded admin account. Password: sapi.1992

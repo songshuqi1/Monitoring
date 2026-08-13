@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\x64\Release\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-generator-types</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-generator-namespace</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-amalgamation-header</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-generator-statuscode</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-generator-transport</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\x64\Release\open62541-amalgamation-source</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

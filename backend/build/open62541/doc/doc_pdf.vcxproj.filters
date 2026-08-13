@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\8244fa7566db1390053368448a99b27a\doc_pdf.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\open62541-1.0\doc\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\NEU\Desktop\Monitoring\backend\build\open62541\doc\CMakeFiles\doc_pdf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{4BF3965C-791F-3CEE-9CA0-C161A689B46F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

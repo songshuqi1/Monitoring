@@ -1,0 +1,10 @@
+^C:\USERS\NEU\DESKTOP\MONITORING - 7\BACKEND\BUILD-RUNTIME\CMAKEFILES\FE99BA1F34046E3DAF78D0D8E3FFFE60\GENERATE.STAMP.RULE
+setlocal
+"G:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/NEU/Desktop/Monitoring - 7/backend" "-BC:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/MonitoringPlatform.slnx"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

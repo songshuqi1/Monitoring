@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{31B2C35C-1E58-3526-A1F5-669BA5BBA7DD}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>open62541-generator-types</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\a51d13daa8be959d94da206794decd60\types_generated.c.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating src_generated/open62541/types_generated.c, src_generated/open62541/types_generated.h, src_generated/open62541/types_generated_handling.h, src_generated/open62541/types_generated_encoding_binary.h</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Users\NEU\AppData\Local\Programs\Python\Python314\python.exe "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/generate_datatypes.py" --namespace=0 "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_minimal.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_method.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_subscriptions.txt" "--selected-types=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/datatypes_dataaccess.txt" "--type-bsd=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/Opc.Ua.Types.bsd" "--type-csv=C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema/NodeIds.csv" "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/src_generated/open62541/types"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\generate_datatypes.py;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\Opc.Ua.Types.bsd;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\NodeIds.csv;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\datatypes_minimal.txt;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\datatypes_method.txt;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\datatypes_subscriptions.txt;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\schema\datatypes_dataaccess.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated.c;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated.h;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated_handling.h;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated_encoding_binary.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\e1a0a0e5639d2a20df4e0ed99a43dbf3\open62541-generator-types.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated.c;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated.h;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated_handling.h;C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\src_generated\open62541\types_generated_encoding_binary.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\CMakeFiles\open62541-generator-types</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</VerifyInputsAndOutputsExist>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"G:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/NEU/Desktop/Monitoring - 7/backend" "-BC:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime" --check-stamp-file "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\include\open62541\config.h.in;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\open62541.pc.in;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\AssignSourceGroup.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\CompilerFlags.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\FindClangTools.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\SetGitBasedVersion.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\linting_build.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\linting_target.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\macros_internal.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\macros_public.cmake;C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\tools\cmake\open62541Config.cmake.in;G:\Program Files\CMake\share\cmake-4.3\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;G:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\CMakePackageConfigHelpers.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\CheckCCompilerFlag.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\FindGit.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\FindPythonInterp.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\GNUInstallDirs.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckCompilerFlag.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckFlagCommonConfig.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckSourceCompiles.cmake;G:\Program Files\CMake\share\cmake-4.3\Modules\WriteBasicConfigVersionFile.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\CMakeFiles\open62541-generator-types">
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\ZERO_CHECK.vcxproj">
+      <Project>{D79556AB-145E-3D43-908A-17B8ECA38A2C}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

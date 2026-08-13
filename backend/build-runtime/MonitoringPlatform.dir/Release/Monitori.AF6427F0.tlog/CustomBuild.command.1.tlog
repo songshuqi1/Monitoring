@@ -1,0 +1,10 @@
+^C:\USERS\NEU\DESKTOP\MONITORING - 7\BACKEND\CMAKELISTS.TXT
+setlocal
+"G:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/NEU/Desktop/Monitoring - 7/backend" "-BC:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime" --check-stamp-file "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

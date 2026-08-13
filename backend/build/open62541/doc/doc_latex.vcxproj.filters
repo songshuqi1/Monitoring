@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\client.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\client_config.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\client_highlevel.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\client_subscriptions.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\constants.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\nodestore.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\plugin_accesscontrol.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\plugin_log.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\plugin_network.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\plugin_pubsub_connection.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\pubsub.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\server.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\server_config.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\services.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\statuscodes.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_client_firststeps.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_datatypes.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_pubsub_publish.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_datasource.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_events.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_firststeps.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_method.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_monitoreditems.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_object.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_variable.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\tutorial_server_variabletype.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\types.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\04013ba7e89c9c5b9330239474c6a073\types_generated.rst.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\backend\build\CMakeFiles\8244fa7566db1390053368448a99b27a\doc_latex.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring\open62541-1.0\doc\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\NEU\Desktop\Monitoring\backend\build\open62541\doc\CMakeFiles\doc_latex" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{4BF3965C-791F-3CEE-9CA0-C161A689B46F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

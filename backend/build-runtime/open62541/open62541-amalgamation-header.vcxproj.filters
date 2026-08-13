@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\a51d13daa8be959d94da206794decd60\nodeids.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\a51d13daa8be959d94da206794decd60\statuscodes.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\a28e52b582e961785b346c0c30bc4c5d\open62541.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\CMakeFiles\e1a0a0e5639d2a20df4e0ed99a43dbf3\open62541-amalgamation-header.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\NEU\Desktop\Monitoring - 7\open62541-1.0\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\CMakeFiles\open62541-amalgamation-header" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{814D263A-CC58-3061-BD59-F9DCBF45B766}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
