@@ -7,6 +7,8 @@
       selected: !readonly && selected,
       readonly,
       'button-shell': isButtonWidget,
+      'compact-control-shell': isCompactControlWidget,
+      'value-column-shell': isValueColumnWidget,
       'process-shell': isProcessWidget,
       'custom-shell': isCustomShapeWidget,
       'label-shell': isLabelWidget,
@@ -205,9 +207,7 @@ const actionMetrics = computed(() => {
     size,
     iconSize,
     gap,
-    padding,
-    topOffset: Math.max(size + 8, 24),
-    rightOffset: Math.max(6, Math.round(size * 0.6))
+    padding
   }
 })
 const actionButtonStyle = computed(() => ({
@@ -219,12 +219,14 @@ const actionGroupStyle = computed(() => ({
   gap: `${actionMetrics.value.gap}px`
 }))
 const floatingActionsStyle = computed(() => ({
-  top: `-${actionMetrics.value.topOffset}px`,
-  right: `-${actionMetrics.value.rightOffset}px`,
+  top: `${Math.max(4, actionMetrics.value.padding + 2)}px`,
+  right: `${Math.max(4, actionMetrics.value.padding + 2)}px`,
   padding: `${actionMetrics.value.padding}px`,
   gap: `${actionMetrics.value.gap}px`
 }))
 const isButtonWidget = computed(() => props.widget.type === 'button')
+const isCompactControlWidget = computed(() => ['winccToggleButton', 'stepperControl'].includes(props.widget.type))
+const isValueColumnWidget = computed(() => props.widget.type === 'valueColumn')
 const isLabelWidget = computed(() => props.widget.type === 'label')
 const isStatusCircleWidget = computed(() => props.widget.type === 'statusCircle')
 const isFrameBoxWidget = computed(() => props.widget.type === 'frameBox')
@@ -234,7 +236,14 @@ const isProcessWidget = computed(() => String(props.widget.type || '').startsWit
 const isConnectableWidget = computed(() =>
   (isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value) && props.widget.type !== 'processValueTag'
 )
-const isFramelessWidget = computed(() => isButtonWidget.value || isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value || isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value)
+// These widgets are their own complete visual controls.  Giving them the
+// generic module header steals most of a 40px-high control and causes the
+// initial compressed appearance seen immediately after dragging.
+const isFramelessWidget = computed(() =>
+  isButtonWidget.value || isCompactControlWidget.value || isValueColumnWidget.value ||
+  isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value ||
+  isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value
+)
 const showConnectionPorts = computed(() =>
   !props.readonly &&
   isConnectableWidget.value &&
@@ -535,16 +544,22 @@ function remove() { emit('request-remove', props.widget) }
   overflow: visible;
 }
 .widget-wrapper.button-shell:hover,
+.widget-wrapper.compact-control-shell:hover,
+.widget-wrapper.value-column-shell:hover,
 .widget-wrapper.process-shell:hover,
 .widget-wrapper.custom-shell:hover,
+.widget-wrapper.scada-svg-shell:hover,
 .widget-wrapper.label-shell:hover,
 .widget-wrapper.status-circle-shell:hover,
 .widget-wrapper.frame-shell:hover {
   box-shadow: none;
 }
 .widget-wrapper.button-shell.selected,
+.widget-wrapper.compact-control-shell.selected,
+.widget-wrapper.value-column-shell.selected,
 .widget-wrapper.process-shell.selected,
 .widget-wrapper.custom-shell.selected,
+.widget-wrapper.scada-svg-shell.selected,
 .widget-wrapper.label-shell.selected,
 .widget-wrapper.status-circle-shell.selected,
 .widget-wrapper.frame-shell.selected {
@@ -553,8 +568,11 @@ function remove() { emit('request-remove', props.widget) }
 }
 .widget-wrapper.label-shell,
 .widget-wrapper.status-circle-shell,
+.widget-wrapper.compact-control-shell,
+.widget-wrapper.value-column-shell,
 .widget-wrapper.process-shell,
 .widget-wrapper.custom-shell,
+.widget-wrapper.scada-svg-shell,
 .widget-wrapper.frame-shell {
   background: transparent;
   border-color: transparent;
@@ -634,12 +652,12 @@ function remove() { emit('request-remove', props.widget) }
 }
 .ww-floating-actions {
   position: absolute;
-  z-index: 12;
+  z-index: 30;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
-  transform: translateY(4px);
+  transform: translateY(-2px);
 }
 .widget-wrapper.selected .ww-floating-actions,
 .ww-floating-actions:focus-within {

@@ -342,12 +342,33 @@ CommunicationResource CommunicationManager::getResource(const std::string& id) c
 bool CommunicationManager::upsertResource(const CommunicationResource& res) {
     if (res.id.empty()) return false;
     bool existed;
+    bool wasRunning = false;
     {
         std::lock_guard lock(mutex_);
         existed = resources_.count(res.id) > 0;
+        auto task = tasks_.find(res.id);
+        wasRunning = task != tasks_.end() && task->second->running.load();
         resources_[res.id] = res;
     }
+
+    // Keep already collected variables aligned when a resource is renamed or
+    // moved to another project/application.  The real-time values and history
+    // remain untouched because the variable id is preserved.
+    for (auto variable : VariableManager::instance().getAllDefinitions()) {
+        if (variable.resourceId != res.id) continue;
+        variable.resourceName = res.name;
+        variable.scopeId = res.scopeId;
+        variable.scopeName = res.scopeName;
+        VariableManager::instance().addOrUpdateDefinition(variable);
+    }
+
     save();
+    if (wasRunning) {
+        // Endpoint, port and interval changes must take effect immediately;
+        // otherwise a running task would keep using its old copied config.
+        stopTask(res.id, false);
+        startTask(res.id);
+    }
     return existed;
 }
 

@@ -4,6 +4,12 @@
       <h2>通信资源</h2>
       <p class="cv-header-desc">配置 OPC UA / UDP 数据源，系统将从远程节点读取数据并自动创建变量</p>
       <div v-if="operationMsg" class="cv-operation-msg" :class="operationMsg.ok ? 'ok' : 'err'">{{ operationMsg.text }}</div>
+      <div v-if="resourceLoadFailed" class="cv-operation-msg err">
+        通信资源未能加载。{{ resourceLoadError }}
+        <button class="btn btn-xs" :disabled="loadingResources" @click="loadResources">
+          {{ loadingResources ? '重新加载中…' : '重新加载' }}
+        </button>
+      </div>
     </div>
 
     <div class="cv-scope-filter">
@@ -277,6 +283,9 @@ export default {
     const operationMsg = ref(null)
     const resourceBusyId = ref('')
     const savingResource = ref(false)
+    const loadingResources = ref(false)
+    const resourceLoadFailed = ref(false)
+    const resourceLoadError = ref('')
 
     const form = reactive({
       name: '', type: 'OPCUA', endpoint: '', nodesText: '', address: '0.0.0.0', sdcUrl: 'http://127.0.0.1:9100', port: 8888, interval: 1000,
@@ -301,13 +310,33 @@ export default {
       return resource.scopeId === scopeFilter.value
     }))
 
+    const wait = ms => new Promise(resolve => window.setTimeout(resolve, ms))
+
     async function loadResources() {
+      if (loadingResources.value) return
+      loadingResources.value = true
+      let lastError = null
       try {
-        const r = await api.getCommunicationResources()
-        resources.value = Array.isArray(r.data) ? r.data : []
-      } catch (e) {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            const r = await api.getCommunicationResources()
+            resources.value = Array.isArray(r.data) ? r.data : []
+            resourceLoadFailed.value = false
+            resourceLoadError.value = ''
+            return
+          } catch (e) {
+            lastError = e
+            // Backend startup can overlap the first page visit. Retry only a
+            // response-less network failure, never a server-side API error.
+            if (attempt === 0 && !e?.response && e?.code !== 'ECONNABORTED') await wait(450)
+            else break
+          }
+        }
         resources.value = []
-        showOperationMsg(false, '加载通信资源失败：' + formatConnectionError(e))
+        resourceLoadFailed.value = true
+        resourceLoadError.value = formatConnectionError(lastError)
+      } finally {
+        loadingResources.value = false
       }
     }
 
@@ -538,6 +567,10 @@ export default {
 
     function formatConnectionError(e) {
       const msg = e?.response?.data?.message || e?.message || ''
+      if (!e?.response && (e?.code === 'ERR_NETWORK' || msg.toLowerCase() === 'network error')) {
+        const target = window.location.port === '5170' ? 'http://127.0.0.1:8081' : window.location.origin
+        return `无法连接后端服务（${target}）。请确认 MonitoringRuntime 已启动；开发模式下前端和后端需同时启动。`
+      }
       if (e?.code === 'ECONNABORTED' || msg.includes('timeout')) {
         return '连接超时：端点不可达。若发布端在本机请用 opc.tcp://127.0.0.1:4840；若在远程电脑，请确认服务监听远程 IP/0.0.0.0 且防火墙放行端口。'
       }
@@ -573,6 +606,7 @@ export default {
       resources, visibleResources, scopeFilter, scopeOptions, projectStore, showDialog, editingIdx, form, testLoading, testMsg,
       showNodeDialog, nodeTargetIdx, nodeForm, deleteTargetIdx, operationMsg,
       resourceBusyId, savingResource,
+      loadingResources, resourceLoadFailed, resourceLoadError,
       openAddDialog, editResourceById, saveResource, deleteResourceById,
       confirmDeleteResource, addNodeToResource, confirmAddNode, removeNodeFromResource,
       addNodeToResourceById, removeNodeFromResourceById, togglePoll, testConn, getNodeValue, getNodeQuality,

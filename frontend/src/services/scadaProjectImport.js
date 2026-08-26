@@ -172,6 +172,41 @@ function graphToLayout(graph) {
   return { widgets, connections }
 }
 
+function isLegacyWhite(value) {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/\s+/g, '')
+  return !normalized || [
+    '#fff', '#ffffff', '#ffffffff', 'white',
+    'rgb(255,255,255)', 'rgba(255,255,255,1)'
+  ].includes(normalized)
+}
+
+// Earlier Monitoring-T exports could persist label defaults as an opaque white
+// panel.  Labels created by the current editor are transparent, so normalize
+// only the old white/default values during import while preserving deliberate
+// non-white label backgrounds.
+function normalizeImportedLayout(layout) {
+  if (!isObject(layout)) return { widgets: [], connections: [] }
+  const widgets = Array.isArray(layout.widgets) ? layout.widgets.map(widget => {
+    if (!isObject(widget)) return widget
+    if (String(widget.type || '').toLowerCase() !== 'label') return { ...widget }
+
+    const config = isObject(widget.config) ? { ...widget.config } : {}
+    if (isLegacyWhite(config.background)) {
+      config.background = 'transparent'
+      config.borderColor = 'transparent'
+      config.borderWidth = 0
+      config.borderRadius = 0
+    }
+    return { ...widget, config }
+  }) : []
+
+  return {
+    ...layout,
+    widgets,
+    connections: Array.isArray(layout.connections) ? layout.connections : []
+  }
+}
+
 export function normalizeScadaProjectImport(payload, fallbackName = '导入项目') {
   const content = asJson(payload)
   const layout = findLayout(content)
@@ -181,7 +216,7 @@ export function normalizeScadaProjectImport(payload, fallbackName = '导入项�
     ? { name: current.name || current.title, description: current.description || current.desc || '' }
     : null) || {}
   return {
-    layout: layout || graphToLayout(graph),
+    layout: normalizeImportedLayout(layout || graphToLayout(graph)),
     customComponents: findCustomComponents(content) || [],
     name: String(meta.name || fallbackName || '导入项目').replace(/\.json$/i, '').trim() || '导入项目',
     description: meta.description || (layout ? '从 Monitoring JSON 导入' : '从旧 SCADA/X6 JSON 导入'),

@@ -54,7 +54,7 @@
                 <div v-show="isLibraryGroupOpen(group)" class="subcat-items">
                   <div
                     v-for="item in group.items"
-                    :key="item.type"
+                    :key="item.scadaAsset?.id || item.customComponentId || item.type"
                     class="lib-item"
                     :style="{ borderLeftColor: item.color }"
                     draggable="true"
@@ -62,9 +62,13 @@
                     @mousemove="moveLibraryPreview"
                     @mouseleave="hideLibraryPreview"
                     @dragstart="onDragStart($event, item)"
-                    @click="addToCanvas(item)"
+                    @dragend="onLibraryDragEnd"
+                    @pointerup.stop="onLibraryItemPointerUp($event, item)"
+                    @click.stop="onLibraryItemClick($event, item)"
                   >
                     <span class="lib-item-name" :title="item.label">{{ item.label }}</span>
+                    <button v-if="item.scadaAsset" type="button" class="lib-item-delete" title="从导入组件库删除"
+                      @mousedown.stop @pointerup.stop @click.stop="requestDeleteScadaAsset(item.scadaAsset)">×</button>
                   </div>
                 </div>
               </div>
@@ -72,7 +76,7 @@
             <template v-else>
               <div
                 v-for="item in cat.items"
-                :key="item.type"
+                :key="item.scadaAsset?.id || item.customComponentId || item.type"
                 class="lib-item"
                 :style="{ borderLeftColor: item.color }"
                 draggable="true"
@@ -80,9 +84,13 @@
                 @mousemove="moveLibraryPreview"
                 @mouseleave="hideLibraryPreview"
                 @dragstart="onDragStart($event, item)"
-                @click="addToCanvas(item)"
+                @dragend="onLibraryDragEnd"
+                @pointerup.stop="onLibraryItemPointerUp($event, item)"
+                @click.stop="onLibraryItemClick($event, item)"
               >
                 <span class="lib-item-name" :title="item.label">{{ item.label }}</span>
+                <button v-if="item.scadaAsset" type="button" class="lib-item-delete" title="从导入组件库删除"
+                  @mousedown.stop @pointerup.stop @click.stop="requestDeleteScadaAsset(item.scadaAsset)">×</button>
               </div>
             </template>
           </div>
@@ -683,6 +691,19 @@
       @confirm="confirmWidgetDelete"
     />
 
+    <ConfirmDialog
+      v-if="deleteScadaAssetTarget"
+      title="删除导入组件"
+      :message="`确定从导入组件库删除「${deleteScadaAssetTarget.asset.name}」吗？`"
+      :detail="deleteScadaAssetTarget.usedOnCanvas
+        ? `画布上已有的 ${deleteScadaAssetTarget.usedOnCanvas} 个实例会保留，可继续单独编辑或删除。`
+        : '仅删除组件库条目；之后仍可重新导入该组件。'"
+      confirm-text="确认删除"
+      danger
+      @close="deleteScadaAssetTarget = null"
+      @confirm="confirmDeleteScadaAsset"
+    />
+
     <!-- 应用模式：只读画布内容，按钮等模块仍可交互 -->
     <div v-if="applicationMode" class="application-overlay">
       <div class="application-toolbar">
@@ -845,6 +866,7 @@ const applicationZoomInput = ref(100)
 const applicationCanvasSize = ref({ width: 0, height: 0 })
 const resetConfirmOpen = ref(false)
 const deleteWidgetTarget = ref(null)
+const deleteScadaAssetTarget = ref(null)
 const connectionMode = ref(false)
 const connectionDraftFrom = ref(null)
 const selectedConnectionId = ref(null)
@@ -875,6 +897,8 @@ const libraryPreview = reactive({
   y: 0
 })
 const librarySearch = ref('')
+const libraryDragging = ref(false)
+let lastLibraryActivationAt = 0
 const scadaAssetInput = ref(null)
 const SCADA_ASSET_LIBRARY_KEY = 'monitoring.scadaAssetLibrary.v1'
 const scadaAssetLibrary = ref(readScadaAssetLibrary())
@@ -1634,12 +1658,38 @@ function addScadaAssetToLibrary(asset) {
   return asset
 }
 
+function requestDeleteScadaAsset(asset) {
+  const id = String(asset?.id || '')
+  if (!id) return
+  const usedOnCanvas = store.widgets.filter(widget => String(widget?.config?.asset?.id || '') === id).length
+  deleteScadaAssetTarget.value = { asset, usedOnCanvas }
+}
+
+function confirmDeleteScadaAsset() {
+  const target = deleteScadaAssetTarget.value
+  const asset = target?.asset
+  const id = String(asset?.id || '')
+  if (!id) {
+    deleteScadaAssetTarget.value = null
+    return
+  }
+  const previous = scadaAssetLibrary.value
+  scadaAssetLibrary.value = previous.filter(item => String(item.id) !== id)
+  if (!persistScadaAssetLibrary()) {
+    scadaAssetLibrary.value = previous
+    showConnectionNotice('删除组件库项失败：浏览器存储不可用')
+    return
+  }
+  deleteScadaAssetTarget.value = null
+  showConnectionNotice(`已从导入组件库删除“${asset.name}”`)
+}
+
 function previewConfigForType(type, label, customDefinition = null, scadaAsset = null) {
   if (type === 'customShape' && customDefinition) {
     return customShapeConfigFromDefinition(customDefinition, label)
   }
   if (type === 'scadaSvg' && scadaAsset) {
-    return { title: label, label, asset: scadaAsset, preserveAspectRatio: 'meet', bindVariable: false, varId: null }
+    return { title: label, label, hideName: true, asset: scadaAsset, preserveAspectRatio: 'meet', bindVariable: false, varId: null }
   }
   const base = { title: label, label, titleFontSize: 12, labelFontSize: 12 }
   if (type === 'button') return { ...base, buttonText: label, writeValue: 1 }
@@ -1716,6 +1766,7 @@ function hideLibraryPreview() {
 }
 
 function onDragStart(event, item) {
+  libraryDragging.value = true
   hideLibraryPreview()
   event.dataTransfer.setData('widget-type', item.type)
   event.dataTransfer.setData('text/plain', item.type)
@@ -1729,17 +1780,48 @@ function onDragStart(event, item) {
   event.dataTransfer.effectAllowed = 'copy'
 }
 
+function onLibraryDragEnd() {
+  window.setTimeout(() => { libraryDragging.value = false }, 0)
+}
+
+function onLibraryItemPointerUp(event, item) {
+  if (event.button !== 0 || libraryDragging.value) return
+  lastLibraryActivationAt = Date.now()
+  addToCanvas(item)
+}
+
+function onLibraryItemClick(event, item) {
+  if (libraryDragging.value || Date.now() - lastLibraryActivationAt < 350) return
+  addToCanvas(item)
+}
+
+function canvasCenterPoint() {
+  const area = canvasAreaRef.value
+  if (!area) return { x: 0, y: 0 }
+  const rect = area.getBoundingClientRect()
+  return canvasPointFromEvent({
+    clientX: rect.left + rect.width / 2,
+    clientY: rect.top + rect.height / 2
+  })
+}
+
 function addToCanvas(item) {
-  // 简单偏移叠加放置
-  const offset = 40 + store.widgets.length * 30
-  const widget = store.addWidget(item.type, offset, offset, {
-    customComponent: item.customComponent || findCustomComponent(item.customComponentId),
+  const customComponent = item.customComponent || findCustomComponent(item.customComponentId)
+  const scadaAsset = item.scadaAsset || null
+  const size = scadaAsset
+    ? { w: scadaAsset.width, h: scadaAsset.height }
+    : customComponent
+    ? { w: customComponent.width, h: customComponent.height }
+    : widgetDefaultSize(item.type)
+  const point = canvasCenterPoint()
+  const widget = store.addWidget(item.type, Math.round(point.x - size.w / 2), Math.round(point.y - size.h / 2), {
+    customComponent,
     w: item.scadaAsset?.width,
     h: item.scadaAsset?.height,
     config: item.scadaAsset ? previewConfigForType('scadaSvg', item.label, null, item.scadaAsset) : undefined
   })
   if (widget) {
-    selectWidget(widget.id)
+    openConfig(widget.id)
     showConnectionNotice(`已添加“${item.label || typeLabel(item.type)}”`)
   } else {
     showConnectionNotice(`组件“${item.label || item.type}”添加失败`)
@@ -2735,7 +2817,7 @@ function selectWidget(id) {
 }
 
 function handleWidgetSelect(id) {
-  selectWidget(id)
+  openConfig(id)
 }
 
 function clearSelection() {
@@ -5576,6 +5658,22 @@ onUnmounted(() => {
   white-space: nowrap;
   font-weight: 700;
 }
+.lib-item-delete {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-placeholder);
+  font-size: 16px;
+  line-height: 1;
+}
+.lib-item-delete:hover { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-text); }
 
 .library-preview-popover {
   position: fixed;

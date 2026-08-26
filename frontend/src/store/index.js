@@ -125,6 +125,7 @@ function defaultConfigForType(type) {
       return {
         ...base,
         label: title,
+        hideName: true,
         labelFontSize: 12,
         labelOffsetX: 0,
         labelOffsetY: 0,
