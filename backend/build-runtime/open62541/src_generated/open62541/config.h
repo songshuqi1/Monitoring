@@ -66,7 +66,7 @@
 /* #undef UA_PACK_DEBIAN */
 
 /* Options for Debugging */
-#define UA_DEBUG
+/* #undef UA_DEBUG */
 /* #undef UA_DEBUG_DUMP_PKGS */
 
 /**

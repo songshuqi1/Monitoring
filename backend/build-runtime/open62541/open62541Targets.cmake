@@ -51,7 +51,7 @@ add_library(open62541::open62541 STATIC IMPORTED)
 
 set_target_properties(open62541::open62541 PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "UA_ARCHITECTURE_WIN32"
-  INTERFACE_INCLUDE_DIRECTORIES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541"
+  INTERFACE_INCLUDE_DIRECTORIES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541"
   INTERFACE_LINK_LIBRARIES "ws2_32;iphlpapi"
 )
 
@@ -59,7 +59,7 @@ set_target_properties(open62541::open62541 PROPERTIES
 set_property(TARGET open62541::open62541 APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(open62541::open62541 PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
-  IMPORTED_LOCATION_RELEASE "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/bin/Release/open62541.lib"
+  IMPORTED_LOCATION_RELEASE "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/bin/open62541.lib"
   )
 
 # This file does not depend on other imported targets which have

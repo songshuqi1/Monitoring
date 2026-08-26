@@ -59,6 +59,10 @@ struct VariableInfo {
     std::string source      = "OPCUA";
     std::string opcuaNodeId;
     int         udpPort     = 0;
+    std::string resourceId;
+    std::string resourceName;
+    std::string scopeId;
+    std::string scopeName;
     double      minValue    = 0.0;
     double      maxValue    = 100.0;
     std::string unit;
@@ -264,10 +268,38 @@ struct CommunicationResource {
     std::string name;
     std::string type;        // "OPCUA" / "UDP"
     std::string endpoint;    // OPC UA 端点 URL
+    std::string address;     // UDP 绑定地址（默认 0.0.0.0）
+    std::string sdcUrl;
+    std::string scopeId;
+    std::string scopeName;
     int         port     = 0;    // UDP 端口
     int         pollIntervalMs = 1000;
     bool        enabled  = false;
     std::vector<ResourceNode> nodes;
+
+    std::string toJson() const {
+        std::stringstream ss;
+        ss << "{\"id\":\"" << escapeJson(id)
+           << "\",\"name\":\"" << escapeJson(name)
+           << "\",\"type\":\"" << escapeJson(type)
+           << "\",\"endpoint\":\"" << escapeJson(endpoint)
+           << "\",\"address\":\"" << escapeJson(address)
+           << "\",\"sdcUrl\":\"" << escapeJson(sdcUrl)
+           << "\",\"scopeId\":\"" << escapeJson(scopeId)
+           << "\",\"scopeName\":\"" << escapeJson(scopeName)
+           << "\",\"port\":" << port
+           << ",\"pollIntervalMs\":" << pollIntervalMs
+           << ",\"enabled\":" << (enabled ? "true" : "false")
+           << ",\"nodes\":[";
+        for (size_t i = 0; i < nodes.size(); ++i) {
+            ss << "{\"nodeId\":\"" << escapeJson(nodes[i].nodeId)
+               << "\",\"name\":\"" << escapeJson(nodes[i].name)
+               << "\",\"browsePath\":\"" << escapeJson(nodes[i].browsePath) << "\"}";
+            if (i < nodes.size() - 1) ss << ",";
+        }
+        ss << "]}";
+        return ss.str();
+    }
 };
 
 #endif // MONITORING_COMMON_H

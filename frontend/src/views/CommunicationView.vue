@@ -6,28 +6,43 @@
       <div v-if="operationMsg" class="cv-operation-msg" :class="operationMsg.ok ? 'ok' : 'err'">{{ operationMsg.text }}</div>
     </div>
 
+    <div class="cv-scope-filter">
+      <label>显示范围</label>
+      <select v-model="scopeFilter">
+        <option value="all">全部项目 / 应用</option>
+        <option value="global">公共资源</option>
+        <option v-for="scope in scopeOptions" :key="scope.id" :value="scope.id">{{ scope.name }}</option>
+      </select>
+      <span>当前显示 {{ visibleResources.length }} / {{ resources.length }} 个通信资源</span>
+    </div>
+
     <!-- 资源列表 -->
     <div class="cv-list">
-      <div v-for="(res, idx) in resources" :key="res.id" class="cv-card" :class="'type-' + res.type">
+      <div v-for="res in visibleResources" :key="res.id" class="cv-card" :class="'type-' + res.type">
         <div class="cv-card-header">
           <div class="cv-card-title">
             <span class="cv-type-badge" :class="res.type">{{ res.type === 'OPCUA' ? 'OPC UA' : res.type }}</span>
             <span class="cv-name">{{ res.name }}</span>
           </div>
           <div class="cv-card-actions">
-            <span class="cv-status" :class="res.enabled ? 'running' : ''">
+            <span class="cv-status" :class="res.running ? 'running' : ''">
               <span class="cv-status-dot"></span>
-              {{ res.enabled ? '采集中' : '已停止' }}
+              {{ res.running ? '采集中' : '已停止' }}
             </span>
-            <button v-if="res.type === 'OPCUA' || res.type === 'UDP'" class="btn btn-sm" :class="res.enabled ? 'btn-danger' : 'btn-primary'"
-              @click="togglePoll(res, idx)">
-              {{ res.enabled ? '停止' : '启动采集' }}
+            <button v-if="res.type === 'OPCUA' || res.type === 'UDP' || res.type === 'SDC'" class="btn btn-sm" :class="res.running ? 'btn-danger' : 'btn-primary'"
+              :disabled="resourceBusyId === res.id" @click="togglePoll(res)">
+              {{ resourceBusyId === res.id ? '处理中...' : (res.running ? '停止' : '启动采集') }}
             </button>
-            <button class="btn btn-sm" @click="editResource(idx)">编辑</button>
-            <button class="btn btn-sm" @click="deleteResource(idx)">删除</button>
+            <button class="btn btn-sm" @click="editResourceById(res.id)">编辑</button>
+            <button class="btn btn-sm" @click="deleteResourceById(res.id)">删除</button>
           </div>
         </div>
         <div class="cv-card-body">
+
+          <div class="cv-detail-row">
+            <span class="cv-detail-label">所属范围</span>
+            <span class="cv-scope-tag">{{ resourceScopeLabel(res) }}</span>
+          </div>
 
           <!-- OPC UA 详情 -->
           <template v-if="res.type === 'OPCUA'">
@@ -41,7 +56,7 @@
             </div>
             <div class="cv-nodes-header">
               <span class="cv-nodes-title">读取节点 ({{ (res.nodes || []).length }})</span>
-              <button class="btn btn-xs" @click="addNodeToResource(idx)">＋ 添加节点</button>
+              <button class="btn btn-xs" @click="addNodeToResourceById(res.id)">＋ 添加节点</button>
             </div>
             <div class="cv-nodes-list">
               <div v-for="(node, ni) in (res.nodes || [])" :key="ni" class="cv-node-row">
@@ -54,7 +69,7 @@
                   <span class="cv-nv-val">{{ getNodeValue(node.name) }}</span>
                   <span class="quality-dot" :class="getNodeQuality(node.name)"></span>
                 </div>
-                <button class="btn btn-sm" @click="removeNodeFromResource(idx, ni)" title="移除">✕</button>
+                <button class="btn btn-sm" @click="removeNodeFromResourceById(res.id, ni)" title="移除">✕</button>
               </div>
             </div>
             <div v-if="!res.nodes || res.nodes.length === 0" class="cv-nodes-empty">
@@ -74,11 +89,23 @@
             </div>
           </template>
 
+          <template v-if="res.type === 'SDC'">
+            <div class="cv-detail-row">
+              <span class="cv-detail-label">服务地址</span>
+              <code class="cv-detail-val">{{ res.sdcUrl }}</code>
+            </div>
+            <div class="cv-detail-row">
+              <span class="cv-detail-label">采集间隔</span>
+              <code class="cv-detail-val">{{ res.pollIntervalMs || 1000 }} ms</code>
+            </div>
+            <p class="cv-sdc-hint">轮询 <code>/api/runtime/stream</code>，读取返回 JSON 的 <code>vars</code> 对象；数值和布尔变量会自动加入变量管理。</p>
+          </template>
+
         </div>
       </div>
 
       <!-- 空状态 -->
-      <div v-if="resources.length === 0" class="cv-empty">
+      <div v-if="visibleResources.length === 0" class="cv-empty">
         <div class="cv-empty-icon">📡</div>
         <p>还没有通信资源</p>
         <p class="cv-empty-hint">添加 OPC UA 或 UDP 数据源来采集数据</p>
@@ -104,7 +131,30 @@
           <select v-model="form.type">
             <option value="OPCUA">OPC UA (远程读取)</option>
             <option value="UDP">UDP (监听端口)</option>
+            <option value="SDC">软件定义通信 (Monitor Agent)</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label>所属范围</label>
+          <select v-model="form.scopeType">
+            <option value="global">公共资源（所有项目可见）</option>
+            <option value="project">指定项目</option>
+            <option value="application">独立应用</option>
+          </select>
+        </div>
+        <div v-if="form.scopeType === 'project'" class="form-group">
+          <label>项目</label>
+          <select v-model="form.projectId">
+            <option value="">请选择项目</option>
+            <option v-for="project in projectStore.list" :key="project.id" :value="String(project.id)">{{ project.name }}</option>
+          </select>
+          <p class="form-hint">资源与采集变量会归入这个项目，可在数据视图中单独筛选。</p>
+        </div>
+        <div v-if="form.scopeType === 'application'" class="form-group">
+          <label>应用名称</label>
+          <input v-model.trim="form.applicationName" placeholder="例如：一号产线应用" />
+          <p class="form-hint">相同名称的资源与变量会被归入同一个应用范围。</p>
         </div>
 
         <template v-if="form.type === 'OPCUA'">
@@ -139,6 +189,20 @@
           </div>
         </template>
 
+        <template v-if="form.type === 'SDC'">
+          <div class="form-group">
+            <label>服务地址</label>
+            <input v-model="form.sdcUrl" placeholder="http://127.0.0.1:9100" />
+            <p class="form-hint">填写 Monitor Agent 根地址或完整的 <code>/api/runtime/stream</code> 地址。系统会直连该服务，不使用系统代理。</p>
+          </div>
+          <div class="comm-connect-bar">
+            <button class="btn btn-sm" @click="testConn" :disabled="testLoading">
+              {{ testLoading ? '测试中...' : '测试 SDC 连接' }}
+            </button>
+            <span v-if="testMsg" class="test-msg" :class="testMsg.ok ? 'ok' : 'err'">{{ testMsg.text }}</span>
+          </div>
+        </template>
+
         <div class="form-group">
           <label>采集间隔 (ms)</label>
           <input type="number" v-model.number="form.interval" placeholder="1000" />
@@ -146,7 +210,7 @@
 
         <div class="dialog-actions">
           <button class="btn btn-secondary" @click="showDialog = false">取消</button>
-          <button class="btn btn-primary" @click="saveResource">保存</button>
+          <button class="btn btn-primary" :disabled="savingResource" @click="saveResource">{{ savingResource ? '保存中...' : '保存' }}</button>
         </div>
       </div>
     </div>
@@ -188,19 +252,20 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useMonitorStore } from '../store/index.js'
+import { useProjectStore } from '../store/projectStore.js'
 import api from '../api/index.js'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
-
-const STORAGE_KEY = 'monitor-comm-resources'
 
 export default {
   name: 'CommunicationView',
   components: { ConfirmDialog },
   setup() {
     const store = useMonitorStore()
+    const projectStore = useProjectStore()
     const resources = ref([])
+    const scopeFilter = ref('all')
     const showDialog = ref(false)
     const editingIdx = ref(-1)
     const testLoading = ref(false)
@@ -210,30 +275,83 @@ export default {
     const nodeForm = reactive({ name: '', nodeId: '' })
     const deleteTargetIdx = ref(-1)
     const operationMsg = ref(null)
+    const resourceBusyId = ref('')
+    const savingResource = ref(false)
 
     const form = reactive({
-      name: '', type: 'OPCUA', endpoint: '', nodesText: '', address: '0.0.0.0', port: 8888, interval: 1000
+      name: '', type: 'OPCUA', endpoint: '', nodesText: '', address: '0.0.0.0', sdcUrl: 'http://127.0.0.1:9100', port: 8888, interval: 1000,
+      scopeType: 'global', projectId: '', applicationName: ''
     })
 
-    function loadResources() {
+    const scopeOptions = computed(() => {
+      const options = new Map()
+      resources.value.forEach((resource) => {
+        if (resource.scopeId) options.set(resource.scopeId, { id: resource.scopeId, name: resource.scopeName || resource.scopeId })
+      })
+      projectStore.list.forEach((project) => {
+        const id = `project:${project.id}`
+        if (!options.has(id)) options.set(id, { id, name: `项目：${project.name}` })
+      })
+      return [...options.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+    })
+
+    const visibleResources = computed(() => resources.value.filter((resource) => {
+      if (scopeFilter.value === 'all') return true
+      if (scopeFilter.value === 'global') return !resource.scopeId
+      return resource.scopeId === scopeFilter.value
+    }))
+
+    async function loadResources() {
       try {
-        const s = localStorage.getItem(STORAGE_KEY)
-        const loaded = s ? JSON.parse(s) : []
-        resources.value = Array.isArray(loaded)
-          ? loaded.filter(item => item?.type === 'OPCUA' || item?.type === 'UDP')
-          : []
-        if (Array.isArray(loaded) && loaded.length !== resources.value.length) saveResources()
-      } catch { resources.value = [] }
+        const r = await api.getCommunicationResources()
+        resources.value = Array.isArray(r.data) ? r.data : []
+      } catch (e) {
+        resources.value = []
+        showOperationMsg(false, '加载通信资源失败：' + formatConnectionError(e))
+      }
     }
 
-    function saveResources() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(resources.value))
+    function resourceScopeLabel(resource) {
+      return resource?.scopeName || (resource?.scopeId ? resource.scopeId : '公共资源')
+    }
+
+    function setFormScope(resource = null) {
+      const scopeId = resource?.scopeId || ''
+      const scopeName = resource?.scopeName || ''
+      if (scopeId.startsWith('project:')) {
+        form.scopeType = 'project'
+        form.projectId = scopeId.slice('project:'.length)
+        form.applicationName = ''
+      } else if (scopeId.startsWith('application:')) {
+        form.scopeType = 'application'
+        form.projectId = ''
+        form.applicationName = scopeName || scopeId.slice('application:'.length)
+      } else {
+        form.scopeType = 'global'
+        form.projectId = ''
+        form.applicationName = ''
+      }
+    }
+
+    function scopePayload() {
+      if (form.scopeType === 'project') {
+        const project = projectStore.list.find(item => String(item.id) === String(form.projectId))
+        if (!project) throw new Error('请选择所属项目')
+        return { scopeId: `project:${project.id}`, scopeName: `项目：${project.name}` }
+      }
+      if (form.scopeType === 'application') {
+        const name = String(form.applicationName || '').trim()
+        if (!name) throw new Error('请填写应用名称')
+        return { scopeId: `application:${name.toLowerCase()}`, scopeName: `应用：${name}` }
+      }
+      return { scopeId: '', scopeName: '' }
     }
 
     function openAddDialog() {
       editingIdx.value = -1
       form.name = ''; form.type = 'OPCUA'; form.endpoint = ''
-      form.nodesText = ''; form.address = '0.0.0.0'; form.port = 8888; form.interval = 1000
+      form.nodesText = ''; form.address = '0.0.0.0'; form.sdcUrl = 'http://127.0.0.1:9100'; form.port = 8888; form.interval = 1000
+      setFormScope(projectStore.currentProject ? { scopeId: `project:${projectStore.currentProject.id}`, scopeName: projectStore.currentProject.name } : null)
       showDialog.value = true
     }
 
@@ -241,9 +359,34 @@ export default {
       const r = resources.value[idx]
       editingIdx.value = idx
       form.name = r.name; form.type = r.type; form.endpoint = r.endpoint || ''
-      form.address = r.address || '0.0.0.0'; form.port = r.port || 8888; form.interval = r.pollIntervalMs || 1000
+      form.address = r.address || '0.0.0.0'; form.sdcUrl = r.sdcUrl || 'http://127.0.0.1:9100'; form.port = r.port || 8888; form.interval = r.pollIntervalMs || 1000
       form.nodesText = (r.nodes || []).map(n => n.nodeId).join('\n')
+      setFormScope(r)
       showDialog.value = true
+    }
+
+    function resourceIndexById(id) {
+      return resources.value.findIndex(resource => resource.id === id)
+    }
+
+    function editResourceById(id) {
+      const index = resourceIndexById(id)
+      if (index >= 0) editResource(index)
+    }
+
+    function deleteResourceById(id) {
+      const index = resourceIndexById(id)
+      if (index >= 0) deleteResource(index)
+    }
+
+    function addNodeToResourceById(id) {
+      const index = resourceIndexById(id)
+      if (index >= 0) addNodeToResource(index)
+    }
+
+    function removeNodeFromResourceById(id, nodeIndex) {
+      const index = resourceIndexById(id)
+      if (index >= 0) removeNodeFromResource(index, nodeIndex)
     }
 
     function nameFromNodeId(nodeId) {
@@ -252,7 +395,9 @@ export default {
         .replace(/^nsu=[^;]+;(?:[isgb]=)?/, '')
     }
 
-    function saveResource() {
+    async function saveResource() {
+      if (savingResource.value) return
+      savingResource.value = true
       const nodes = []
       form.nodesText.split('\n').filter(Boolean).forEach(line => {
         const nid = line.trim()
@@ -260,25 +405,37 @@ export default {
         nodes.push({ name, nodeId: nid, browsePath: '\\Root\\Objects\\' + name })
       })
 
+      const existing = editingIdx.value >= 0 ? resources.value[editingIdx.value] : null
+      let scope
+      try {
+        scope = scopePayload()
+      } catch (error) {
+        savingResource.value = false
+        showOperationMsg(false, error.message || '资源范围无效')
+        return
+      }
       const data = {
-        id: 'res-' + Date.now(),
+        id: existing?.id || 'res-' + Date.now(),
         name: form.name || (form.type === 'OPCUA' ? 'OPC UA' : form.type),
         type: form.type,
         endpoint: form.endpoint,
-        address: form.address, port: form.port,
+        address: form.address, sdcUrl: form.sdcUrl, port: form.port,
         pollIntervalMs: form.interval,
-        enabled: false,
+        enabled: existing?.enabled || false,
+        ...scope,
         nodes
       }
 
-      if (editingIdx.value >= 0) {
-        data.enabled = resources.value[editingIdx.value].enabled
-        resources.value[editingIdx.value] = data
-      } else {
-        resources.value.push(data)
+      try {
+        await api.saveCommunicationResource(data)
+        await loadResources()
+        showDialog.value = false
+        showOperationMsg(true, existing ? '通信资源已更新' : '通信资源已保存')
+      } catch (e) {
+        showOperationMsg(false, '保存失败：' + (e?.message || e))
+      } finally {
+        savingResource.value = false
       }
-      saveResources()
-      showDialog.value = false
     }
 
     function deleteResource(idx) {
@@ -289,16 +446,17 @@ export default {
       const idx = deleteTargetIdx.value
       if (idx < 0 || idx >= resources.value.length) return
       const r = resources.value[idx]
-      if (r.enabled) {
-          if (r.type === 'OPCUA') {
-            await api.post('/opcua/poll/stop', {}).catch(() => {})
-          } else if (r.type === 'UDP') {
-            await api.udpStop().catch(() => {})
-          }
+      try {
+        if (r.running) {
+          await api.stopCommunicationResource(r.id).catch(() => {})
+        }
+        await api.deleteCommunicationResource(r.id)
+        await loadResources()
+      } catch (e) {
+        showOperationMsg(false, '删除失败：' + (e?.message || e))
+      } finally {
+        deleteTargetIdx.value = -1
       }
-      resources.value.splice(idx, 1)
-      deleteTargetIdx.value = -1
-      saveResources()
     }
 
     function addNodeToResource(idx) {
@@ -308,62 +466,56 @@ export default {
       showNodeDialog.value = true
     }
 
-    function confirmAddNode() {
+    async function confirmAddNode() {
       if (!nodeForm.name.trim() && !nodeForm.nodeId.trim()) return
+      const target = resources.value[nodeTargetIdx.value]
+      if (!target) return
       const name = nodeForm.name.trim() || nameFromNodeId(nodeForm.nodeId.trim())
       const nodeId = nodeForm.nodeId.trim() || 'ns=1;s=' + name
-      if (!resources.value[nodeTargetIdx.value].nodes) {
-        resources.value[nodeTargetIdx.value].nodes = []
+      if (!Array.isArray(target.nodes)) target.nodes = []
+      target.nodes.push({ name, nodeId, browsePath: '\\Root\\Objects\\' + name })
+      try {
+        await api.saveCommunicationResource(target)
+        await loadResources()
+        showNodeDialog.value = false
+      } catch (e) {
+        showOperationMsg(false, '添加节点失败：' + (e?.message || e))
       }
-      resources.value[nodeTargetIdx.value].nodes.push({
-        name, nodeId, browsePath: '\\Root\\Objects\\' + name
-      })
-      saveResources()
-      showNodeDialog.value = false
-    }function removeNodeFromResource(rIdx, nIdx) {
-      resources.value[rIdx].nodes.splice(nIdx, 1)
-      saveResources()
     }
 
-    async function togglePoll(res, idx) {
-      if (res.enabled) {
-        if (res.type === 'OPCUA') {
-          try { await api.post('/opcua/poll/stop', {}) } catch {}
-        } else if (res.type === 'UDP') {
-          try { await api.udpStop() } catch {}
-        }
-        res.enabled = false
-        saveResources()
-      } else {
-        if (res.type === 'OPCUA') {
-          if (!res.endpoint) return
-          try {
-            const payload = {
-              endpoint: res.endpoint,
-              interval: res.pollIntervalMs || 1000,
-              nodes: (res.nodes || []).map(n => ({ nodeId: n.nodeId, name: n.name }))
-            }
-            const r = await api.post('/opcua/poll/start', payload)
-            if (r.data.started) {
-              res.enabled = true
-              saveResources()
-              store.loadVariables()
-            }
-          } catch (e) {
-            showOperationMsg(false, '启动采集失败：' + formatConnectionError(e))
-          }
-        } else if (res.type === 'UDP') {
-          try {
-              const r = await api.udpStart(res.address || '0.0.0.0', res.port || 8888)
-            if (r.data.started) {
-              res.enabled = true
-              saveResources()
-              store.loadVariables()
-            }
-          } catch (e) {
-            showOperationMsg(false, '启动 UDP 采集失败：' + (e.message || e))
+    async function removeNodeFromResource(rIdx, nIdx) {
+      const r = resources.value[rIdx]
+      if (!r || !Array.isArray(r.nodes)) return
+      r.nodes.splice(nIdx, 1)
+      try {
+        await api.saveCommunicationResource(r)
+        await loadResources()
+      } catch (e) {
+        showOperationMsg(false, '移除节点失败：' + (e?.message || e))
+      }
+    }
+
+    async function togglePoll(res) {
+      if (!res?.id || resourceBusyId.value) return
+      resourceBusyId.value = res.id
+      try {
+        if (res.running) {
+          await api.stopCommunicationResource(res.id)
+          showOperationMsg(true, `已停止「${res.name}」`)
+        } else {
+          const r = await api.startCommunicationResource(res.id)
+          if (!r.data || r.data.started === false) {
+            showOperationMsg(false, `启动「${res.name}」失败`)
+          } else {
+            showOperationMsg(true, `已启动「${res.name}」`)
           }
         }
+        await loadResources()
+        store.loadVariables()
+      } catch (e) {
+        showOperationMsg(false, (res.running ? '停止' : '启动') + '失败：' + formatConnectionError(e))
+      } finally {
+        resourceBusyId.value = ''
       }
     }
 
@@ -376,8 +528,9 @@ export default {
       testLoading.value = true
       testMsg.value = null
       try {
-        const r = await api.connectOpcua(form.endpoint)
-        testMsg.value = { ok: r.data.connected, text: r.data.connected ? '✅ 连接成功' : '❌ ' + r.data.message }
+        const r = form.type === 'SDC' ? await api.testSdc(form.sdcUrl) : await api.connectOpcua(form.endpoint)
+        const countText = form.type === 'SDC' && r.data?.connected ? `，识别 ${r.data.variableCount || 0} 个可采集变量` : ''
+        testMsg.value = { ok: r.data.connected, text: r.data.connected ? '✅ 连接成功' + countText : '❌ ' + r.data.message }
       } catch (e) {
         testMsg.value = { ok: false, text: '❌ ' + formatConnectionError(e) }
       } finally { testLoading.value = false }
@@ -413,14 +566,17 @@ export default {
     onMounted(() => {
       loadResources()
       store.loadVariables()
+      projectStore.fetchProjects().catch(() => {})
     })
 
     return {
-      resources, showDialog, editingIdx, form, testLoading, testMsg,
+      resources, visibleResources, scopeFilter, scopeOptions, projectStore, showDialog, editingIdx, form, testLoading, testMsg,
       showNodeDialog, nodeTargetIdx, nodeForm, deleteTargetIdx, operationMsg,
-      openAddDialog, editResource, saveResource, deleteResource,
+      resourceBusyId, savingResource,
+      openAddDialog, editResourceById, saveResource, deleteResourceById,
       confirmDeleteResource, addNodeToResource, confirmAddNode, removeNodeFromResource,
-      togglePoll, testConn, getNodeValue, getNodeQuality
+      addNodeToResourceById, removeNodeFromResourceById, togglePoll, testConn, getNodeValue, getNodeQuality,
+      resourceScopeLabel
     }
   }
 }
@@ -434,19 +590,26 @@ export default {
 .cv-operation-msg { margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-md); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
 .cv-operation-msg.ok { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
 .cv-operation-msg.err { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+.cv-scope-filter { max-width: var(--content-max-width); margin: 0 auto 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-primary); box-shadow: var(--shadow-xs); }
+.cv-scope-filter label { color: var(--text-secondary); font-size: var(--fs-sm); font-weight: var(--fw-bold); }
+.cv-scope-filter select { min-width: 220px; min-height: 34px; }
+.cv-scope-filter span { color: var(--text-tertiary); font-size: var(--fs-sm); }
 
 .cv-list { max-width: var(--content-max-width); margin: 0 auto 20px; display: flex; flex-direction: column; gap: 14px; }
 .cv-card { border: 1px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-card); transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast); }
 .cv-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-color); }
 .cv-card.type-OPCUA { border-left: 3px solid var(--accent); }
 .cv-card.type-UDP { border-left: 3px solid var(--color-warning); }
+.cv-card.type-SDC { border-left: 3px solid var(--color-online); }
 
 .cv-card-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; background: var(--surface-muted); border-bottom: 1px solid var(--border-light); }
 .cv-card-title { display: flex; align-items: center; gap: 10px; }
 .cv-type-badge { font-size: 10px; font-weight: var(--fw-bold); padding: 4px 9px; border-radius: var(--radius-full); text-transform: uppercase; border: 1px solid transparent; }
 .cv-type-badge.OPCUA { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
 .cv-type-badge.UDP { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+.cv-type-badge.SDC { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
 .cv-name { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--text-primary); }
+.cv-scope-tag { display: inline-flex; align-items: center; min-height: 23px; padding: 0 8px; border-radius: var(--radius-full); background: var(--accent-soft); border: 1px solid var(--info-border); color: var(--accent); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
 .cv-card-actions { display: flex; align-items: center; gap: 8px; }
 .cv-status { display: flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 9px; border-radius: var(--radius-full); border: 1px solid var(--border-light); background: var(--bg-primary); font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--text-placeholder); }
 .cv-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-offline); }
@@ -457,6 +620,7 @@ export default {
 .cv-detail-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: var(--fs-sm); }
 .cv-detail-label { color: var(--text-tertiary); min-width: 76px; font-weight: var(--fw-semibold); }
 .cv-detail-val { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-secondary); background: var(--surface-muted); padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); }
+.cv-sdc-hint { margin: 2px 0 0; font-size: var(--fs-xs); line-height: 1.6; color: var(--text-tertiary); }
 
 .cv-nodes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-light); }
 .cv-nodes-title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--text-secondary); }

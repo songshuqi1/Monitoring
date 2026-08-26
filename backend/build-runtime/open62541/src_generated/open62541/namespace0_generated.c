@@ -232,31 +232,9 @@ UA_NODEID_NUMERIC(ns[0], 22)
 );
 }
 
-/* EnumValueType - ns=0;i=7594 */
-
-static UA_StatusCode function_namespace0_generated_10_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "EnumValueType");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 7594),
-UA_NODEID_NUMERIC(ns[0], 22),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "EnumValueType"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_10_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 7594)
-);
-}
-
 /* SignedSoftwareCertificate - ns=0;i=344 */
 
-static UA_StatusCode function_namespace0_generated_11_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_10_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "SignedSoftwareCertificate");
@@ -270,9 +248,31 @@ UA_QUALIFIEDNAME(ns[0], "SignedSoftwareCertificate"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_11_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_10_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 344)
+);
+}
+
+/* ServerDiagnosticsSummaryDataType - ns=0;i=859 */
+
+static UA_StatusCode function_namespace0_generated_11_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnosticsSummaryDataType");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 859),
+UA_NODEID_NUMERIC(ns[0], 22),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "ServerDiagnosticsSummaryDataType"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_11_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 859)
 );
 }
 
@@ -298,53 +298,9 @@ UA_NODEID_NUMERIC(ns[0], 862)
 );
 }
 
-/* BuildInfo - ns=0;i=338 */
-
-static UA_StatusCode function_namespace0_generated_13_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "BuildInfo");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 338),
-UA_NODEID_NUMERIC(ns[0], 22),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "BuildInfo"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_13_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 338)
-);
-}
-
-/* ServerDiagnosticsSummaryDataType - ns=0;i=859 */
-
-static UA_StatusCode function_namespace0_generated_14_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnosticsSummaryDataType");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 859),
-UA_NODEID_NUMERIC(ns[0], 22),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "ServerDiagnosticsSummaryDataType"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_14_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 859)
-);
-}
-
 /* Argument - ns=0;i=296 */
 
-static UA_StatusCode function_namespace0_generated_15_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_13_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "Argument");
@@ -358,9 +314,53 @@ UA_QUALIFIEDNAME(ns[0], "Argument"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_15_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_13_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 296)
+);
+}
+
+/* BuildInfo - ns=0;i=338 */
+
+static UA_StatusCode function_namespace0_generated_14_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "BuildInfo");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 338),
+UA_NODEID_NUMERIC(ns[0], 22),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "BuildInfo"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_14_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 338)
+);
+}
+
+/* EnumValueType - ns=0;i=7594 */
+
+static UA_StatusCode function_namespace0_generated_15_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "EnumValueType");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 7594),
+UA_NODEID_NUMERIC(ns[0], 22),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "EnumValueType"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_15_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 7594)
 );
 }
 
@@ -769,9 +769,31 @@ UA_NODEID_NUMERIC(ns[0], 12169)
 );
 }
 
-/* RedundancySupport - ns=0;i=851 */
+/* ServerState - ns=0;i=852 */
 
 static UA_StatusCode function_namespace0_generated_33_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerState");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 852),
+UA_NODEID_NUMERIC(ns[0], 29),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "ServerState"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_33_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 852)
+);
+}
+
+/* RedundancySupport - ns=0;i=851 */
+
+static UA_StatusCode function_namespace0_generated_34_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "RedundancySupport");
@@ -785,7 +807,7 @@ UA_QUALIFIEDNAME(ns[0], "RedundancySupport"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_33_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_34_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 851)
 );
@@ -793,7 +815,7 @@ UA_NODEID_NUMERIC(ns[0], 851)
 
 /* EnumStrings - ns=0;i=7611 */
 
-static UA_StatusCode function_namespace0_generated_34_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_35_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -824,31 +846,9 @@ UA_NODEID_NUMERIC(ns[0], 68),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_34_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 7611)
-);
-}
-
-/* ServerState - ns=0;i=852 */
-
-static UA_StatusCode function_namespace0_generated_35_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerState");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 852),
-UA_NODEID_NUMERIC(ns[0], 29),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "ServerState"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
 static UA_StatusCode function_namespace0_generated_35_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 852)
+UA_NODEID_NUMERIC(ns[0], 7611)
 );
 }
 
@@ -898,9 +898,31 @@ UA_NODEID_NUMERIC(ns[0], 28)
 );
 }
 
-/* UInt64 - ns=0;i=9 */
+/* UInt16 - ns=0;i=5 */
 
 static UA_StatusCode function_namespace0_generated_38_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "UInt16");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 5),
+UA_NODEID_NUMERIC(ns[0], 28),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "UInt16"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_38_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 5)
+);
+}
+
+/* UInt64 - ns=0;i=9 */
+
+static UA_StatusCode function_namespace0_generated_39_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "UInt64");
@@ -914,31 +936,9 @@ UA_QUALIFIEDNAME(ns[0], "UInt64"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_38_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 9)
-);
-}
-
-/* Byte - ns=0;i=3 */
-
-static UA_StatusCode function_namespace0_generated_39_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "Byte");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 3),
-UA_NODEID_NUMERIC(ns[0], 28),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "Byte"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
 static UA_StatusCode function_namespace0_generated_39_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 3)
+UA_NODEID_NUMERIC(ns[0], 9)
 );
 }
 
@@ -964,17 +964,17 @@ UA_NODEID_NUMERIC(ns[0], 7)
 );
 }
 
-/* UInt16 - ns=0;i=5 */
+/* Byte - ns=0;i=3 */
 
 static UA_StatusCode function_namespace0_generated_41_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "UInt16");
+attr.displayName = UA_LOCALIZEDTEXT("", "Byte");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 5),
+UA_NODEID_NUMERIC(ns[0], 3),
 UA_NODEID_NUMERIC(ns[0], 28),
 UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "UInt16"),
+UA_QUALIFIEDNAME(ns[0], "Byte"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
 return retVal;
@@ -982,7 +982,7 @@ return retVal;
 
 static UA_StatusCode function_namespace0_generated_41_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 5)
+UA_NODEID_NUMERIC(ns[0], 3)
 );
 }
 
@@ -1030,9 +1030,53 @@ UA_NODEID_NUMERIC(ns[0], 50)
 );
 }
 
-/* Integer - ns=0;i=27 */
+/* Double - ns=0;i=11 */
 
 static UA_StatusCode function_namespace0_generated_44_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "Double");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 11),
+UA_NODEID_NUMERIC(ns[0], 26),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "Double"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_44_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11)
+);
+}
+
+/* Duration - ns=0;i=290 */
+
+static UA_StatusCode function_namespace0_generated_45_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "Duration");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 290),
+UA_NODEID_NUMERIC(ns[0], 11),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "Duration"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_45_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 290)
+);
+}
+
+/* Integer - ns=0;i=27 */
+
+static UA_StatusCode function_namespace0_generated_46_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.isAbstract = true;
@@ -1047,7 +1091,7 @@ UA_QUALIFIEDNAME(ns[0], "Integer"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_44_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_46_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 27)
 );
@@ -1055,7 +1099,7 @@ UA_NODEID_NUMERIC(ns[0], 27)
 
 /* Int32 - ns=0;i=6 */
 
-static UA_StatusCode function_namespace0_generated_45_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_47_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "Int32");
@@ -1069,37 +1113,15 @@ UA_QUALIFIEDNAME(ns[0], "Int32"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_45_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_47_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 6)
 );
 }
 
-/* SByte - ns=0;i=2 */
-
-static UA_StatusCode function_namespace0_generated_46_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "SByte");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 2),
-UA_NODEID_NUMERIC(ns[0], 27),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "SByte"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_46_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2)
-);
-}
-
 /* Int64 - ns=0;i=8 */
 
-static UA_StatusCode function_namespace0_generated_47_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_48_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "Int64");
@@ -1113,15 +1135,37 @@ UA_QUALIFIEDNAME(ns[0], "Int64"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_47_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_48_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 8)
 );
 }
 
+/* SByte - ns=0;i=2 */
+
+static UA_StatusCode function_namespace0_generated_49_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "SByte");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
+UA_NODEID_NUMERIC(ns[0], 2),
+UA_NODEID_NUMERIC(ns[0], 27),
+UA_NODEID_NUMERIC(ns[0], 45),
+UA_QUALIFIEDNAME(ns[0], "SByte"),
+ UA_NODEID_NULL,
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_49_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2)
+);
+}
+
 /* Int16 - ns=0;i=4 */
 
-static UA_StatusCode function_namespace0_generated_48_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_50_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "Int16");
@@ -1135,53 +1179,9 @@ UA_QUALIFIEDNAME(ns[0], "Int16"),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_48_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 4)
-);
-}
-
-/* Double - ns=0;i=11 */
-
-static UA_StatusCode function_namespace0_generated_49_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "Double");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 11),
-UA_NODEID_NUMERIC(ns[0], 26),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "Double"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_49_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11)
-);
-}
-
-/* Duration - ns=0;i=290 */
-
-static UA_StatusCode function_namespace0_generated_50_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_DataTypeAttributes attr = UA_DataTypeAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "Duration");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_DATATYPE,
-UA_NODEID_NUMERIC(ns[0], 290),
-UA_NODEID_NUMERIC(ns[0], 11),
-UA_NODEID_NUMERIC(ns[0], 45),
-UA_QUALIFIEDNAME(ns[0], "Duration"),
- UA_NODEID_NULL,
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
 static UA_StatusCode function_namespace0_generated_50_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 290)
+UA_NODEID_NUMERIC(ns[0], 4)
 );
 }
 
@@ -1256,289 +1256,9 @@ UA_NODEID_NUMERIC(ns[0], 2150)
 );
 }
 
-/* RejectedSessionCount - ns=0;i=2155 */
-
-static UA_StatusCode function_namespace0_generated_54_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "RejectedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2155),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "RejectedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_54_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2155)
-);
-}
-
-/* ServerViewCount - ns=0;i=2151 */
-
-static UA_StatusCode function_namespace0_generated_55_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerViewCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2151),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerViewCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_55_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2151)
-);
-}
-
-/* SecurityRejectedSessionCount - ns=0;i=2154 */
-
-static UA_StatusCode function_namespace0_generated_56_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2154),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SecurityRejectedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_56_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2154)
-);
-}
-
-/* PublishingIntervalCount - ns=0;i=2159 */
-
-static UA_StatusCode function_namespace0_generated_57_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "PublishingIntervalCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2159),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "PublishingIntervalCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_57_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2159)
-);
-}
-
-/* CurrentSubscriptionCount - ns=0;i=2160 */
-
-static UA_StatusCode function_namespace0_generated_58_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSubscriptionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2160),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CurrentSubscriptionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_58_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2160)
-);
-}
-
-/* SessionAbortCount - ns=0;i=2157 */
-
-static UA_StatusCode function_namespace0_generated_59_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SessionAbortCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2157),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SessionAbortCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_59_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2157)
-);
-}
-
-/* CumulatedSubscriptionCount - ns=0;i=2161 */
-
-static UA_StatusCode function_namespace0_generated_60_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSubscriptionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2161),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CumulatedSubscriptionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_60_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2161)
-);
-}
-
-/* CurrentSessionCount - ns=0;i=2152 */
-
-static UA_StatusCode function_namespace0_generated_61_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2152),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CurrentSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_61_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2152)
-);
-}
-
-/* CumulatedSessionCount - ns=0;i=2153 */
-
-static UA_StatusCode function_namespace0_generated_62_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2153),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CumulatedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_62_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2153)
-);
-}
-
-/* SecurityRejectedRequestsCount - ns=0;i=2162 */
-
-static UA_StatusCode function_namespace0_generated_63_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedRequestsCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2162),
-UA_NODEID_NUMERIC(ns[0], 2150),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SecurityRejectedRequestsCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_63_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2162)
-);
-}
-
 /* RejectedRequestsCount - ns=0;i=2163 */
 
-static UA_StatusCode function_namespace0_generated_64_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_54_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -1558,15 +1278,99 @@ UA_NODEID_NUMERIC(ns[0], 63),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_64_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_54_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 2163)
 );
 }
 
+/* CumulatedSubscriptionCount - ns=0;i=2161 */
+
+static UA_StatusCode function_namespace0_generated_55_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSubscriptionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2161),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CumulatedSubscriptionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_55_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2161)
+);
+}
+
+/* RejectedSessionCount - ns=0;i=2155 */
+
+static UA_StatusCode function_namespace0_generated_56_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "RejectedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2155),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "RejectedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_56_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2155)
+);
+}
+
+/* SecurityRejectedRequestsCount - ns=0;i=2162 */
+
+static UA_StatusCode function_namespace0_generated_57_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedRequestsCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2162),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SecurityRejectedRequestsCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_57_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2162)
+);
+}
+
 /* SessionTimeoutCount - ns=0;i=2156 */
 
-static UA_StatusCode function_namespace0_generated_65_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_58_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -1586,9 +1390,205 @@ UA_NODEID_NUMERIC(ns[0], 63),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_65_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_58_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 2156)
+);
+}
+
+/* ServerViewCount - ns=0;i=2151 */
+
+static UA_StatusCode function_namespace0_generated_59_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerViewCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2151),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerViewCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_59_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2151)
+);
+}
+
+/* CurrentSubscriptionCount - ns=0;i=2160 */
+
+static UA_StatusCode function_namespace0_generated_60_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSubscriptionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2160),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CurrentSubscriptionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_60_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2160)
+);
+}
+
+/* PublishingIntervalCount - ns=0;i=2159 */
+
+static UA_StatusCode function_namespace0_generated_61_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "PublishingIntervalCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2159),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "PublishingIntervalCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_61_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2159)
+);
+}
+
+/* SecurityRejectedSessionCount - ns=0;i=2154 */
+
+static UA_StatusCode function_namespace0_generated_62_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2154),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SecurityRejectedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_62_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2154)
+);
+}
+
+/* CumulatedSessionCount - ns=0;i=2153 */
+
+static UA_StatusCode function_namespace0_generated_63_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2153),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CumulatedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_63_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2153)
+);
+}
+
+/* SessionAbortCount - ns=0;i=2157 */
+
+static UA_StatusCode function_namespace0_generated_64_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SessionAbortCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2157),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SessionAbortCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_64_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2157)
+);
+}
+
+/* CurrentSessionCount - ns=0;i=2152 */
+
+static UA_StatusCode function_namespace0_generated_65_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2152),
+UA_NODEID_NUMERIC(ns[0], 2150),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CurrentSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_65_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2152)
 );
 }
 
@@ -1692,65 +1692,9 @@ UA_NODEID_NUMERIC(ns[0], 11573)
 );
 }
 
-/* MaxNodesPerBrowse - ns=0;i=11570 */
-
-static UA_StatusCode function_namespace0_generated_70_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerBrowse");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11570),
-UA_NODEID_NUMERIC(ns[0], 11564),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerBrowse"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_70_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11570)
-);
-}
-
-/* MaxNodesPerWrite - ns=0;i=11567 */
-
-static UA_StatusCode function_namespace0_generated_71_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerWrite");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11567),
-UA_NODEID_NUMERIC(ns[0], 11564),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerWrite"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_71_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11567)
-);
-}
-
 /* MaxNodesPerRegisterNodes - ns=0;i=11571 */
 
-static UA_StatusCode function_namespace0_generated_72_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_70_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -1770,7 +1714,7 @@ UA_NODEID_NUMERIC(ns[0], 68),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_72_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_70_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 11571)
 );
@@ -1778,7 +1722,7 @@ UA_NODEID_NUMERIC(ns[0], 11571)
 
 /* MaxNodesPerRead - ns=0;i=11565 */
 
-static UA_StatusCode function_namespace0_generated_73_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_71_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -1798,15 +1742,43 @@ UA_NODEID_NUMERIC(ns[0], 68),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_73_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_71_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 11565)
 );
 }
 
+/* MaxMonitoredItemsPerCall - ns=0;i=11574 */
+
+static UA_StatusCode function_namespace0_generated_72_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxMonitoredItemsPerCall");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11574),
+UA_NODEID_NUMERIC(ns[0], 11564),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxMonitoredItemsPerCall"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_72_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11574)
+);
+}
+
 /* MaxNodesPerTranslateBrowsePathsToNodeIds - ns=0;i=11572 */
 
-static UA_StatusCode function_namespace0_generated_74_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_73_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -1826,9 +1798,37 @@ UA_NODEID_NUMERIC(ns[0], 68),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_74_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_73_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 11572)
+);
+}
+
+/* MaxNodesPerWrite - ns=0;i=11567 */
+
+static UA_StatusCode function_namespace0_generated_74_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerWrite");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11567),
+UA_NODEID_NUMERIC(ns[0], 11564),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerWrite"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_74_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11567)
 );
 }
 
@@ -1860,7 +1860,7 @@ UA_NODEID_NUMERIC(ns[0], 11569)
 );
 }
 
-/* MaxMonitoredItemsPerCall - ns=0;i=11574 */
+/* MaxNodesPerBrowse - ns=0;i=11570 */
 
 static UA_StatusCode function_namespace0_generated_76_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
@@ -1871,12 +1871,12 @@ attr.accessLevel = 1;
 /* Value rank inherited */
 attr.valueRank = -1;
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxMonitoredItemsPerCall");
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerBrowse");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11574),
+UA_NODEID_NUMERIC(ns[0], 11570),
 UA_NODEID_NUMERIC(ns[0], 11564),
 UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxMonitoredItemsPerCall"),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerBrowse"),
 UA_NODEID_NUMERIC(ns[0], 68),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
 return retVal;
@@ -1884,7 +1884,7 @@ return retVal;
 
 static UA_StatusCode function_namespace0_generated_76_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11574)
+UA_NODEID_NUMERIC(ns[0], 11570)
 );
 }
 
@@ -2048,9 +2048,31 @@ UA_NODEID_NUMERIC(ns[0], 2004)
 );
 }
 
-/* Server - ns=0;i=2253 */
+/* VendorServerInfo - ns=0;i=2011 */
 
 static UA_StatusCode function_namespace0_generated_84_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "VendorServerInfo");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2011),
+UA_NODEID_NUMERIC(ns[0], 2004),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "VendorServerInfo"),
+UA_NODEID_NUMERIC(ns[0], 2033),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_84_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2011)
+);
+}
+
+/* Server - ns=0;i=2253 */
+
+static UA_StatusCode function_namespace0_generated_85_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_ObjectAttributes attr = UA_ObjectAttributes_default;
 attr.eventNotifier = true;
@@ -2065,1500 +2087,15 @@ UA_NODEID_NUMERIC(ns[0], 2004),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_84_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_85_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 2253)
 );
 }
 
-/* Auditing - ns=0;i=2994 */
-
-static UA_StatusCode function_namespace0_generated_85_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 1);
-attr.displayName = UA_LOCALIZEDTEXT("", "Auditing");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2994),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "Auditing"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_85_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2994)
-);
-}
-
-/* NamespaceArray - ns=0;i=2255 */
-
-static UA_StatusCode function_namespace0_generated_86_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-attr.valueRank = 1;
-attr.arrayDimensionsSize = 1;
-UA_UInt32 arrayDimensions[1];
-arrayDimensions[0] = 0;
-attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "NamespaceArray");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2255),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "NamespaceArray"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_86_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2255)
-);
-}
-
-/* ServerCapabilities - ns=0;i=2268 */
-
-static UA_StatusCode function_namespace0_generated_87_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerCapabilities");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerCapabilities"),
-UA_NODEID_NUMERIC(ns[0], 2013),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_87_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2268)
-);
-}
-
-/* AggregateFunctions - ns=0;i=2997 */
-
-static UA_StatusCode function_namespace0_generated_88_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "AggregateFunctions");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2997),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "AggregateFunctions"),
-UA_NODEID_NUMERIC(ns[0], 61),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_88_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2997)
-);
-}
-
-/* ModellingRules - ns=0;i=2996 */
-
-static UA_StatusCode function_namespace0_generated_89_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ModellingRules");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2996),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ModellingRules"),
-UA_NODEID_NUMERIC(ns[0], 61),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_89_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2996)
-);
-}
-
-/* MaxHistoryContinuationPoints - ns=0;i=2737 */
-
-static UA_StatusCode function_namespace0_generated_90_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxHistoryContinuationPoints");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2737),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxHistoryContinuationPoints"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_90_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2737)
-);
-}
-
-/* OperationLimits - ns=0;i=11704 */
-
-static UA_StatusCode function_namespace0_generated_91_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "OperationLimits");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "OperationLimits"),
-UA_NODEID_NUMERIC(ns[0], 11564),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_91_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11704)
-);
-}
-
-/* MaxNodesPerBrowse - ns=0;i=11710 */
-
-static UA_StatusCode function_namespace0_generated_92_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerBrowse");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11710),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerBrowse"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_92_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11710)
-);
-}
-
-/* MaxNodesPerRegisterNodes - ns=0;i=11711 */
-
-static UA_StatusCode function_namespace0_generated_93_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerRegisterNodes");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11711),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerRegisterNodes"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_93_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11711)
-);
-}
-
-/* MaxNodesPerTranslateBrowsePathsToNodeIds - ns=0;i=11712 */
-
-static UA_StatusCode function_namespace0_generated_94_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerTranslateBrowsePathsToNodeIds");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11712),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerTranslateBrowsePathsToNodeIds"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_94_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11712)
-);
-}
-
-/* MaxNodesPerNodeManagement - ns=0;i=11713 */
-
-static UA_StatusCode function_namespace0_generated_95_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerNodeManagement");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11713),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerNodeManagement"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_95_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11713)
-);
-}
-
-/* MaxNodesPerMethodCall - ns=0;i=11709 */
-
-static UA_StatusCode function_namespace0_generated_96_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerMethodCall");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11709),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerMethodCall"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_96_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11709)
-);
-}
-
-/* MaxNodesPerWrite - ns=0;i=11707 */
-
-static UA_StatusCode function_namespace0_generated_97_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerWrite");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11707),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerWrite"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_97_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11707)
-);
-}
-
-/* MaxNodesPerRead - ns=0;i=11705 */
-
-static UA_StatusCode function_namespace0_generated_98_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerRead");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11705),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxNodesPerRead"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_98_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11705)
-);
-}
-
-/* MaxMonitoredItemsPerCall - ns=0;i=11714 */
-
-static UA_StatusCode function_namespace0_generated_99_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxMonitoredItemsPerCall");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11714),
-UA_NODEID_NUMERIC(ns[0], 11704),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxMonitoredItemsPerCall"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_99_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11714)
-);
-}
-
-/* MaxBrowseContinuationPoints - ns=0;i=2735 */
-
-static UA_StatusCode function_namespace0_generated_100_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxBrowseContinuationPoints");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2735),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxBrowseContinuationPoints"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_100_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2735)
-);
-}
-
-/* ServerProfileArray - ns=0;i=2269 */
-
-static UA_StatusCode function_namespace0_generated_101_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-attr.valueRank = 1;
-attr.arrayDimensionsSize = 1;
-UA_UInt32 arrayDimensions[1];
-arrayDimensions[0] = 0;
-attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerProfileArray");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2269),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "ServerProfileArray"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_101_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2269)
-);
-}
-
-/* LocaleIdArray - ns=0;i=2271 */
-
-static UA_StatusCode function_namespace0_generated_102_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-attr.valueRank = 1;
-attr.arrayDimensionsSize = 1;
-UA_UInt32 arrayDimensions[1];
-arrayDimensions[0] = 0;
-attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 295);
-attr.displayName = UA_LOCALIZEDTEXT("", "LocaleIdArray");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2271),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "LocaleIdArray"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_102_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2271)
-);
-}
-
-/* SoftwareCertificates - ns=0;i=3704 */
-
-static UA_StatusCode function_namespace0_generated_103_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-attr.valueRank = 1;
-attr.arrayDimensionsSize = 1;
-UA_UInt32 arrayDimensions[1];
-arrayDimensions[0] = 0;
-attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 344);
-attr.displayName = UA_LOCALIZEDTEXT("", "SoftwareCertificates");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 3704),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "SoftwareCertificates"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_103_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 3704)
-);
-}
-
-/* MaxQueryContinuationPoints - ns=0;i=2736 */
-
-static UA_StatusCode function_namespace0_generated_104_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
-attr.displayName = UA_LOCALIZEDTEXT("", "MaxQueryContinuationPoints");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2736),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MaxQueryContinuationPoints"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_104_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2736)
-);
-}
-
-/* MinSupportedSampleRate - ns=0;i=2272 */
-
-static UA_StatusCode function_namespace0_generated_105_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 290);
-attr.displayName = UA_LOCALIZEDTEXT("", "MinSupportedSampleRate");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2272),
-UA_NODEID_NUMERIC(ns[0], 2268),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "MinSupportedSampleRate"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_105_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2272)
-);
-}
-
-/* ServerRedundancy - ns=0;i=2296 */
-
-static UA_StatusCode function_namespace0_generated_106_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerRedundancy");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2296),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerRedundancy"),
-UA_NODEID_NUMERIC(ns[0], 2034),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_106_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2296)
-);
-}
-
-/* RedundancySupport - ns=0;i=3709 */
-
-static UA_StatusCode function_namespace0_generated_107_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 851);
-attr.displayName = UA_LOCALIZEDTEXT("", "RedundancySupport");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 3709),
-UA_NODEID_NUMERIC(ns[0], 2296),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "RedundancySupport"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_107_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 3709)
-);
-}
-
-/* ServerStatus - ns=0;i=2256 */
-
-static UA_StatusCode function_namespace0_generated_108_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 862);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerStatus");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerStatus"),
-UA_NODEID_NUMERIC(ns[0], 2138),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_108_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2256)
-);
-}
-
-/* State - ns=0;i=2259 */
-
-static UA_StatusCode function_namespace0_generated_109_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 852);
-attr.displayName = UA_LOCALIZEDTEXT("", "State");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2259),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "State"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_109_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2259)
-);
-}
-
-/* SecondsTillShutdown - ns=0;i=2992 */
-
-static UA_StatusCode function_namespace0_generated_110_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SecondsTillShutdown");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2992),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SecondsTillShutdown"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_110_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2992)
-);
-}
-
-/* BuildInfo - ns=0;i=2260 */
-
-static UA_StatusCode function_namespace0_generated_111_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 338);
-attr.displayName = UA_LOCALIZEDTEXT("", "BuildInfo");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "BuildInfo"),
-UA_NODEID_NUMERIC(ns[0], 3051),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_111_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2260)
-);
-}
-
-/* ManufacturerName - ns=0;i=2263 */
-
-static UA_StatusCode function_namespace0_generated_112_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "ManufacturerName");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2263),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ManufacturerName"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_112_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2263)
-);
-}
-
-/* BuildNumber - ns=0;i=2265 */
-
-static UA_StatusCode function_namespace0_generated_113_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "BuildNumber");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2265),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "BuildNumber"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_113_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2265)
-);
-}
-
-/* BuildDate - ns=0;i=2266 */
-
-static UA_StatusCode function_namespace0_generated_114_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
-attr.displayName = UA_LOCALIZEDTEXT("", "BuildDate");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2266),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "BuildDate"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_114_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2266)
-);
-}
-
-/* ProductName - ns=0;i=2261 */
-
-static UA_StatusCode function_namespace0_generated_115_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "ProductName");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2261),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ProductName"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_115_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2261)
-);
-}
-
-/* SoftwareVersion - ns=0;i=2264 */
-
-static UA_StatusCode function_namespace0_generated_116_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "SoftwareVersion");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2264),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SoftwareVersion"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_116_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2264)
-);
-}
-
-/* ProductUri - ns=0;i=2262 */
-
-static UA_StatusCode function_namespace0_generated_117_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "ProductUri");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2262),
-UA_NODEID_NUMERIC(ns[0], 2260),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ProductUri"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_117_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2262)
-);
-}
-
-/* ShutdownReason - ns=0;i=2993 */
-
-static UA_StatusCode function_namespace0_generated_118_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 21);
-attr.displayName = UA_LOCALIZEDTEXT("", "ShutdownReason");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2993),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ShutdownReason"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_118_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2993)
-);
-}
-
-/* CurrentTime - ns=0;i=2258 */
-
-static UA_StatusCode function_namespace0_generated_119_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
-attr.displayName = UA_LOCALIZEDTEXT("", "CurrentTime");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2258),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CurrentTime"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_119_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2258)
-);
-}
-
-/* StartTime - ns=0;i=2257 */
-
-static UA_StatusCode function_namespace0_generated_120_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
-attr.displayName = UA_LOCALIZEDTEXT("", "StartTime");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2257),
-UA_NODEID_NUMERIC(ns[0], 2256),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "StartTime"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_120_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2257)
-);
-}
-
-/* ServerDiagnostics - ns=0;i=2274 */
-
-static UA_StatusCode function_namespace0_generated_121_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnostics");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2274),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerDiagnostics"),
-UA_NODEID_NUMERIC(ns[0], 2020),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_121_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2274)
-);
-}
-
-/* ServerDiagnosticsSummary - ns=0;i=2275 */
-
-static UA_StatusCode function_namespace0_generated_122_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 859);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnosticsSummary");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 2274),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerDiagnosticsSummary"),
-UA_NODEID_NUMERIC(ns[0], 2150),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_122_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2275)
-);
-}
-
-/* RejectedSessionCount - ns=0;i=3705 */
-
-static UA_StatusCode function_namespace0_generated_123_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "RejectedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 3705),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "RejectedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_123_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 3705)
-);
-}
-
-/* CumulatedSessionCount - ns=0;i=2278 */
-
-static UA_StatusCode function_namespace0_generated_124_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2278),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CumulatedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_124_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2278)
-);
-}
-
-/* SessionTimeoutCount - ns=0;i=2281 */
-
-static UA_StatusCode function_namespace0_generated_125_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SessionTimeoutCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2281),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SessionTimeoutCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_125_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2281)
-);
-}
-
-/* ServerViewCount - ns=0;i=2276 */
-
-static UA_StatusCode function_namespace0_generated_126_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerViewCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2276),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "ServerViewCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_126_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2276)
-);
-}
-
-/* SessionAbortCount - ns=0;i=2282 */
-
-static UA_StatusCode function_namespace0_generated_127_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SessionAbortCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2282),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SessionAbortCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_127_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2282)
-);
-}
-
-/* CurrentSessionCount - ns=0;i=2277 */
-
-static UA_StatusCode function_namespace0_generated_128_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2277),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CurrentSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_128_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2277)
-);
-}
-
-/* PublishingIntervalCount - ns=0;i=2284 */
-
-static UA_StatusCode function_namespace0_generated_129_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "PublishingIntervalCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2284),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "PublishingIntervalCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_129_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2284)
-);
-}
-
-/* RejectedRequestsCount - ns=0;i=2288 */
-
-static UA_StatusCode function_namespace0_generated_130_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "RejectedRequestsCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2288),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "RejectedRequestsCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_130_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2288)
-);
-}
-
-/* CurrentSubscriptionCount - ns=0;i=2285 */
-
-static UA_StatusCode function_namespace0_generated_131_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSubscriptionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2285),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CurrentSubscriptionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_131_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2285)
-);
-}
-
-/* CumulatedSubscriptionCount - ns=0;i=2286 */
-
-static UA_StatusCode function_namespace0_generated_132_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSubscriptionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2286),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "CumulatedSubscriptionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_132_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2286)
-);
-}
-
-/* SecurityRejectedSessionCount - ns=0;i=2279 */
-
-static UA_StatusCode function_namespace0_generated_133_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedSessionCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2279),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SecurityRejectedSessionCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_133_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2279)
-);
-}
-
-/* SecurityRejectedRequestsCount - ns=0;i=2287 */
-
-static UA_StatusCode function_namespace0_generated_134_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
-attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedRequestsCount");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2287),
-UA_NODEID_NUMERIC(ns[0], 2275),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "SecurityRejectedRequestsCount"),
-UA_NODEID_NUMERIC(ns[0], 63),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_134_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2287)
-);
-}
-
-/* EnabledFlag - ns=0;i=2294 */
-
-static UA_StatusCode function_namespace0_generated_135_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 3;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 1);
-attr.displayName = UA_LOCALIZEDTEXT("", "EnabledFlag");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2294),
-UA_NODEID_NUMERIC(ns[0], 2274),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "EnabledFlag"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_135_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2294)
-);
-}
-
-/* ServerArray - ns=0;i=2254 */
-
-static UA_StatusCode function_namespace0_generated_136_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-attr.valueRank = 1;
-attr.arrayDimensionsSize = 1;
-UA_UInt32 arrayDimensions[1];
-arrayDimensions[0] = 0;
-attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServerArray");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2254),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "ServerArray"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_136_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2254)
-);
-}
-
-/* ServiceLevel - ns=0;i=2267 */
-
-static UA_StatusCode function_namespace0_generated_137_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 1000.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 3);
-attr.displayName = UA_LOCALIZEDTEXT("", "ServiceLevel");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 2267),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "ServiceLevel"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_137_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2267)
-);
-}
-
-/* VendorServerInfo - ns=0;i=2295 */
-
-static UA_StatusCode function_namespace0_generated_138_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "VendorServerInfo");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2295),
-UA_NODEID_NUMERIC(ns[0], 2253),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "VendorServerInfo"),
-UA_NODEID_NUMERIC(ns[0], 2033),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_138_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2295)
-);
-}
-
 /* GetMonitoredItems - ns=0;i=11492 */
 
-static UA_StatusCode function_namespace0_generated_139_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_86_begin(UA_Server *server, UA_UInt16* ns) {
 #ifdef UA_ENABLE_METHODCALLS
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_MethodAttributes attr = UA_MethodAttributes_default;
@@ -3578,7 +2115,7 @@ return UA_STATUSCODE_GOOD;
 #endif /* UA_ENABLE_METHODCALLS */
 }
 
-static UA_StatusCode function_namespace0_generated_139_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_86_finish(UA_Server *server, UA_UInt16* ns) {
 #ifdef UA_ENABLE_METHODCALLS
 return UA_Server_addMethodNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 11492)
@@ -3588,9 +2125,48 @@ return UA_STATUSCODE_GOOD;
 #endif /* UA_ENABLE_METHODCALLS */
 }
 
+/* InputArguments - ns=0;i=11493 */
+
+static UA_StatusCode function_namespace0_generated_87_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+attr.valueRank = 1;
+attr.arrayDimensionsSize = 1;
+UA_UInt32 arrayDimensions[1];
+arrayDimensions[0] = 0;
+attr.arrayDimensions = &arrayDimensions[0];
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 296);
+UA_Argument variablenode_ns_0_i_11493_variant_DataContents[1];
+
+UA_init(&variablenode_ns_0_i_11493_variant_DataContents[0], &UA_TYPES[UA_TYPES_ARGUMENT]);
+variablenode_ns_0_i_11493_variant_DataContents[0].name = UA_STRING("SubscriptionId");
+variablenode_ns_0_i_11493_variant_DataContents[0].dataType = UA_NODEID_NUMERIC(ns[0], 7);
+variablenode_ns_0_i_11493_variant_DataContents[0].valueRank = (UA_Int32) -1;
+UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_11493_variant_DataContents, (UA_Int32) 1, &UA_TYPES[UA_TYPES_ARGUMENT]);
+attr.displayName = UA_LOCALIZEDTEXT("", "InputArguments");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11493),
+UA_NODEID_NUMERIC(ns[0], 11492),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "InputArguments"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_87_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11493)
+);
+}
+
 /* OutputArguments - ns=0;i=11494 */
 
-static UA_StatusCode function_namespace0_generated_140_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_88_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -3635,15 +2211,501 @@ UA_NODEID_NUMERIC(ns[0], 68),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_140_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_88_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 11494)
 );
 }
 
-/* InputArguments - ns=0;i=11493 */
+/* ServerRedundancy - ns=0;i=2296 */
 
-static UA_StatusCode function_namespace0_generated_141_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_89_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerRedundancy");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2296),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerRedundancy"),
+UA_NODEID_NUMERIC(ns[0], 2034),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_89_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2296)
+);
+}
+
+/* RedundancySupport - ns=0;i=3709 */
+
+static UA_StatusCode function_namespace0_generated_90_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 851);
+attr.displayName = UA_LOCALIZEDTEXT("", "RedundancySupport");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 3709),
+UA_NODEID_NUMERIC(ns[0], 2296),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "RedundancySupport"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_90_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 3709)
+);
+}
+
+/* Auditing - ns=0;i=2994 */
+
+static UA_StatusCode function_namespace0_generated_91_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 1);
+attr.displayName = UA_LOCALIZEDTEXT("", "Auditing");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2994),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "Auditing"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_91_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2994)
+);
+}
+
+/* ServerStatus - ns=0;i=2256 */
+
+static UA_StatusCode function_namespace0_generated_92_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 862);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerStatus");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerStatus"),
+UA_NODEID_NUMERIC(ns[0], 2138),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_92_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2256)
+);
+}
+
+/* CurrentTime - ns=0;i=2258 */
+
+static UA_StatusCode function_namespace0_generated_93_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
+attr.displayName = UA_LOCALIZEDTEXT("", "CurrentTime");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2258),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CurrentTime"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_93_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2258)
+);
+}
+
+/* ShutdownReason - ns=0;i=2993 */
+
+static UA_StatusCode function_namespace0_generated_94_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 21);
+attr.displayName = UA_LOCALIZEDTEXT("", "ShutdownReason");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2993),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ShutdownReason"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_94_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2993)
+);
+}
+
+/* SecondsTillShutdown - ns=0;i=2992 */
+
+static UA_StatusCode function_namespace0_generated_95_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SecondsTillShutdown");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2992),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SecondsTillShutdown"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_95_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2992)
+);
+}
+
+/* StartTime - ns=0;i=2257 */
+
+static UA_StatusCode function_namespace0_generated_96_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
+attr.displayName = UA_LOCALIZEDTEXT("", "StartTime");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2257),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "StartTime"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_96_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2257)
+);
+}
+
+/* State - ns=0;i=2259 */
+
+static UA_StatusCode function_namespace0_generated_97_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 852);
+attr.displayName = UA_LOCALIZEDTEXT("", "State");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2259),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "State"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_97_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2259)
+);
+}
+
+/* BuildInfo - ns=0;i=2260 */
+
+static UA_StatusCode function_namespace0_generated_98_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 338);
+attr.displayName = UA_LOCALIZEDTEXT("", "BuildInfo");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 2256),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "BuildInfo"),
+UA_NODEID_NUMERIC(ns[0], 3051),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_98_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2260)
+);
+}
+
+/* SoftwareVersion - ns=0;i=2264 */
+
+static UA_StatusCode function_namespace0_generated_99_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "SoftwareVersion");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2264),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SoftwareVersion"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_99_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2264)
+);
+}
+
+/* ProductName - ns=0;i=2261 */
+
+static UA_StatusCode function_namespace0_generated_100_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "ProductName");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2261),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ProductName"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_100_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2261)
+);
+}
+
+/* ProductUri - ns=0;i=2262 */
+
+static UA_StatusCode function_namespace0_generated_101_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "ProductUri");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2262),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ProductUri"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_101_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2262)
+);
+}
+
+/* ManufacturerName - ns=0;i=2263 */
+
+static UA_StatusCode function_namespace0_generated_102_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "ManufacturerName");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2263),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ManufacturerName"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_102_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2263)
+);
+}
+
+/* BuildDate - ns=0;i=2266 */
+
+static UA_StatusCode function_namespace0_generated_103_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 294);
+attr.displayName = UA_LOCALIZEDTEXT("", "BuildDate");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2266),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "BuildDate"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_103_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2266)
+);
+}
+
+/* BuildNumber - ns=0;i=2265 */
+
+static UA_StatusCode function_namespace0_generated_104_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "BuildNumber");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2265),
+UA_NODEID_NUMERIC(ns[0], 2260),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "BuildNumber"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_104_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2265)
+);
+}
+
+/* VendorServerInfo - ns=0;i=2295 */
+
+static UA_StatusCode function_namespace0_generated_105_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "VendorServerInfo");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2295),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "VendorServerInfo"),
+UA_NODEID_NUMERIC(ns[0], 2033),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_105_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2295)
+);
+}
+
+/* ServerCapabilities - ns=0;i=2268 */
+
+static UA_StatusCode function_namespace0_generated_106_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerCapabilities");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerCapabilities"),
+UA_NODEID_NUMERIC(ns[0], 2013),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_106_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2268)
+);
+}
+
+/* LocaleIdArray - ns=0;i=2271 */
+
+static UA_StatusCode function_namespace0_generated_107_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -3654,51 +2716,989 @@ attr.arrayDimensionsSize = 1;
 UA_UInt32 arrayDimensions[1];
 arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 296);
-UA_Argument variablenode_ns_0_i_11493_variant_DataContents[1];
-
-UA_init(&variablenode_ns_0_i_11493_variant_DataContents[0], &UA_TYPES[UA_TYPES_ARGUMENT]);
-variablenode_ns_0_i_11493_variant_DataContents[0].name = UA_STRING("SubscriptionId");
-variablenode_ns_0_i_11493_variant_DataContents[0].dataType = UA_NODEID_NUMERIC(ns[0], 7);
-variablenode_ns_0_i_11493_variant_DataContents[0].valueRank = (UA_Int32) -1;
-UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_11493_variant_DataContents, (UA_Int32) 1, &UA_TYPES[UA_TYPES_ARGUMENT]);
-attr.displayName = UA_LOCALIZEDTEXT("", "InputArguments");
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 295);
+attr.displayName = UA_LOCALIZEDTEXT("", "LocaleIdArray");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 11493),
-UA_NODEID_NUMERIC(ns[0], 11492),
+UA_NODEID_NUMERIC(ns[0], 2271),
+UA_NODEID_NUMERIC(ns[0], 2268),
 UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "InputArguments"),
+UA_QUALIFIEDNAME(ns[0], "LocaleIdArray"),
 UA_NODEID_NUMERIC(ns[0], 68),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
 
+static UA_StatusCode function_namespace0_generated_107_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2271)
+);
+}
+
+/* MaxQueryContinuationPoints - ns=0;i=2736 */
+
+static UA_StatusCode function_namespace0_generated_108_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxQueryContinuationPoints");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2736),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxQueryContinuationPoints"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_108_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2736)
+);
+}
+
+/* SoftwareCertificates - ns=0;i=3704 */
+
+static UA_StatusCode function_namespace0_generated_109_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+attr.valueRank = 1;
+attr.arrayDimensionsSize = 1;
+UA_UInt32 arrayDimensions[1];
+arrayDimensions[0] = 0;
+attr.arrayDimensions = &arrayDimensions[0];
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 344);
+attr.displayName = UA_LOCALIZEDTEXT("", "SoftwareCertificates");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 3704),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "SoftwareCertificates"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_109_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 3704)
+);
+}
+
+/* ModellingRules - ns=0;i=2996 */
+
+static UA_StatusCode function_namespace0_generated_110_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ModellingRules");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2996),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ModellingRules"),
+UA_NODEID_NUMERIC(ns[0], 61),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_110_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2996)
+);
+}
+
+/* MaxHistoryContinuationPoints - ns=0;i=2737 */
+
+static UA_StatusCode function_namespace0_generated_111_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxHistoryContinuationPoints");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2737),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxHistoryContinuationPoints"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_111_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2737)
+);
+}
+
+/* OperationLimits - ns=0;i=11704 */
+
+static UA_StatusCode function_namespace0_generated_112_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "OperationLimits");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "OperationLimits"),
+UA_NODEID_NUMERIC(ns[0], 11564),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_112_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11704)
+);
+}
+
+/* MaxNodesPerWrite - ns=0;i=11707 */
+
+static UA_StatusCode function_namespace0_generated_113_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerWrite");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11707),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerWrite"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_113_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11707)
+);
+}
+
+/* MaxNodesPerTranslateBrowsePathsToNodeIds - ns=0;i=11712 */
+
+static UA_StatusCode function_namespace0_generated_114_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerTranslateBrowsePathsToNodeIds");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11712),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerTranslateBrowsePathsToNodeIds"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_114_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11712)
+);
+}
+
+/* MaxNodesPerMethodCall - ns=0;i=11709 */
+
+static UA_StatusCode function_namespace0_generated_115_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerMethodCall");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11709),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerMethodCall"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_115_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11709)
+);
+}
+
+/* MaxNodesPerBrowse - ns=0;i=11710 */
+
+static UA_StatusCode function_namespace0_generated_116_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerBrowse");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11710),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerBrowse"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_116_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11710)
+);
+}
+
+/* MaxNodesPerRead - ns=0;i=11705 */
+
+static UA_StatusCode function_namespace0_generated_117_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerRead");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11705),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerRead"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_117_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11705)
+);
+}
+
+/* MaxNodesPerRegisterNodes - ns=0;i=11711 */
+
+static UA_StatusCode function_namespace0_generated_118_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerRegisterNodes");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11711),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerRegisterNodes"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_118_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11711)
+);
+}
+
+/* MaxNodesPerNodeManagement - ns=0;i=11713 */
+
+static UA_StatusCode function_namespace0_generated_119_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxNodesPerNodeManagement");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11713),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxNodesPerNodeManagement"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_119_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11713)
+);
+}
+
+/* MaxMonitoredItemsPerCall - ns=0;i=11714 */
+
+static UA_StatusCode function_namespace0_generated_120_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxMonitoredItemsPerCall");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 11714),
+UA_NODEID_NUMERIC(ns[0], 11704),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxMonitoredItemsPerCall"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_120_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 11714)
+);
+}
+
+/* MaxBrowseContinuationPoints - ns=0;i=2735 */
+
+static UA_StatusCode function_namespace0_generated_121_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 5);
+attr.displayName = UA_LOCALIZEDTEXT("", "MaxBrowseContinuationPoints");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2735),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MaxBrowseContinuationPoints"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_121_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2735)
+);
+}
+
+/* MinSupportedSampleRate - ns=0;i=2272 */
+
+static UA_StatusCode function_namespace0_generated_122_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 290);
+attr.displayName = UA_LOCALIZEDTEXT("", "MinSupportedSampleRate");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2272),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "MinSupportedSampleRate"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_122_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2272)
+);
+}
+
+/* ServerProfileArray - ns=0;i=2269 */
+
+static UA_StatusCode function_namespace0_generated_123_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+attr.valueRank = 1;
+attr.arrayDimensionsSize = 1;
+UA_UInt32 arrayDimensions[1];
+arrayDimensions[0] = 0;
+attr.arrayDimensions = &arrayDimensions[0];
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerProfileArray");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2269),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "ServerProfileArray"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_123_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2269)
+);
+}
+
+/* AggregateFunctions - ns=0;i=2997 */
+
+static UA_StatusCode function_namespace0_generated_124_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "AggregateFunctions");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2997),
+UA_NODEID_NUMERIC(ns[0], 2268),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "AggregateFunctions"),
+UA_NODEID_NUMERIC(ns[0], 61),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_124_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2997)
+);
+}
+
+/* ServerDiagnostics - ns=0;i=2274 */
+
+static UA_StatusCode function_namespace0_generated_125_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnostics");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 2274),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerDiagnostics"),
+UA_NODEID_NUMERIC(ns[0], 2020),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_125_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2274)
+);
+}
+
+/* EnabledFlag - ns=0;i=2294 */
+
+static UA_StatusCode function_namespace0_generated_126_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 3;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 1);
+attr.displayName = UA_LOCALIZEDTEXT("", "EnabledFlag");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2294),
+UA_NODEID_NUMERIC(ns[0], 2274),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "EnabledFlag"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_126_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2294)
+);
+}
+
+/* ServerDiagnosticsSummary - ns=0;i=2275 */
+
+static UA_StatusCode function_namespace0_generated_127_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 859);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerDiagnosticsSummary");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 2274),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerDiagnosticsSummary"),
+UA_NODEID_NUMERIC(ns[0], 2150),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_127_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2275)
+);
+}
+
+/* CurrentSessionCount - ns=0;i=2277 */
+
+static UA_StatusCode function_namespace0_generated_128_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2277),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CurrentSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_128_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2277)
+);
+}
+
+/* SessionAbortCount - ns=0;i=2282 */
+
+static UA_StatusCode function_namespace0_generated_129_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SessionAbortCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2282),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SessionAbortCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_129_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2282)
+);
+}
+
+/* SecurityRejectedSessionCount - ns=0;i=2279 */
+
+static UA_StatusCode function_namespace0_generated_130_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2279),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SecurityRejectedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_130_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2279)
+);
+}
+
+/* CumulatedSubscriptionCount - ns=0;i=2286 */
+
+static UA_StatusCode function_namespace0_generated_131_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSubscriptionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2286),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CumulatedSubscriptionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_131_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2286)
+);
+}
+
+/* RejectedRequestsCount - ns=0;i=2288 */
+
+static UA_StatusCode function_namespace0_generated_132_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "RejectedRequestsCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2288),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "RejectedRequestsCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_132_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2288)
+);
+}
+
+/* PublishingIntervalCount - ns=0;i=2284 */
+
+static UA_StatusCode function_namespace0_generated_133_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "PublishingIntervalCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2284),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "PublishingIntervalCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_133_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2284)
+);
+}
+
+/* SecurityRejectedRequestsCount - ns=0;i=2287 */
+
+static UA_StatusCode function_namespace0_generated_134_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SecurityRejectedRequestsCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2287),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SecurityRejectedRequestsCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_134_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2287)
+);
+}
+
+/* ServerViewCount - ns=0;i=2276 */
+
+static UA_StatusCode function_namespace0_generated_135_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerViewCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2276),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "ServerViewCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_135_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2276)
+);
+}
+
+/* CurrentSubscriptionCount - ns=0;i=2285 */
+
+static UA_StatusCode function_namespace0_generated_136_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CurrentSubscriptionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2285),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CurrentSubscriptionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_136_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2285)
+);
+}
+
+/* SessionTimeoutCount - ns=0;i=2281 */
+
+static UA_StatusCode function_namespace0_generated_137_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "SessionTimeoutCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2281),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "SessionTimeoutCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_137_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2281)
+);
+}
+
+/* CumulatedSessionCount - ns=0;i=2278 */
+
+static UA_StatusCode function_namespace0_generated_138_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "CumulatedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2278),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "CumulatedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_138_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2278)
+);
+}
+
+/* RejectedSessionCount - ns=0;i=3705 */
+
+static UA_StatusCode function_namespace0_generated_139_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 7);
+attr.displayName = UA_LOCALIZEDTEXT("", "RejectedSessionCount");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 3705),
+UA_NODEID_NUMERIC(ns[0], 2275),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "RejectedSessionCount"),
+UA_NODEID_NUMERIC(ns[0], 63),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_139_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 3705)
+);
+}
+
+/* ServiceLevel - ns=0;i=2267 */
+
+static UA_StatusCode function_namespace0_generated_140_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 3);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServiceLevel");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2267),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "ServiceLevel"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_140_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 2267)
+);
+}
+
+/* NamespaceArray - ns=0;i=2255 */
+
+static UA_StatusCode function_namespace0_generated_141_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+attr.valueRank = 1;
+attr.arrayDimensionsSize = 1;
+UA_UInt32 arrayDimensions[1];
+arrayDimensions[0] = 0;
+attr.arrayDimensions = &arrayDimensions[0];
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "NamespaceArray");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2255),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "NamespaceArray"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
 return retVal;
 }
 
 static UA_StatusCode function_namespace0_generated_141_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 11493)
+UA_NODEID_NUMERIC(ns[0], 2255)
 );
 }
 
-/* VendorServerInfo - ns=0;i=2011 */
+/* ServerArray - ns=0;i=2254 */
 
 static UA_StatusCode function_namespace0_generated_142_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "VendorServerInfo");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 2011),
-UA_NODEID_NUMERIC(ns[0], 2004),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "VendorServerInfo"),
-UA_NODEID_NUMERIC(ns[0], 2033),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 1000.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+attr.valueRank = 1;
+attr.arrayDimensionsSize = 1;
+UA_UInt32 arrayDimensions[1];
+arrayDimensions[0] = 0;
+attr.arrayDimensions = &arrayDimensions[0];
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "ServerArray");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 2254),
+UA_NODEID_NUMERIC(ns[0], 2253),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "ServerArray"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
 return retVal;
 }
 
 static UA_StatusCode function_namespace0_generated_142_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 2011)
+UA_NODEID_NUMERIC(ns[0], 2254)
 );
 }
 
@@ -3737,22 +3737,22 @@ UA_NODEID_NUMERIC(ns[0], 0),
 UA_QUALIFIEDNAME(ns[0], "Mandatory"),
 UA_NODEID_NUMERIC(ns[0], 77),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2155), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2162), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2011), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2160), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2161), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2159), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2157), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2151), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2163), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2154), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2152), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2153), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2160), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2155), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2154), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2163), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2162), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2161), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2011), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2156), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2152), false);
 return retVal;
 }
 
@@ -3796,74 +3796,9 @@ UA_NODEID_NUMERIC(ns[0], 112)
 );
 }
 
-/* Optional - ns=0;i=80 */
-
-static UA_StatusCode function_namespace0_generated_146_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "Optional");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 80),
-UA_NODEID_NUMERIC(ns[0], 0),
-UA_NODEID_NUMERIC(ns[0], 0),
-UA_QUALIFIEDNAME(ns[0], "Optional"),
-UA_NODEID_NUMERIC(ns[0], 77),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11571), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11572), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11551), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11565), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11574), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570), false);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_146_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 80)
-);
-}
-
-/* NamingRule - ns=0;i=113 */
-
-static UA_StatusCode function_namespace0_generated_147_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 120);
-UA_Int32 *variablenode_ns_0_i_113_variant_DataContents =  UA_Int32_new();
-if (!variablenode_ns_0_i_113_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
-UA_Int32_init(variablenode_ns_0_i_113_variant_DataContents);
-*variablenode_ns_0_i_113_variant_DataContents = (UA_Int32) 2;
-UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_113_variant_DataContents, &UA_TYPES[UA_TYPES_INT32]);
-attr.displayName = UA_LOCALIZEDTEXT("", "NamingRule");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 113),
-UA_NODEID_NUMERIC(ns[0], 80),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "NamingRule"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-UA_Int32_delete(variablenode_ns_0_i_113_variant_DataContents);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_147_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 113)
-);
-}
-
 /* NamingRule - ns=0;i=111 */
 
-static UA_StatusCode function_namespace0_generated_148_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_146_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -3890,9 +3825,74 @@ retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 111), UA_NODEI
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_148_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_146_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 111)
+);
+}
+
+/* Optional - ns=0;i=80 */
+
+static UA_StatusCode function_namespace0_generated_147_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "Optional");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 80),
+UA_NODEID_NUMERIC(ns[0], 0),
+UA_NODEID_NUMERIC(ns[0], 0),
+UA_QUALIFIEDNAME(ns[0], "Optional"),
+UA_NODEID_NUMERIC(ns[0], 77),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11572), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11565), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11571), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11574), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11551), false);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_147_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 80)
+);
+}
+
+/* NamingRule - ns=0;i=113 */
+
+static UA_StatusCode function_namespace0_generated_148_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 120);
+UA_Int32 *variablenode_ns_0_i_113_variant_DataContents =  UA_Int32_new();
+if (!variablenode_ns_0_i_113_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
+UA_Int32_init(variablenode_ns_0_i_113_variant_DataContents);
+*variablenode_ns_0_i_113_variant_DataContents = (UA_Int32) 2;
+UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_113_variant_DataContents, &UA_TYPES[UA_TYPES_INT32]);
+attr.displayName = UA_LOCALIZEDTEXT("", "NamingRule");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 113),
+UA_NODEID_NUMERIC(ns[0], 80),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "NamingRule"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+UA_Int32_delete(variablenode_ns_0_i_113_variant_DataContents);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_148_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 113)
 );
 }
 
@@ -3986,31 +3986,9 @@ UA_NODEID_NUMERIC(ns[0], 75)
 );
 }
 
-/* OPC Binary - ns=0;i=93 */
-
-static UA_StatusCode function_namespace0_generated_153_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_ObjectAttributes attr = UA_ObjectAttributes_default;
-attr.displayName = UA_LOCALIZEDTEXT("", "OPC Binary");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
-UA_NODEID_NUMERIC(ns[0], 93),
-UA_NODEID_NUMERIC(ns[0], 90),
-UA_NODEID_NUMERIC(ns[0], 35),
-UA_QUALIFIEDNAME(ns[0], "OPC Binary"),
-UA_NODEID_NUMERIC(ns[0], 75),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_153_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 93)
-);
-}
-
 /* XML Schema - ns=0;i=92 */
 
-static UA_StatusCode function_namespace0_generated_154_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_153_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_ObjectAttributes attr = UA_ObjectAttributes_default;
 attr.displayName = UA_LOCALIZEDTEXT("", "XML Schema");
@@ -4024,9 +4002,31 @@ UA_NODEID_NUMERIC(ns[0], 75),
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_154_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_153_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 92)
+);
+}
+
+/* OPC Binary - ns=0;i=93 */
+
+static UA_StatusCode function_namespace0_generated_154_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+attr.displayName = UA_LOCALIZEDTEXT("", "OPC Binary");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_OBJECT,
+UA_NODEID_NUMERIC(ns[0], 93),
+UA_NODEID_NUMERIC(ns[0], 90),
+UA_NODEID_NUMERIC(ns[0], 35),
+UA_QUALIFIEDNAME(ns[0], "OPC Binary"),
+UA_NODEID_NUMERIC(ns[0], 75),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_154_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 93)
 );
 }
 
@@ -4055,9 +4055,38 @@ UA_NODEID_NUMERIC(ns[0], 72)
 );
 }
 
-/* NamespaceUri - ns=0;i=107 */
+/* DataTypeVersion - ns=0;i=106 */
 
 static UA_StatusCode function_namespace0_generated_156_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "DataTypeVersion");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 106),
+UA_NODEID_NUMERIC(ns[0], 72),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "DataTypeVersion"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 106), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 80), true);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_156_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 106)
+);
+}
+
+/* NamespaceUri - ns=0;i=107 */
+
+static UA_StatusCode function_namespace0_generated_157_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -4081,7 +4110,7 @@ retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 107), UA_NODEI
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_156_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_157_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 107)
 );
@@ -4089,7 +4118,7 @@ UA_NODEID_NUMERIC(ns[0], 107)
 
 /* Opc.Ua - ns=0;i=7617 */
 
-static UA_StatusCode function_namespace0_generated_157_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_158_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -4117,38 +4146,9 @@ UA_ByteString_delete(variablenode_ns_0_i_7617_variant_DataContents);
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_157_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 7617)
-);
-}
-
-/* DataTypeVersion - ns=0;i=106 */
-
-static UA_StatusCode function_namespace0_generated_158_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "DataTypeVersion");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 106),
-UA_NODEID_NUMERIC(ns[0], 72),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "DataTypeVersion"),
-UA_NODEID_NUMERIC(ns[0], 68),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 106), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 80), true);
-return retVal;
-}
-
 static UA_StatusCode function_namespace0_generated_158_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 106)
+UA_NODEID_NUMERIC(ns[0], 7617)
 );
 }
 
@@ -4177,44 +4177,9 @@ UA_NODEID_NUMERIC(ns[0], 69)
 );
 }
 
-/* EnumValueType - ns=0;i=7656 */
-
-static UA_StatusCode function_namespace0_generated_160_begin(UA_Server *server, UA_UInt16* ns) {
-UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-UA_VariableAttributes attr = UA_VariableAttributes_default;
-attr.minimumSamplingInterval = 0.000000;
-attr.userAccessLevel = 1;
-attr.accessLevel = 1;
-/* Value rank inherited */
-attr.valueRank = -1;
-attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-UA_String *variablenode_ns_0_i_7656_variant_DataContents =  UA_String_new();
-if (!variablenode_ns_0_i_7656_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
-UA_String_init(variablenode_ns_0_i_7656_variant_DataContents);
-*variablenode_ns_0_i_7656_variant_DataContents = UA_STRING_ALLOC("EnumValueType");
-UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_7656_variant_DataContents, &UA_TYPES[UA_TYPES_STRING]);
-attr.displayName = UA_LOCALIZEDTEXT("", "EnumValueType");
-retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 7656),
-UA_NODEID_NUMERIC(ns[0], 7617),
-UA_NODEID_NUMERIC(ns[0], 47),
-UA_QUALIFIEDNAME(ns[0], "EnumValueType"),
-UA_NODEID_NUMERIC(ns[0], 69),
-(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-UA_String_delete(variablenode_ns_0_i_7656_variant_DataContents);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 7656), UA_NODEID_NUMERIC(ns[0], 39), UA_EXPANDEDNODEID_NUMERIC(ns[0], 8251), false);
-return retVal;
-}
-
-static UA_StatusCode function_namespace0_generated_160_finish(UA_Server *server, UA_UInt16* ns) {
-return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 7656)
-);
-}
-
 /* DictionaryFragment - ns=0;i=105 */
 
-static UA_StatusCode function_namespace0_generated_161_begin(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_160_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_VariableAttributes attr = UA_VariableAttributes_default;
 attr.minimumSamplingInterval = 0.000000;
@@ -4235,9 +4200,38 @@ retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 105), UA_NODEI
 return retVal;
 }
 
-static UA_StatusCode function_namespace0_generated_161_finish(UA_Server *server, UA_UInt16* ns) {
+static UA_StatusCode function_namespace0_generated_160_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
 UA_NODEID_NUMERIC(ns[0], 105)
+);
+}
+
+/* DataTypeVersion - ns=0;i=104 */
+
+static UA_StatusCode function_namespace0_generated_161_begin(UA_Server *server, UA_UInt16* ns) {
+UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+UA_VariableAttributes attr = UA_VariableAttributes_default;
+attr.minimumSamplingInterval = 0.000000;
+attr.userAccessLevel = 1;
+attr.accessLevel = 1;
+/* Value rank inherited */
+attr.valueRank = -1;
+attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
+attr.displayName = UA_LOCALIZEDTEXT("", "DataTypeVersion");
+retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
+UA_NODEID_NUMERIC(ns[0], 104),
+UA_NODEID_NUMERIC(ns[0], 69),
+UA_NODEID_NUMERIC(ns[0], 46),
+UA_QUALIFIEDNAME(ns[0], "DataTypeVersion"),
+UA_NODEID_NUMERIC(ns[0], 68),
+(const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 104), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 80), true);
+return retVal;
+}
+
+static UA_StatusCode function_namespace0_generated_161_finish(UA_Server *server, UA_UInt16* ns) {
+return UA_Server_addNode_finish(server, 
+UA_NODEID_NUMERIC(ns[0], 104)
 );
 }
 
@@ -4276,7 +4270,7 @@ UA_NODEID_NUMERIC(ns[0], 7650)
 );
 }
 
-/* DataTypeVersion - ns=0;i=104 */
+/* EnumValueType - ns=0;i=7656 */
 
 static UA_StatusCode function_namespace0_generated_163_begin(UA_Server *server, UA_UInt16* ns) {
 UA_StatusCode retVal = UA_STATUSCODE_GOOD;
@@ -4287,21 +4281,27 @@ attr.accessLevel = 1;
 /* Value rank inherited */
 attr.valueRank = -1;
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 12);
-attr.displayName = UA_LOCALIZEDTEXT("", "DataTypeVersion");
+UA_String *variablenode_ns_0_i_7656_variant_DataContents =  UA_String_new();
+if (!variablenode_ns_0_i_7656_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
+UA_String_init(variablenode_ns_0_i_7656_variant_DataContents);
+*variablenode_ns_0_i_7656_variant_DataContents = UA_STRING_ALLOC("EnumValueType");
+UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_7656_variant_DataContents, &UA_TYPES[UA_TYPES_STRING]);
+attr.displayName = UA_LOCALIZEDTEXT("", "EnumValueType");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
-UA_NODEID_NUMERIC(ns[0], 104),
+UA_NODEID_NUMERIC(ns[0], 7656),
+UA_NODEID_NUMERIC(ns[0], 7617),
+UA_NODEID_NUMERIC(ns[0], 47),
+UA_QUALIFIEDNAME(ns[0], "EnumValueType"),
 UA_NODEID_NUMERIC(ns[0], 69),
-UA_NODEID_NUMERIC(ns[0], 46),
-UA_QUALIFIEDNAME(ns[0], "DataTypeVersion"),
-UA_NODEID_NUMERIC(ns[0], 68),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 104), UA_NODEID_NUMERIC(ns[0], 37), UA_EXPANDEDNODEID_NUMERIC(ns[0], 80), true);
+UA_String_delete(variablenode_ns_0_i_7656_variant_DataContents);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 7656), UA_NODEID_NUMERIC(ns[0], 39), UA_EXPANDEDNODEID_NUMERIC(ns[0], 8251), false);
 return retVal;
 }
 
 static UA_StatusCode function_namespace0_generated_163_finish(UA_Server *server, UA_UInt16* ns) {
 return UA_Server_addNode_finish(server, 
-UA_NODEID_NUMERIC(ns[0], 104)
+UA_NODEID_NUMERIC(ns[0], 7656)
 );
 }
 

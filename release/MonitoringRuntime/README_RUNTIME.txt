@@ -15,6 +15,10 @@ Public internet access without hardware:
 Communication resources:
   The public URL only exposes this web/API service on port 8081.
   OPC UA and UDP data sources are still connected by this computer's backend.
+  Software-defined communication (SDC) is configured in Communication Resources.
+  Enter the Monitor Agent address (for example http://DEVICE-IP:9100); the runtime
+  directly polls /api/runtime/stream and expects {"vars":{"name": value}}.
+  Enabled SDC resources are saved under data and automatically restart with the runtime.
   For OPC UA, the endpoint must be reachable from this computer, for example:
     opc.tcp://DEVICE-IP:4840
   Cloudflare Quick Tunnel does not expose OPC UA/UDP ports automatically.

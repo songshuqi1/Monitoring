@@ -1,7 +1,0 @@
-C:\Users\NEU\Desktop\Monitoring\backend\src\main.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\main.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\variable_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\variable_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\database.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\database.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\opcua_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\opcua_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\udp_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\udp_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\http_server.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\http_server.obj
-C:\Users\NEU\Desktop\Monitoring\backend\generated\frontend_assets.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\MonitoringPlatform.dir\Release\frontend_assets.obj

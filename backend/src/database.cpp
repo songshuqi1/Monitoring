@@ -25,6 +25,7 @@ bool DatabaseManager::executeQuery(const std::string&) { return false; }
 std::vector<VariableInfo> DatabaseManager::loadVariableDefinitions() { return {}; }
 bool DatabaseManager::saveVariableDefinition(const VariableInfo&) { return false; }
 bool DatabaseManager::deleteVariableDefinition(int) { return false; }
+bool DatabaseManager::deleteVariableDefinitions(const std::vector<int>&) { return false; }
 bool DatabaseManager::updateVariableDefinition(const VariableInfo&) { return false; }
 
 bool DatabaseManager::upsertRealtimeData(int, const std::string&, double, const std::string&, int64_t) { return false; }
@@ -512,6 +513,10 @@ void DatabaseManager::initTables() {
             source          VARCHAR(32)     NOT NULL DEFAULT 'OPCUA',
             opcua_node_id   VARCHAR(256)    DEFAULT '',
             udp_port        INT             DEFAULT 0,
+            resource_id     VARCHAR(160)    DEFAULT '',
+            resource_name   VARCHAR(128)    DEFAULT '',
+            scope_id        VARCHAR(160)    DEFAULT '',
+            scope_name      VARCHAR(128)    DEFAULT '',
             min_value       DOUBLE          DEFAULT NULL,
             max_value       DOUBLE          DEFAULT NULL,
             unit            VARCHAR(32)     DEFAULT '',
@@ -588,6 +593,29 @@ void DatabaseManager::initTables() {
         if (mysql_query(conn_, sql) == 0) created++;
     }
 
+    // Existing installations already have variable_definitions.  Add the
+    // ownership columns individually, so an upgrade does not require users
+    // to recreate their database or lose historical data.
+    const auto addVariableColumnIfMissing = [this](const char* column, const char* definition) {
+        const std::string existsSql = "SELECT 1 FROM information_schema.COLUMNS WHERE "
+            "TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'variable_definitions' AND COLUMN_NAME = '" +
+            std::string(column) + "' LIMIT 1";
+        if (mysql_query(conn_, existsSql.c_str()) != 0) return;
+        MYSQL_RES* result = mysql_store_result(conn_);
+        const bool exists = result && mysql_fetch_row(result);
+        if (result) mysql_free_result(result);
+        if (exists) return;
+        const std::string alterSql = "ALTER TABLE variable_definitions ADD COLUMN " +
+            std::string(column) + " " + definition;
+        if (mysql_query(conn_, alterSql.c_str()) != 0) {
+            Log(LogLevel::WARN, "Unable to add variable_definitions." + std::string(column) + ": " + mysql_error(conn_));
+        }
+    };
+    addVariableColumnIfMissing("resource_id", "VARCHAR(160) DEFAULT ''");
+    addVariableColumnIfMissing("resource_name", "VARCHAR(128) DEFAULT ''");
+    addVariableColumnIfMissing("scope_id", "VARCHAR(160) DEFAULT ''");
+    addVariableColumnIfMissing("scope_name", "VARCHAR(128) DEFAULT ''");
+
     if (!migrateHistoricalTableToWide(conn_)) {
         Log(LogLevel::WARN, "historical_data wide-table migration/check failed");
     }
@@ -610,7 +638,8 @@ std::vector<VariableInfo> DatabaseManager::loadVariableDefinitions() {
     if (!conn_) return result;
 
     if (mysql_query(conn_, "SELECT id, name, description, data_type, source, "
-                          "opcua_node_id, udp_port, min_value, max_value, unit, color, enabled "
+                          "opcua_node_id, udp_port, resource_id, resource_name, scope_id, scope_name, "
+                          "min_value, max_value, unit, color, enabled "
                           "FROM variable_definitions WHERE enabled = 1")) {
         Log(LogLevel::ERR, "loadVariableDefinitions query failed: " + std::string(mysql_error(conn_)));
         return result;
@@ -630,6 +659,10 @@ std::vector<VariableInfo> DatabaseManager::loadVariableDefinitions() {
         v.source      = row[col] ? row[col] : "OPCUA"; col++;
         v.opcuaNodeId = row[col] ? row[col] : ""; col++;
         v.udpPort     = row[col] ? std::stoi(row[col]) : 0; col++;
+        v.resourceId  = row[col] ? row[col] : ""; col++;
+        v.resourceName = row[col] ? row[col] : ""; col++;
+        v.scopeId     = row[col] ? row[col] : ""; col++;
+        v.scopeName   = row[col] ? row[col] : ""; col++;
         v.minValue    = row[col] ? std::stod(row[col]) : 0.0; col++;
         v.maxValue    = row[col] ? std::stod(row[col]) : 100.0; col++;
         v.unit        = row[col] ? row[col] : ""; col++;
@@ -652,6 +685,10 @@ bool DatabaseManager::saveVariableDefinition(const VariableInfo& info) {
               "', source='" + escapeSql(conn_, info.source) +
               "', opcua_node_id='" + escapeSql(conn_, info.opcuaNodeId) +
               "', udp_port=" + std::to_string(info.udpPort) +
+              ", resource_id='" + escapeSql(conn_, info.resourceId) +
+              "', resource_name='" + escapeSql(conn_, info.resourceName) +
+              "', scope_id='" + escapeSql(conn_, info.scopeId) +
+              "', scope_name='" + escapeSql(conn_, info.scopeName) +
                ", min_value=" + std::to_string(info.minValue) +
                ", max_value=" + std::to_string(info.maxValue) +
               ", unit='" + escapeSql(conn_, info.unit) +
@@ -660,10 +697,12 @@ bool DatabaseManager::saveVariableDefinition(const VariableInfo& info) {
               " WHERE id=" + std::to_string(info.id);
     } else {
         sql = "INSERT INTO variable_definitions (name, description, data_type, source, "
-              "opcua_node_id, udp_port, min_value, max_value, unit, color, enabled) VALUES ('" +
+              "opcua_node_id, udp_port, resource_id, resource_name, scope_id, scope_name, min_value, max_value, unit, color, enabled) VALUES ('" +
               escapeSql(conn_, info.name) + "','" + escapeSql(conn_, info.description) +
               "','" + escapeSql(conn_, info.dataType) + "','" + escapeSql(conn_, info.source) +
               "','" + escapeSql(conn_, info.opcuaNodeId) + "'," + std::to_string(info.udpPort) +
+              ",'" + escapeSql(conn_, info.resourceId) + "','" + escapeSql(conn_, info.resourceName) +
+              "','" + escapeSql(conn_, info.scopeId) + "','" + escapeSql(conn_, info.scopeName) + "'" +
                "," + std::to_string(info.minValue) +
                "," + std::to_string(info.maxValue) +
               ",'" + escapeSql(conn_, info.unit) + "','" + escapeSql(conn_, info.color) +
@@ -673,7 +712,75 @@ bool DatabaseManager::saveVariableDefinition(const VariableInfo& info) {
 }
 
 bool DatabaseManager::deleteVariableDefinition(int varId) {
-    return executeQuery("DELETE FROM variable_definitions WHERE id=" + std::to_string(varId));
+    return deleteVariableDefinitions({varId});
+}
+
+bool DatabaseManager::deleteVariableDefinitions(const std::vector<int>& varIds) {
+    std::vector<int> ids;
+    std::set<int> uniqueIds;
+    for (int id : varIds) {
+        if (id > 0 && uniqueIds.insert(id).second) ids.push_back(id);
+    }
+    if (ids.empty()) return true;
+
+    std::lock_guard lock(dbMutex_);
+    if (!conn_) return false;
+
+    std::string idList;
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i) idList += ",";
+        idList += std::to_string(ids[i]);
+    }
+
+    std::vector<std::string> variableNames;
+    const std::string namesSql = "SELECT name FROM variable_definitions WHERE id IN (" + idList + ")";
+    if (mysql_query(conn_, namesSql.c_str()) != 0) {
+        Log(LogLevel::ERR, "Unable to resolve variable names before delete: " + std::string(mysql_error(conn_)));
+        return false;
+    }
+    if (MYSQL_RES* namesResult = mysql_store_result(conn_)) {
+        MYSQL_ROW row;
+        while ((row = mysql_fetch_row(namesResult))) {
+            if (row[0] && *row[0]) variableNames.emplace_back(row[0]);
+        }
+        mysql_free_result(namesResult);
+    }
+
+    const std::vector<std::string> metadataDeletes = {
+        "DELETE FROM alarm_records WHERE var_id IN (" + idList + ")",
+        "DELETE FROM operation_log WHERE var_id IN (" + idList + ")",
+        "DELETE FROM variable_definitions WHERE id IN (" + idList + ")"
+    };
+
+    const std::vector<std::string> valueTables = {"realtime_data", "historical_data", "write_records"};
+    for (const auto& table : valueTables) {
+        if (!tableExists(conn_, table)) continue;
+        const auto columns = getTableColumns(conn_, table);
+        std::set<std::string> existingColumns(columns.begin(), columns.end());
+        std::vector<std::string> toDrop;
+        for (const auto& name : variableNames) {
+            if (existingColumns.count(name)) toDrop.push_back(name);
+        }
+        if (toDrop.empty()) continue;
+
+        std::string alter = "ALTER TABLE " + quoteIdentifier(table) + " ";
+        for (size_t i = 0; i < toDrop.size(); ++i) {
+            if (i) alter += ", ";
+            alter += "DROP COLUMN " + quoteIdentifier(toDrop[i]);
+        }
+        if (mysql_query(conn_, alter.c_str()) != 0) {
+            Log(LogLevel::ERR, "Unable to remove deleted variable data columns: " + std::string(mysql_error(conn_)));
+            return false;
+        }
+    }
+
+    for (const auto& sql : metadataDeletes) {
+        if (mysql_query(conn_, sql.c_str()) != 0) {
+            Log(LogLevel::ERR, "Variable delete query failed: " + std::string(mysql_error(conn_)));
+            return false;
+        }
+    }
+    return true;
 }
 
 bool DatabaseManager::updateVariableDefinition(const VariableInfo& info) {

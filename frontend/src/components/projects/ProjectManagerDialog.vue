@@ -118,7 +118,9 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
+import { useMonitorStore } from '../../store/index.js'
 import { useProjectStore } from '../../store/projectStore.js'
+import { normalizeScadaProjectImport } from '../../services/scadaProjectImport.js'
 import ProjectCard from './ProjectCard.vue'
 import ProjectDeleteConfirm from './ProjectDeleteConfirm.vue'
 import ProjectFormModal from './ProjectFormModal.vue'
@@ -129,6 +131,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'load-layout'])
+const monitorStore = useMonitorStore()
 const projectStore = useProjectStore()
 const searchText = ref(projectStore.query.search)
 const sortValue = ref(`${projectStore.query.sortBy}:${projectStore.query.sortDir}`)
@@ -255,7 +258,8 @@ function exportPayload(project) {
       name: project.name,
       description: project.description || '',
       layout: project.layout
-    }
+    },
+    customComponents: monitorStore.customComponents
   }
 }
 
@@ -311,19 +315,17 @@ function triggerImport() {
 }
 
 function pickImportedProject(data, fallbackName) {
-  const source = data?.project || data
-  const layout = source?.layout || data?.layout
-  if (!layout || (typeof layout !== 'object' && !Array.isArray(layout))) {
-    throw new Error('文件中没有可用的 layout')
-  }
+  const normalized = normalizeScadaProjectImport(data, fallbackName)
   const stamp = new Date()
     .toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
     .replace(/[^\d]/g, '')
-  const baseName = String(source?.name || fallbackName || '导入项目').trim().slice(0, 26)
+  const baseName = String(normalized.name || fallbackName || '导入项目').trim().slice(0, 26)
   return {
     name: `${baseName} 导入${stamp}`.slice(0, 40),
-    description: source?.description || '从 JSON 文件导入',
-    layout
+    description: normalized.description,
+    layout: normalized.layout,
+    customComponents: normalized.customComponents,
+    format: normalized.format
   }
 }
 
@@ -336,7 +338,16 @@ async function importProjectFile(event) {
     const data = JSON.parse(text)
     const payload = pickImportedProject(data, file.name.replace(/\.json$/i, ''))
     await projectStore.createProject(payload)
-    fileMessage.value = `已导入为「${payload.name}」`
+    let componentMessage = ''
+    if (payload.customComponents.length) {
+      try {
+        const count = await monitorStore.importCustomComponentsFromServer(payload.customComponents)
+        componentMessage = `，合并 ${count} 个自定义组件`
+      } catch {
+        componentMessage = '；自定义组件库未能合并，请在组件设计器中单独导入'
+      }
+    }
+    fileMessage.value = `已从 ${payload.format} 导入为「${payload.name}」${componentMessage}`
   } catch (e) {
     fileMessage.value = `导入失败：${e.message || e}`
   }

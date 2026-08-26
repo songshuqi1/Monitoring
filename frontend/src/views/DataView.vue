@@ -27,6 +27,8 @@
           <select v-model="variableGroupBy">
             <option value="custom">自定义分组</option>
             <option value="source">按来源</option>
+            <option value="resource">按通信资源</option>
+            <option value="scope">按项目/应用</option>
             <option value="quality">按质量</option>
             <option value="unit">按单位</option>
             <option value="prefix">按名称前缀</option>
@@ -43,9 +45,27 @@
             <option value="offline">离线</option>
           </select>
         </div>
+        <div class="variable-filter-box">
+          <label>项目 / 应用</label>
+          <select v-model="variableScopeFilter">
+            <option value="all">全部范围</option>
+            <option value="global">公共 / 未归类</option>
+            <option v-for="scope in scopeOptions" :key="scope.id" :value="scope.id">{{ scope.name }}</option>
+          </select>
+        </div>
+        <div class="variable-filter-box">
+          <label>通信资源</label>
+          <select v-model="variableResourceFilter">
+            <option value="all">全部资源</option>
+            <option value="manual">手工 / 旧变量</option>
+            <option v-for="resource in resourceOptions" :key="resource.id" :value="resource.id">{{ resource.name }}</option>
+          </select>
+        </div>
         <div class="variable-manager-actions">
           <button type="button" class="btn btn-sm" @click="expandAllVariableGroups">全部展开</button>
           <button type="button" class="btn btn-sm" @click="collapseAllVariableGroups">全部折叠</button>
+          <button type="button" class="btn btn-sm btn-danger" :disabled="!variableStats.offline || bulkDeleting" @click="openBulkDeleteDialog('offline')">删除离线变量</button>
+          <button type="button" class="btn btn-sm btn-danger" :disabled="!store.variables.length || bulkDeleting" @click="openBulkDeleteDialog('all')">删除全部变量</button>
         </div>
       </div>
 
@@ -80,6 +100,8 @@
                 <th>值</th>
                 <th>单位</th>
                 <th>质量</th>
+                <th>项目 / 应用</th>
+                <th>通信资源</th>
                 <th>来源</th>
                 <th>OPC UA 节点路径</th>
                 <th>操作</th>
@@ -106,6 +128,8 @@
                     <span class="q-dot"></span>{{ getQualityText(v.id) }}
                   </span>
                 </td>
+                <td class="td-muted">{{ variableScopeLabel(v) }}</td>
+                <td><span class="resource-tag">{{ variableResourceLabel(v) }}</span></td>
                 <td><span class="source-tag">{{ v.source || '-' }}</span></td>
                 <td class="td-mono">\Root\Objects\{{ v.name }}</td>
                 <td class="td-actions">
@@ -216,6 +240,18 @@
       @close="deleteTarget = null"
       @confirm="confirmDeleteVariable"
     />
+    <ConfirmDialog
+      v-if="bulkDeleteDialog"
+      :title="bulkDeleteDialog.title"
+      :message="bulkDeleteDialog.message"
+      :detail="bulkDeleteDialog.detail"
+      :submitting="bulkDeleting"
+      confirm-text="确认删除"
+      submitting-text="删除中..."
+      danger
+      @close="bulkDeleteDialog = null"
+      @confirm="confirmBulkDeleteVariables"
+    />
   </div>
 </template>
 
@@ -257,9 +293,14 @@ export default {
     const historyRows = ref([])
     const historyLoading = ref(false)
     const deleteTarget = ref(null)
+    const bulkDeleteDialog = ref(null)
+    const bulkDeleting = ref(false)
     const variableSearch = ref('')
     const variableGroupBy = ref(localStorage.getItem('monitor-variable-group-by') || 'custom')
     const variableQualityFilter = ref('all')
+    const variableScopeFilter = ref('all')
+    const variableResourceFilter = ref('all')
+    const communicationResources = ref([])
     const collapsedVariableGroups = ref({})
     const variableGroupMap = ref(loadVariableGroupMap())
 
@@ -285,6 +326,7 @@ export default {
       const dp = store.realtimeData[id]
       if (!dp) return 'offline'
       const q = String(dp.quality || '').toUpperCase()
+      if (q === 'OFFLINE' || q === 'DISCONNECTED') return 'offline'
       if (q === 'GOOD') return 'good'
       if (q === 'UNCERTAIN') return 'uncertain'
       return 'bad'
@@ -334,6 +376,37 @@ export default {
       return stats
     })
 
+    const resourceOptions = computed(() => {
+      const options = new Map()
+      communicationResources.value.forEach(resource => {
+        if (resource.id) options.set(resource.id, { id: resource.id, name: resource.name || resource.id })
+      })
+      store.variables.forEach(variable => {
+        if (variable.resourceId && !options.has(variable.resourceId)) {
+          options.set(variable.resourceId, { id: variable.resourceId, name: variable.resourceName || variable.resourceId })
+        }
+      })
+      return [...options.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+    })
+
+    const scopeOptions = computed(() => {
+      const options = new Map()
+      const addScope = (scopeId, scopeName) => {
+        if (scopeId) options.set(scopeId, { id: scopeId, name: scopeName || scopeId })
+      }
+      communicationResources.value.forEach(resource => addScope(resource.scopeId, resource.scopeName))
+      store.variables.forEach(variable => addScope(variable.scopeId, variable.scopeName))
+      return [...options.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+    })
+
+    function variableScopeLabel(variable) {
+      return variable.scopeName || (variable.scopeId ? variable.scopeId : '公共 / 未归类')
+    }
+
+    function variableResourceLabel(variable) {
+      return variable.resourceName || (variable.resourceId ? variable.resourceId : '手工 / 旧变量')
+    }
+
     function variablePrefix(name) {
       const text = String(name || '').trim()
       if (!text) return '未命名'
@@ -346,6 +419,8 @@ export default {
     function variableGroupLabel(v) {
       if (variableGroupBy.value === 'none') return '全部变量'
       if (variableGroupBy.value === 'source') return v.source || '未知来源'
+      if (variableGroupBy.value === 'resource') return variableResourceLabel(v)
+      if (variableGroupBy.value === 'scope') return variableScopeLabel(v)
       if (variableGroupBy.value === 'quality') return getQualityText(v.id)
       if (variableGroupBy.value === 'unit') return v.unit || '无单位'
       if (variableGroupBy.value === 'prefix') return variablePrefix(v.name)
@@ -357,8 +432,13 @@ export default {
       return store.variables.filter(v => {
         const quality = getQualityKey(v.id)
         if (variableQualityFilter.value !== 'all' && quality !== variableQualityFilter.value) return false
+        if (variableScopeFilter.value === 'global' && v.scopeId) return false
+        if (variableScopeFilter.value !== 'all' && variableScopeFilter.value !== 'global' && v.scopeId !== variableScopeFilter.value) return false
+        if (variableResourceFilter.value === 'manual' && v.resourceId) return false
+        if (variableResourceFilter.value !== 'all' && variableResourceFilter.value !== 'manual' && v.resourceId !== variableResourceFilter.value) return false
         if (!q) return true
-        return [v.name, v.description, v.source, v.unit, v.id, getQualityText(v.id), variableGroupMap.value[v.id]]
+        return [v.name, v.description, v.source, v.unit, v.id, getQualityText(v.id), variableGroupMap.value[v.id],
+          variableScopeLabel(v), variableResourceLabel(v), v.opcuaNodeId]
           .some(value => String(value || '').toLowerCase().includes(q))
       })
     })
@@ -425,19 +505,69 @@ export default {
       deleteTarget.value = v
     }
 
+    function pruneVariableGroups(ids = []) {
+      const targets = new Set((ids || []).map(id => String(id)))
+      if (!targets.size) return
+      const next = { ...variableGroupMap.value }
+      Object.keys(next).forEach((key) => {
+        if (targets.has(String(key))) delete next[key]
+      })
+      variableGroupMap.value = next
+      saveVariableGroupMap(next)
+    }
+
     const confirmDeleteVariable = async () => {
       if (!deleteTarget.value) return
       try {
         await api.deleteVariable(deleteTarget.value.id)
-        const next = { ...variableGroupMap.value }
-        delete next[deleteTarget.value.id]
-        variableGroupMap.value = next
-        saveVariableGroupMap(next)
+        pruneVariableGroups([deleteTarget.value.id])
         deleteTarget.value = null
         await store.loadVariables()
         await store.loadRealtime()
+        await store.loadAlarms()
+        await loadLogs()
       }
       catch (e) { console.error('Delete failed:', e) }
+    }
+
+    function openBulkDeleteDialog(mode) {
+      if (mode === 'offline') {
+        if (!variableStats.value.offline) return
+        bulkDeleteDialog.value = {
+          mode,
+          title: '删除离线变量',
+          message: `确定删除全部离线变量吗？当前共有 ${variableStats.value.offline} 个离线变量。`,
+          detail: '只会删除当前没有实时数据或状态为离线的变量，并清理对应的缓存、历史、报警和日志。正在采集的同名点位在后续收到新数据时会被自动重新创建。'
+        }
+        return
+      }
+      if (!store.variables.length) return
+      bulkDeleteDialog.value = {
+        mode: 'all',
+        title: '删除全部变量',
+        message: `确定删除全部 ${store.variables.length} 个变量吗？`,
+        detail: '该操作会删除变量定义，并清理对应的实时缓存、历史、报警和操作日志。正在采集的点位在后续收到新数据时会被自动重新创建。'
+      }
+    }
+
+    const confirmBulkDeleteVariables = async () => {
+      if (!bulkDeleteDialog.value || bulkDeleting.value) return
+      bulkDeleting.value = true
+      try {
+        const mode = bulkDeleteDialog.value.mode || 'all'
+        const res = await api.bulkDeleteVariables(mode)
+        pruneVariableGroups(res.data?.deletedIds || [])
+        bulkDeleteDialog.value = null
+        await store.loadVariables()
+        await store.loadRealtime()
+        await store.loadAlarms()
+        await loadLogs()
+        if (activeTab.value === 'history') await loadHistoryDb()
+      } catch (e) {
+        console.error('Bulk delete failed:', e)
+      } finally {
+        bulkDeleting.value = false
+      }
     }
 
     const loadHistoryDb = async () => {
@@ -456,11 +586,19 @@ export default {
     }
 
     const refreshAll = async () => {
-      await store.loadRealtime(); await store.loadAlarms(); await loadLogs(); await store.loadVariables()
+      await store.loadRealtime(); await store.loadAlarms(); await loadLogs(); await store.loadVariables(); await loadCommunicationResources()
       if (activeTab.value === 'history') await loadHistoryDb()
     }
 
     const loadLogs = async () => { try { logs.value = (await api.getLogs()).data } catch {} }
+    const loadCommunicationResources = async () => {
+      try {
+        const response = await api.getCommunicationResources()
+        communicationResources.value = Array.isArray(response.data) ? response.data : []
+      } catch {
+        communicationResources.value = []
+      }
+    }
 
     watch(activeTab, async (tab) => {
       if (tab === 'history') {
@@ -470,21 +608,23 @@ export default {
 
     let timer = null
     onMounted(async () => {
-      await store.loadVariables(); await store.loadRealtime(); await store.loadAlarms(); await loadLogs()
+      await store.loadVariables(); await store.loadRealtime(); await store.loadAlarms(); await loadLogs(); await loadCommunicationResources()
       timer = setInterval(async () => { await store.loadRealtime(); await store.loadAlarms() }, 5000)
     })
     onUnmounted(() => { clearInterval(timer) })
 
     return {
       store, logs, activeTab, tabs, showWriteDialog, writeVar, writeValue,
-      historyColumns, historyRows, historyLoading, deleteTarget,
-      variableSearch, variableGroupBy, variableQualityFilter, variableGroupMap,
+      historyColumns, historyRows, historyLoading, deleteTarget, bulkDeleteDialog, bulkDeleting,
+      variableSearch, variableGroupBy, variableQualityFilter, variableScopeFilter, variableResourceFilter, variableGroupMap,
+      resourceOptions, scopeOptions,
       variableStats, filteredVariables, groupedVariables,
       getReadableColor, getDisplayValue, getQuality, getQualityText, formatTime,
       formatValue, getHistoryQuality, getHistoryCellClass, formatHistoryCell,
-      setVariableGroup, isVariableGroupCollapsed, toggleVariableGroup,
+      setVariableGroup, isVariableGroupCollapsed, toggleVariableGroup, variableScopeLabel, variableResourceLabel,
       expandAllVariableGroups, collapseAllVariableGroups,
-      openWriteDialog, doWrite, deleteVariable, confirmDeleteVariable, refreshAll, loadHistoryDb
+      openWriteDialog, doWrite, deleteVariable, confirmDeleteVariable,
+      openBulkDeleteDialog, confirmBulkDeleteVariables, refreshAll, loadHistoryDb
     }
   }
 }
@@ -504,7 +644,7 @@ export default {
 .variable-manager-section { padding: 14px; }
 .variable-manager-toolbar {
   display: grid;
-  grid-template-columns: minmax(240px, 1.5fr) 150px 150px auto;
+  grid-template-columns: minmax(220px, 1.5fr) 140px 140px 180px 180px auto;
   gap: 12px;
   align-items: end;
   padding: 12px;
@@ -581,7 +721,7 @@ export default {
 .group-toggle { width: 16px; color: var(--text-placeholder); font-size: var(--fs-sm); }
 .group-title { color: var(--text-primary); font-size: var(--fs-md); font-weight: var(--fw-bold); }
 .group-summary { margin-left: auto; color: var(--text-tertiary); font-size: var(--fs-sm); }
-.variable-table { min-width: 1120px; border-radius: 0; }
+.variable-table { min-width: 1360px; border-radius: 0; }
 .dv-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-md); }
 .dv-table thead th { padding: 11px 12px; text-align: left; font-weight: var(--fw-semibold); color: var(--text-secondary); font-size: var(--fs-sm); letter-spacing: 0; border-bottom: 1px solid var(--border-light); background: var(--surface-muted); position: sticky; top: 0; }
 .dv-table tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
@@ -597,6 +737,7 @@ export default {
 .var-name-text { display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; font-weight: var(--fw-semibold); }
 .q-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .source-tag { background: var(--surface-muted); border-color: var(--border-light); color: var(--text-tertiary); }
+.resource-tag { display: inline-flex; align-items: center; max-width: 160px; min-height: 23px; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid var(--info-border); border-radius: var(--radius-full); background: var(--accent-soft); color: var(--accent); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
 .td-group-editor { min-width: 132px; }
 .td-group-editor input { height: 32px; padding: 0 9px; border-radius: var(--radius-sm); background: #ffffff; }
 .td-actions { display: flex; gap: 5px; white-space: nowrap; }

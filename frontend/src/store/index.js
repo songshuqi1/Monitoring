@@ -8,14 +8,19 @@ const CUSTOM_COMPONENT_STORAGE_KEY = 'monitor-custom-components'
 // widget 类型定义 (含默认尺寸)
 export const WIDGET_TYPES = {
   trendChart:     { type: 'trendChart',     label: '趋势曲线',   icon: '📈', defaultW: 520, defaultH: 260 },
+  trendChartLite: { type: 'trendChartLite', label: '简洁趋势曲线', icon: '📉', defaultW: 460, defaultH: 240 },
   digitalDisplay: { type: 'digitalDisplay', label: '数值显示',   icon: '🔢', defaultW: 260, defaultH: 160 },
+  valueColumn:    { type: 'valueColumn',    label: '液柱显示',   icon: '柱', defaultW: 140, defaultH: 300 },
   gauge:          { type: 'gauge',          label: '仪表盘',     icon: '⭕', defaultW: 260, defaultH: 260 },
   button:         { type: 'button',         label: '控制按钮',   icon: '🔘', defaultW: 140, defaultH: 80 },
+  winccToggleButton: { type: 'winccToggleButton', label: '状态切换按钮', icon: '切', defaultW: 180, defaultH: 42 },
+  stepperControl: { type: 'stepperControl', label: '加减调节',   icon: '±', defaultW: 120, defaultH: 40 },
   alarmList:      { type: 'alarmList',      label: '报警列表',   icon: '📋', defaultW: 520, defaultH: 260 },
   indicator:      { type: 'indicator',      label: '状态指示',   icon: '💡', defaultW: 120, defaultH: 80 },
   statusCircle:   { type: 'statusCircle',   label: '状态圆点',   icon: '●', defaultW: 42, defaultH: 42 },
   label:          { type: 'label',          label: '文本标签',   icon: '📝', defaultW: 240, defaultH: 60 },
   frameBox:       { type: 'frameBox',       label: '边框容器',   icon: '▣', defaultW: 320, defaultH: 180 },
+  scadaSvg:       { type: 'scadaSvg',       label: '导入 SVG/图片', icon: '图', defaultW: 180, defaultH: 140 },
   customShape:    { type: 'customShape',    label: '自定义组件', icon: '自', defaultW: 180, defaultH: 120 },
   processPump:    { type: 'processPump',    label: '水泵/气泵',  icon: '泵', defaultW: 112, defaultH: 96 },
   processPool:    { type: 'processPool',    label: '水池',       icon: '池', defaultW: 380, defaultH: 156 },
@@ -58,13 +63,32 @@ function defaultConfigForType(type) {
   const base = { title, titleFontSize: 12, hideName: false, rotation: 0, rotationStep: 90 }
   switch (type) {
     case 'trendChart':
+    case 'trendChartLite':
       return { ...base, varIds: [], yMin: null, yMax: null, timeWindow: 60 }
     case 'digitalDisplay':
       return { ...base, varId: null, min: 0, max: 100, unit: '', decimals: 1 }
+    case 'valueColumn':
+      return {
+        ...base,
+        varId: null,
+        min: 0,
+        max: 100,
+        unit: '',
+        decimals: 1,
+        valuePosition: 'right',
+        barColor: '#ec4899',
+        trackColor: '#111827',
+        scaleColor: '#98a2b3',
+        textColor: '#f8fafc'
+      }
     case 'gauge':
       return { ...base, varId: null, min: 0, max: 100, unit: '', decimals: 1 }
     case 'button':
       return { ...base, varId: null, buttonText: title, writeValue: 1 }
+    case 'winccToggleButton':
+      return { ...base, varId: null, buttonText: title, activeValue: 1, inactiveValue: 0, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [] }
+    case 'stepperControl':
+      return { ...base, varId: null, defaultValue: 0, min: 0, max: 100, step: 1, decimals: 0, unit: '', minusText: '-', plusText: '+' }
     case 'indicator':
       return { ...base, varId: null, threshold: 50 }
     case 'statusCircle':
@@ -96,6 +120,26 @@ function defaultConfigForType(type) {
         borderWidth: 2,
         borderRadius: 8,
         borderStyle: 'solid'
+      }
+    case 'scadaSvg':
+      return {
+        ...base,
+        label: title,
+        labelFontSize: 12,
+        labelOffsetX: 0,
+        labelOffsetY: 0,
+        varId: null,
+        bindVariable: false,
+        statusOnColor: '#22c55e',
+        statusOffColor: '#64748b',
+        opacity: 100,
+        background: '#ffffff',
+        backgroundOpacity: 0,
+        borderColor: '#4f6fb8',
+        borderWidth: 0,
+        borderRadius: 0,
+        preserveAspectRatio: 'meet',
+        asset: null
       }
     case 'customShape':
       return {
@@ -485,10 +529,37 @@ export const useMonitorStore = defineStore('monitor', () => {
     } catch {
       customComponents.value = []
     }
+    // 后端作为跨端共享源：异步拉取并合并（后端为空时保留本地）
+    refreshCustomComponentsFromServer()
+  }
+
+  function refreshCustomComponentsFromServer() {
+    api.getCustomComponents()
+      .then(r => {
+        const list = Array.isArray(r?.data) ? r.data : []
+        if (list.length) {
+          customComponents.value = list.map(normalizeCustomComponent).filter(Boolean)
+          localStorage.setItem(CUSTOM_COMPONENT_STORAGE_KEY, JSON.stringify(customComponents.value))
+        }
+      })
+      .catch(() => {})
   }
 
   function persistCustomComponents() {
     localStorage.setItem(CUSTOM_COMPONENT_STORAGE_KEY, JSON.stringify(customComponents.value))
+    // 同步到后端组件库（失败不影响本地使用）
+    api.saveCustomComponents(customComponents.value).catch(() => {})
+  }
+
+  // 从后端导入组件（合并）：返回 Promise<number> 导入数量
+  async function importCustomComponentsFromServer(payload) {
+    const r = await api.importCustomComponents(payload)
+    const list = Array.isArray(r?.data) ? r.data : []
+    if (list.length) {
+      customComponents.value = list.map(normalizeCustomComponent).filter(Boolean)
+      localStorage.setItem(CUSTOM_COMPONENT_STORAGE_KEY, JSON.stringify(customComponents.value))
+    }
+    return list.length
   }
 
   function saveCustomComponent(component) {
@@ -1003,8 +1074,10 @@ export const useMonitorStore = defineStore('monitor', () => {
 
   function connectWebSocket() {
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${location.host}/ws/realtime`
+    const url = `${protocol}//${location.host}/ws/realtime?token=${encodeURIComponent(token)}`
     ws = new WebSocket(url)
     ws.onopen  = () => { wsConnected.value = true }
     ws.onclose = () => {
@@ -1033,7 +1106,8 @@ export const useMonitorStore = defineStore('monitor', () => {
     variables, realtimeData, wsConnected, alarms, systemStatus, operationLogs, onlineCount, customComponents,
       trendBuffers, appendTrendData, sampleTrendData, startTrendSampler, stopTrendSampler, pruneTrendData, TREND_MAX_POINTS,
     widgets, connections, layoutSnapshot, canUndo, canRedo,
-    loadCustomComponents, saveCustomComponent, removeCustomComponent,
+    loadCustomComponents, refreshCustomComponentsFromServer, importCustomComponentsFromServer,
+    saveCustomComponent, removeCustomComponent,
     loadLayout, addWidget, duplicateWidget, duplicateWidgetsWithConnections, updateWidget, removeWidget, removeWidgets, moveWidget, resizeWidget,
     addConnection, splitConnectionWithJunction, removeConnection, updateConnection, resetLayout, replaceLayout,
     undoLayout, redoLayout,

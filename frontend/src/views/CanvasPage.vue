@@ -22,6 +22,11 @@
         />
         <button v-if="librarySearch" type="button" title="清空搜索" @click="librarySearch = ''">清除</button>
       </div>
+      <div class="library-import">
+        <input ref="scadaAssetInput" class="hidden-file-input" type="file" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp,image/gif" @change="importScadaAsset" />
+        <button type="button" class="btn btn-sm" @click="scadaAssetInput?.click()">导入 SVG/图片</button>
+        <span>作为可绑定组件加入画布</span>
+      </div>
       <div class="library-categories">
         <div v-if="visibleCategories.length === 0" class="library-empty">
           没有找到匹配组件
@@ -390,18 +395,27 @@
         </div>
         <div v-if="showVarSelect" class="form-group">
           <label>{{ isTrend ? '显示变量（勾选要显示的变量）' : '关联变量' }}</label>
+          <div class="var-binding-search">
+            <input v-model.trim="variableBindingSearch" type="search" placeholder="搜索名称、描述、来源或单位" />
+            <span>{{ visibleBindingVariableCount }}/{{ store.variables.length }}</span>
+          </div>
 
           <!-- 趋势图：多选 checkbox -->
           <div v-if="isTrend" class="var-checkbox-list">
             <div v-for="group in configVariableGroups" :key="group.key" class="var-select-group">
-              <div class="var-select-group-title">{{ group.label }} <span>{{ group.items.length }}</span></div>
-              <label v-for="v in group.items" :key="v.id" class="var-checkbox">
-                <input type="checkbox" :value="v.id"
-                  :checked="(activeConfig.varIds || []).includes(v.id)"
-                  @change="toggleTrendVar(v.id)" />
-                <span class="var-checkbox-name" :style="{ borderLeftColor: v.color || '#4f6fb8' }">{{ v.name }}</span>
-                <span class="var-checkbox-meta">{{ v.unit || '' }} {{ v.source ? '('+v.source+')' : '' }}</span>
-              </label>
+              <button type="button" class="var-select-group-title" @click="toggleConfigVariableGroup(group.key)">
+                <span class="var-select-group-name"><b>{{ isConfigVariableGroupCollapsed(group.key) ? '▸' : '▾' }}</b>{{ group.label }}</span>
+                <span>{{ group.items.length }}</span>
+              </button>
+              <div v-show="!isConfigVariableGroupCollapsed(group.key)" class="var-select-group-items">
+                <label v-for="v in group.items" :key="v.id" class="var-checkbox">
+                  <input type="checkbox" :value="v.id"
+                    :checked="(activeConfig.varIds || []).includes(v.id)"
+                    @change="toggleTrendVar(v.id)" />
+                  <span class="var-checkbox-name" :style="{ borderLeftColor: v.color || '#4f6fb8' }">{{ v.name }}</span>
+                  <span class="var-checkbox-meta">{{ v.unit || '' }} {{ v.source ? '('+v.source+')' : '' }}</span>
+                </label>
+              </div>
             </div>
             <div v-if="store.variables.length === 0" class="text-muted" style="font-size:13px;padding:8px 0;">
               暂无变量定义，请先在系统设置中添加变量
@@ -454,6 +468,19 @@
           </div>
         </div>
 
+        <div v-if="isScadaSvgConfig" class="config-section">
+          <div class="section-title">导入组件样式</div>
+          <label class="inline-check"><input type="checkbox" v-model="activeConfig.bindVariable" @change="applyConfig" /> 绑定变量控制状态颜色</label>
+          <div class="form-row two-col">
+            <div class="form-group"><label>开启颜色</label><input type="color" v-model="activeConfig.statusOnColor" @input="applyConfig" /></div>
+            <div class="form-group"><label>关闭颜色</label><input type="color" v-model="activeConfig.statusOffColor" @input="applyConfig" /></div>
+          </div>
+          <div class="form-row two-col">
+            <div class="form-group"><label>透明度 (%)</label><input type="number" min="0" max="100" v-model.number="activeConfig.opacity" @input="applyConfig" /></div>
+            <div class="form-group"><label>缩放方式</label><select v-model="activeConfig.preserveAspectRatio" @change="applyConfig"><option value="meet">完整显示</option><option value="slice">铺满裁切</option><option value="none">拉伸填满</option></select></div>
+          </div>
+        </div>
+
         <div v-if="isConnectableConfig" class="config-section">
           <div class="section-title">连接端口</div>
           <div class="port-config-list">
@@ -480,11 +507,11 @@
         </div>
 
         <!-- 数值范围（仪表盘数值显示） -->
-        <template v-if="configWidget.type === 'gauge' || configWidget.type === 'digitalDisplay'">
+        <template v-if="['gauge', 'digitalDisplay', 'valueColumn', 'stepperControl'].includes(configWidget.type)">
           <div class="form-group"><label>最小值</label><input type="number" v-model.number="activeConfig.min" @input="applyConfig" /></div>
           <div class="form-group"><label>最大值</label><input type="number" v-model.number="activeConfig.max" @input="applyConfig" /></div>
         </template>
-        <div v-if="configWidget.type === 'gauge'" class="form-group"><label>单位</label><input v-model="activeConfig.unit" @input="applyConfig" /></div>
+        <div v-if="['gauge', 'valueColumn', 'stepperControl'].includes(configWidget.type)" class="form-group"><label>单位</label><input v-model="activeConfig.unit" @input="applyConfig" /></div>
         <template v-if="configWidget.type === 'label'">
           <div class="form-group"><label>文本</label><input v-model="activeConfig.text" @input="applyConfig" /></div>
           <div class="form-row two-col">
@@ -548,11 +575,31 @@
         <div v-if="configWidget.type === 'statusCircle'" class="form-group"><label>绿色阈值</label><input type="number" v-model.number="activeConfig.threshold" @input="applyConfig" /></div>
 
         <!-- 小数位数 -->
-        <div v-if="configWidget.type === 'button'" class="form-group"><label>按钮文本</label><input v-model="activeConfig.buttonText" @input="applyConfig" placeholder="按钮上显示的文字" /></div>
+        <div v-if="configWidget.type === 'button' || configWidget.type === 'winccToggleButton'" class="form-group"><label>按钮文本</label><input v-model="activeConfig.buttonText" @input="applyConfig" placeholder="按钮上显示的文字" /></div>
         <div v-if="configWidget.type === 'button'" class="form-group"><label>写入值</label><input type="number" v-model.number="activeConfig.writeValue" @input="applyConfig" /></div>
+        <template v-if="configWidget.type === 'winccToggleButton'">
+          <div class="form-row two-col">
+            <div class="form-group"><label>激活值</label><input type="number" v-model.number="activeConfig.activeValue" @input="applyConfig" /></div>
+            <div class="form-group"><label>未激活值</label><input type="number" v-model.number="activeConfig.inactiveValue" @input="applyConfig" /></div>
+          </div>
+          <div class="form-group"><label>激活颜色</label><input type="color" v-model="activeConfig.activeColor" @input="applyConfig" /></div>
+        </template>
+        <template v-if="configWidget.type === 'stepperControl'">
+          <div class="form-row two-col">
+            <div class="form-group"><label>步长</label><input type="number" min="0.0001" step="any" v-model.number="activeConfig.step" @input="applyConfig" /></div>
+            <div class="form-group"><label>默认值</label><input type="number" step="any" v-model.number="activeConfig.defaultValue" @input="applyConfig" /></div>
+          </div>
+        </template>
+        <template v-if="configWidget.type === 'valueColumn'">
+          <div class="form-row two-col">
+            <div class="form-group"><label>液柱颜色</label><input type="color" v-model="activeConfig.barColor" @input="applyConfig" /></div>
+            <div class="form-group"><label>刻度颜色</label><input type="color" v-model="activeConfig.scaleColor" @input="applyConfig" /></div>
+          </div>
+          <div class="form-group"><label>数值位置</label><select v-model="activeConfig.valuePosition" @change="applyConfig"><option value="right">右侧</option><option value="left">左侧</option></select></div>
+        </template>
         <div v-if="configWidget.type === 'processValueTag'" class="form-group"><label>单位</label><input v-model="activeConfig.unit" @input="applyConfig" /></div>
         <div v-if="configWidget.type === 'processValueTag'" class="form-group"><label>数据字号</label><input type="number" min="8" max="72" v-model.number="activeConfig.valueFontSize" @input="applyConfig" /></div>
-        <div v-if="configWidget.type === 'digitalDisplay' || configWidget.type === 'gauge' || configWidget.type === 'processValueTag'" class="form-group">
+        <div v-if="['digitalDisplay', 'gauge', 'valueColumn', 'processValueTag', 'stepperControl'].includes(configWidget.type)" class="form-group">
           <label>小数位数</label>
           <input type="number" v-model.number="activeConfig.decimals" min="0" max="6" @input="applyConfig" />
         </div>
@@ -641,9 +688,14 @@
       <div class="application-toolbar">
         <span class="application-title">应用模式</span>
         <div class="application-zoom-controls">
-          <button class="application-zoom-button" title="缩小" @click="zoomApplicationBy(-1)">−</button>
-          <button class="application-zoom-value" title="恢复 100%" @click="resetApplicationZoom">{{ applicationZoomPercent }}%</button>
-          <button class="application-zoom-button" title="放大" @click="zoomApplicationBy(1)">+</button>
+          <button class="application-zoom-button" title="缩小 1%" @click="zoomApplicationBy(-1)">−</button>
+          <label class="application-zoom-value" title="输入 25% 至 400%，回车或失焦后生效">
+            <input v-model="applicationZoomInput" type="number" min="25" max="400" step="1"
+              aria-label="应用模式缩放百分比" @change="applyApplicationZoomInput" @keydown.enter.prevent="applyApplicationZoomInput" />
+            <span>%</span>
+          </label>
+          <button class="application-zoom-button" title="放大 1%" @click="zoomApplicationBy(1)">+</button>
+          <button class="application-zoom-reset" title="恢复 100%" @click="resetApplicationZoom">100%</button>
         </div>
         <button class="btn btn-sm btn-secondary" @click="exitApplicationMode">返回编辑</button>
       </div>
@@ -789,6 +841,7 @@ const canvasAreaSize = ref({ width: 0, height: 0 })
 const applicationCanvasRef = ref(null)
 const applicationMode = ref(false)
 const applicationZoom = ref(1)
+const applicationZoomInput = ref(100)
 const applicationCanvasSize = ref({ width: 0, height: 0 })
 const resetConfirmOpen = ref(false)
 const deleteWidgetTarget = ref(null)
@@ -822,6 +875,11 @@ const libraryPreview = reactive({
   y: 0
 })
 const librarySearch = ref('')
+const scadaAssetInput = ref(null)
+const SCADA_ASSET_LIBRARY_KEY = 'monitoring.scadaAssetLibrary.v1'
+const scadaAssetLibrary = ref(readScadaAssetLibrary())
+const variableBindingSearch = ref('')
+const collapsedConfigVariableGroups = reactive({})
 const LIBRARY_WIDTH_MIN = 232
 const LIBRARY_WIDTH_MAX = 460
 const BOTTOM_DOCK_HEIGHT_MIN = 96
@@ -947,14 +1005,15 @@ const libraryPreviewWidget = computed(() => {
   if (!item || !WIDGET_TYPES[item.type]) return null
   const def = WIDGET_TYPES[item.type]
   const customDefinition = item.customComponent || null
+  const scadaAsset = item.scadaAsset || null
   return {
     id: `preview-${item.type}`,
     type: item.type,
     x: 0,
     y: 0,
-    w: customDefinition?.width || def.defaultW,
-    h: customDefinition?.height || def.defaultH,
-    config: previewConfigForType(item.type, item.label, customDefinition)
+    w: scadaAsset?.width || customDefinition?.width || def.defaultW,
+    h: scadaAsset?.height || customDefinition?.height || def.defaultH,
+    config: previewConfigForType(item.type, item.label, customDefinition, scadaAsset)
   }
 })
 
@@ -970,12 +1029,13 @@ const libraryPreviewStageStyle = computed(() => {
   }
 })
 
-const isTrend = computed(() => configWidget.value?.type === 'trendChart')
+const isTrend = computed(() => ['trendChart', 'trendChartLite'].includes(configWidget.value?.type))
 const isCustomShapeConfig = computed(() => configWidget.value?.type === 'customShape')
-const isProcessConfig = computed(() => String(configWidget.value?.type || '').startsWith('process') || isCustomShapeConfig.value)
+const isScadaSvgConfig = computed(() => configWidget.value?.type === 'scadaSvg')
+const isProcessConfig = computed(() => String(configWidget.value?.type || '').startsWith('process') || isCustomShapeConfig.value || isScadaSvgConfig.value)
 const isConnectableConfig = computed(() =>
   configWidget.value &&
-  (String(configWidget.value.type || '').startsWith('process') || configWidget.value.type === 'customShape') &&
+  (String(configWidget.value.type || '').startsWith('process') || configWidget.value.type === 'customShape' || configWidget.value.type === 'scadaSvg') &&
   configWidget.value.type !== 'processValueTag'
 )
 const selectedConnection = computed(() =>
@@ -1001,9 +1061,13 @@ const showVarSelect = computed(() => {
   if (!configWidget.value) return false
   return [
     'trendChart',
+    'trendChartLite',
     'digitalDisplay',
+    'valueColumn',
     'gauge',
     'button',
+    'winccToggleButton',
+    'stepperControl',
     'indicator',
     'statusCircle',
     'processPump',
@@ -1031,7 +1095,7 @@ const showVarSelect = computed(() => {
     'processMaterialChute',
     'processDoubleFlapValve'
   ].includes(configWidget.value.type) ||
-    (configWidget.value.type === 'customShape' && Boolean(activeConfig.value.bindVariable))
+    ((configWidget.value.type === 'customShape' || configWidget.value.type === 'scadaSvg') && Boolean(activeConfig.value.bindVariable))
 })
 
 function readVariableGroupMap() {
@@ -1046,7 +1110,10 @@ function readVariableGroupMap() {
 const configVariableGroups = computed(() => {
   const customGroups = readVariableGroupMap()
   const groups = new Map()
+  const query = variableBindingSearch.value.trim().toLocaleLowerCase()
   store.variables.forEach(v => {
+    if (query && ![v.name, v.description, v.source, v.unit, v.id]
+      .some(value => String(value || '').toLocaleLowerCase().includes(query))) return
     const label = customGroups[v.id] || v.source || '未分组'
     const key = `var-group:${label}`
     if (!groups.has(key)) groups.set(key, { key, label, items: [] })
@@ -1060,6 +1127,18 @@ const configVariableGroups = computed(() => {
       return String(a.label).localeCompare(String(b.label), 'zh-CN')
     })
 })
+
+function isConfigVariableGroupCollapsed(key) {
+  return Boolean(collapsedConfigVariableGroups[key]) && !variableBindingSearch.value.trim()
+}
+
+function toggleConfigVariableGroup(key) {
+  collapsedConfigVariableGroups[key] = !collapsedConfigVariableGroups[key]
+}
+
+const visibleBindingVariableCount = computed(() =>
+  configVariableGroups.value.reduce((total, group) => total + group.items.length, 0)
+)
 const selectedVarInfo = computed(() => {
   if (!configWidget.value || isTrend.value) return null
   const vid = activeConfig.value.varId
@@ -1367,7 +1446,9 @@ const categories = ref([
     key: 'display', label: '数据展示', description: '曲线、数值和仪表', icon: '数', open: true,
     items: [
       { type: 'trendChart',     label: '趋势曲线',     icon: '📈', color: '#4f6fb8' },
+      { type: 'trendChartLite', label: '简洁趋势曲线', icon: '📉', color: '#3b82f6' },
       { type: 'digitalDisplay', label: '数值显示',     icon: '🔢', color: '#2f8f63' },
+      { type: 'valueColumn',    label: '液柱显示',     icon: '柱', color: '#ec4899' },
       { type: 'gauge',          label: '仪表盘',       icon: '⭕', color: '#a66a1f' },
     ]
   },
@@ -1375,6 +1456,8 @@ const categories = ref([
     key: 'control', label: '控制与状态', description: '下发控制和状态反馈', icon: '控', open: true,
     items: [
       { type: 'button',   label: '控制按钮',   icon: '🔘', color: '#c2414b' },
+      { type: 'winccToggleButton', label: '状态切换按钮', icon: '切', color: '#18c93a' },
+      { type: 'stepperControl', label: '加减调节', icon: '±', color: '#64748b' },
       { type: 'indicator', label: '状态指示',   icon: '💡', color: '#8250df' },
       { type: 'statusCircle', label: '状态圆点', icon: '●', color: '#22c55e' },
     ]
@@ -1391,7 +1474,15 @@ const categories = ref([
 const libraryQuery = computed(() => librarySearch.value.trim().toLowerCase())
 const hasLibrarySearch = computed(() => libraryQuery.value.length > 0)
 const customLibraryOpen = ref(true)
+const scadaAssetLibraryOpen = ref(true)
 const libraryCategories = computed(() => {
+  const importedItems = scadaAssetLibrary.value.map(asset => ({
+    type: 'scadaSvg',
+    label: asset.name,
+    icon: '图',
+    color: '#0ea5e9',
+    scadaAsset: asset
+  }))
   const customItems = store.customComponents.map(component => ({
     type: 'customShape',
     label: component.name,
@@ -1400,16 +1491,30 @@ const libraryCategories = computed(() => {
     customComponentId: component.id,
     customComponent: component
   }))
-  if (!customItems.length) return categories.value
-  return [
-    {
+  const extraCategories = []
+  if (importedItems.length) {
+    extraCategories.push({
+      key: 'imported-scada-assets',
+      label: '导入组件库',
+      description: '本浏览器保存的 SVG/图片组件',
+      icon: '图',
+      open: scadaAssetLibraryOpen.value,
+      items: importedItems
+    })
+  }
+  if (customItems.length) {
+    extraCategories.push({
       key: 'custom-components',
       label: '自定义组件',
       description: '组件配置器保存的模块',
       icon: '自',
       open: customLibraryOpen.value,
       items: customItems
-    },
+    })
+  }
+  if (!extraCategories.length) return categories.value
+  return [
+    ...extraCategories,
     ...categories.value
   ]
 })
@@ -1436,6 +1541,7 @@ function matchesLibraryText(query, ...values) {
 
 function isLibraryCategoryOpen(cat) {
   if ((cat.source || cat).key === 'custom-components') return hasLibrarySearch.value || customLibraryOpen.value
+  if ((cat.source || cat).key === 'imported-scada-assets') return hasLibrarySearch.value || scadaAssetLibraryOpen.value
   return hasLibrarySearch.value || Boolean((cat.source || cat).open)
 }
 
@@ -1443,6 +1549,10 @@ function toggleLibraryCategory(cat) {
   const source = cat.source || cat
   if (source.key === 'custom-components') {
     customLibraryOpen.value = !customLibraryOpen.value
+    return
+  }
+  if (source.key === 'imported-scada-assets') {
+    scadaAssetLibraryOpen.value = !scadaAssetLibraryOpen.value
     return
   }
   source.open = !source.open
@@ -1482,16 +1592,64 @@ function customShapeConfigFromDefinition(definition, label) {
   }
 }
 
-function previewConfigForType(type, label, customDefinition = null) {
+function readScadaAssetLibrary() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SCADA_ASSET_LIBRARY_KEY) || '[]')
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .filter(asset => asset && typeof asset.name === 'string' && typeof asset.path === 'string' && asset.path.startsWith('data:image/'))
+      .slice(0, 12)
+      .map(asset => ({
+        id: String(asset.id || `asset-${Date.now()}`),
+        name: asset.name.slice(0, 80),
+        type: 'image',
+        path: asset.path,
+        width: Math.max(1, Number(asset.width) || WIDGET_TYPES.scadaSvg.defaultW),
+        height: Math.max(1, Number(asset.height) || WIDGET_TYPES.scadaSvg.defaultH)
+      }))
+  } catch {
+    return []
+  }
+}
+
+function persistScadaAssetLibrary() {
+  try {
+    localStorage.setItem(SCADA_ASSET_LIBRARY_KEY, JSON.stringify(scadaAssetLibrary.value))
+    return true
+  } catch {
+    return false
+  }
+}
+
+function addScadaAssetToLibrary(asset) {
+  const existing = scadaAssetLibrary.value.find(item => item.path === asset.path)
+  if (existing) return existing
+  const next = [asset, ...scadaAssetLibrary.value].slice(0, 12)
+  const previous = scadaAssetLibrary.value
+  scadaAssetLibrary.value = next
+  if (!persistScadaAssetLibrary()) {
+    scadaAssetLibrary.value = previous
+    return null
+  }
+  return asset
+}
+
+function previewConfigForType(type, label, customDefinition = null, scadaAsset = null) {
   if (type === 'customShape' && customDefinition) {
     return customShapeConfigFromDefinition(customDefinition, label)
   }
+  if (type === 'scadaSvg' && scadaAsset) {
+    return { title: label, label, asset: scadaAsset, preserveAspectRatio: 'meet', bindVariable: false, varId: null }
+  }
   const base = { title: label, label, titleFontSize: 12, labelFontSize: 12 }
   if (type === 'button') return { ...base, buttonText: label, writeValue: 1 }
+  if (type === 'winccToggleButton') return { ...base, buttonText: label, activeValue: 1, inactiveValue: 0, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [] }
+  if (type === 'stepperControl') return { ...base, defaultValue: 0, min: 0, max: 100, step: 1, decimals: 0, unit: '', minusText: '-', plusText: '+' }
   if (type === 'label') return { ...base, text: label, fontSize: 16, color: '#344054', align: 'center', verticalAlign: 'center', background: 'transparent', borderColor: 'transparent', borderWidth: 0 }
   if (type === 'frameBox') return { ...base, hideName: false, background: '#ffffff', backgroundOpacity: 0, borderColor: '#4f6fb8', borderWidth: 2, borderRadius: 8, borderStyle: 'solid' }
   if (type === 'digitalDisplay' || type === 'gauge') return { ...base, min: 0, max: 100, unit: '', decimals: 1 }
-  if (type === 'trendChart') return { ...base, varIds: [], timeWindow: 60 }
+  if (type === 'valueColumn') return { ...base, min: 0, max: 100, unit: '', decimals: 1, valuePosition: 'right', barColor: '#ec4899', trackColor: '#111827', scaleColor: '#98a2b3', textColor: '#f8fafc' }
+  if (type === 'trendChart' || type === 'trendChartLite') return { ...base, varIds: [], timeWindow: 60 }
   if (type === 'indicator') return { ...base, threshold: 50 }
   if (type === 'statusCircle') return { ...base, hideName: true, threshold: 0 }
   if (type === 'processValueTag') return { ...base, unit: '', decimals: 1, valueFontSize: 16 }
@@ -1563,9 +1721,11 @@ function onDragStart(event, item) {
   event.dataTransfer.setData('text/plain', item.type)
   event.dataTransfer.setData('application/json', JSON.stringify({
     type: item.type,
-    customComponentId: item.customComponentId || null
+    customComponentId: item.customComponentId || null,
+    scadaAssetId: item.scadaAsset?.id || null
   }))
   if (item.customComponentId) event.dataTransfer.setData('custom-component-id', item.customComponentId)
+  if (item.scadaAsset?.id) event.dataTransfer.setData('scada-asset-id', item.scadaAsset.id)
   event.dataTransfer.effectAllowed = 'copy'
 }
 
@@ -1573,7 +1733,10 @@ function addToCanvas(item) {
   // 简单偏移叠加放置
   const offset = 40 + store.widgets.length * 30
   const widget = store.addWidget(item.type, offset, offset, {
-    customComponent: item.customComponent || findCustomComponent(item.customComponentId)
+    customComponent: item.customComponent || findCustomComponent(item.customComponentId),
+    w: item.scadaAsset?.width,
+    h: item.scadaAsset?.height,
+    config: item.scadaAsset ? previewConfigForType('scadaSvg', item.label, null, item.scadaAsset) : undefined
   })
   if (widget) {
     selectWidget(widget.id)
@@ -1583,21 +1746,94 @@ function addToCanvas(item) {
   }
 }
 
+function encodeUtf8Base64(text) {
+  const bytes = new TextEncoder().encode(text)
+  let binary = ''
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, Math.min(bytes.length, offset + 0x8000)))
+  }
+  return btoa(binary)
+}
+
+async function scadaAssetDataUrl(file) {
+  const isSvg = file.type === 'image/svg+xml' || /\.svg$/i.test(file.name)
+  if (!isSvg) return await new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('读取图片失败'))
+    reader.readAsDataURL(file)
+  })
+
+  const source = await file.text()
+  const document = new DOMParser().parseFromString(source, 'image/svg+xml')
+  if (document.querySelector('parsererror') || document.documentElement?.nodeName.toLowerCase() !== 'svg') {
+    throw new Error('不是有效的 SVG 文件')
+  }
+  document.querySelectorAll('script, foreignObject, iframe, object, embed').forEach(node => node.remove())
+  document.querySelectorAll('*').forEach(node => {
+    Array.from(node.attributes).forEach(attribute => {
+      const name = attribute.name.toLowerCase()
+      const value = attribute.value.trim().toLowerCase()
+      if (name.startsWith('on') ||
+          ((name === 'href' || name === 'xlink:href') && value && !value.startsWith('#') && !value.startsWith('data:'))) {
+        node.removeAttribute(attribute.name)
+      }
+    })
+  })
+  return `data:image/svg+xml;base64,${encodeUtf8Base64(new XMLSerializer().serializeToString(document.documentElement))}`
+}
+
+async function importScadaAsset(event) {
+  const file = event.target?.files?.[0]
+  if (event.target) event.target.value = ''
+  if (!file) return
+  if (file.size > 768 * 1024) {
+    showConnectionNotice('导入文件不能超过 768 KiB，避免工程数据过大')
+    return
+  }
+  const validImage = file.type.startsWith('image/') || /\.svg$/i.test(file.name)
+  if (!validImage) {
+    showConnectionNotice('只支持 SVG、PNG、JPEG、WEBP 或 GIF 图片')
+    return
+  }
+  try {
+    const path = await scadaAssetDataUrl(file)
+    const label = file.name.replace(/\.[^.]+$/, '').trim() || '导入组件'
+    const asset = { id: `asset-${Date.now()}`, name: label, type: 'image', path, width: 180, height: 140 }
+    const storedAsset = addScadaAssetToLibrary(asset)
+    const offset = 56 + (store.widgets.length % 12) * 28
+    const widget = store.addWidget('scadaSvg', offset, offset, {
+      w: asset.width,
+      h: asset.height,
+      config: previewConfigForType('scadaSvg', label, null, asset)
+    })
+    if (!widget) throw new Error('无法创建导入组件')
+    selectWidget(widget.id)
+    showConnectionNotice(storedAsset
+      ? `已导入「${label}」并加入组件库，可在属性面板绑定变量`
+      : `已导入「${label}」，但组件库空间不足，未保存为复用项`)
+  } catch (error) {
+    showConnectionNotice(error?.message || '导入组件失败')
+  }
+}
+
 function readDroppedLibraryItem(dataTransfer) {
   const directType = dataTransfer.getData('widget-type')
   const customComponentId = dataTransfer.getData('custom-component-id')
-  if (directType) return { type: directType, customComponentId }
+  const scadaAssetId = dataTransfer.getData('scada-asset-id')
+  if (directType) return { type: directType, customComponentId, scadaAssetId }
 
   try {
     const payload = JSON.parse(dataTransfer.getData('application/json') || '{}')
     if (payload?.type) return {
       type: payload.type,
-      customComponentId: payload.customComponentId || customComponentId || ''
+      customComponentId: payload.customComponentId || customComponentId || '',
+      scadaAssetId: payload.scadaAssetId || scadaAssetId || ''
     }
   } catch {}
 
   const textType = dataTransfer.getData('text/plain')
-  return textType ? { type: textType, customComponentId } : null
+  return textType ? { type: textType, customComponentId, scadaAssetId } : null
 }
 
 function onDrop(e) {
@@ -1608,11 +1844,19 @@ function onDrop(e) {
     return
   }
   const customComponent = findCustomComponent(dropped.customComponentId)
+  const scadaAsset = findScadaAsset(dropped.scadaAssetId)
   const point = canvasPointFromEvent(e)
-  const size = customComponent
+  const size = scadaAsset
+    ? { w: scadaAsset.width, h: scadaAsset.height }
+    : customComponent
     ? { w: customComponent.width, h: customComponent.height }
     : widgetDefaultSize(dropped.type)
-  const widget = store.addWidget(dropped.type, Math.round(point.x - size.w / 2), Math.round(point.y - size.h / 2), { customComponent })
+  const widget = store.addWidget(dropped.type, Math.round(point.x - size.w / 2), Math.round(point.y - size.h / 2), {
+    customComponent,
+    w: scadaAsset?.width,
+    h: scadaAsset?.height,
+    config: scadaAsset ? previewConfigForType('scadaSvg', scadaAsset.name, null, scadaAsset) : undefined
+  })
   if (widget) {
     selectWidget(widget.id)
     showConnectionNotice(`已添加“${typeLabel(dropped.type)}”`)
@@ -1622,6 +1866,11 @@ function onDrop(e) {
 function findCustomComponent(id) {
   if (!id) return null
   return store.customComponents.find(component => component.id === id) || null
+}
+
+function findScadaAsset(id) {
+  if (!id) return null
+  return scadaAssetLibrary.value.find(asset => asset.id === id) || null
 }
 
 // ============ 画布平移 (transform) & 缩放 ============
@@ -2418,12 +2667,17 @@ function applyWheelZoom() {
 function typeLabel(type) {
   const map = {
     trendChart:'趋势曲线',
+    trendChartLite:'简洁趋势曲线',
     digitalDisplay:'数值显示',
+    valueColumn:'液柱显示',
     gauge:'仪表盘',
     button:'控制按钮',
+    winccToggleButton:'状态切换按钮',
+    stepperControl:'加减调节',
     indicator:'状态指示',
     statusCircle:'状态圆点',
     label:'文本标签',
+    scadaSvg:'导入 SVG/图片',
     customShape:'自定义组件',
     processPump:'水泵/气泵',
     processDosingMachine:'加药机',
@@ -4887,6 +5141,7 @@ function setApplicationZoom(nextZoom, clientX = null, clientY = null) {
   const keepCentered = !Number.isFinite(clientX) && !Number.isFinite(clientY)
   if (!canvas || Math.abs(next - oldZoom) < 0.0001) {
     applicationZoom.value = next
+    applicationZoomInput.value = Math.round(next * 100)
     if (keepCentered) requestAnimationFrame(centerApplicationViewport)
     return
   }
@@ -4894,6 +5149,7 @@ function setApplicationZoom(nextZoom, clientX = null, clientY = null) {
   updateApplicationCanvasSize()
   if (keepCentered) {
     applicationZoom.value = Math.round(next * 10000) / 10000
+    applicationZoomInput.value = Math.round(applicationZoom.value * 100)
     requestAnimationFrame(centerApplicationViewport)
     return
   }
@@ -4905,6 +5161,7 @@ function setApplicationZoom(nextZoom, clientX = null, clientY = null) {
   const contentX = (canvas.scrollLeft + anchorX - oldMetrics.offsetX) / oldZoom
   const contentY = (canvas.scrollTop + anchorY - oldMetrics.offsetY) / oldZoom
   applicationZoom.value = Math.round(next * 10000) / 10000
+  applicationZoomInput.value = Math.round(applicationZoom.value * 100)
 
   requestAnimationFrame(() => {
     updateApplicationCanvasSize()
@@ -4922,7 +5179,16 @@ function handleApplicationWheel(event) {
 }
 
 function zoomApplicationBy(direction) {
-  setApplicationZoom(applicationZoom.value * (direction > 0 ? 1.2 : 1 / 1.2))
+  setApplicationZoom((applicationZoomPercent.value + (direction > 0 ? 1 : -1)) / 100)
+}
+
+function applyApplicationZoomInput() {
+  const percent = Number(applicationZoomInput.value)
+  if (!Number.isFinite(percent)) {
+    applicationZoomInput.value = applicationZoomPercent.value
+    return
+  }
+  setApplicationZoom(percent / 100)
 }
 
 function resetApplicationZoom() {
@@ -4940,6 +5206,7 @@ function enterApplicationMode() {
   connectionMode.value = false
   configWidgetId.value = null
   applicationZoom.value = 1
+  applicationZoomInput.value = 100
   applicationMode.value = true
   requestAnimationFrame(() => {
     updateApplicationCanvasSize()
@@ -5076,6 +5343,17 @@ onUnmounted(() => {
   border-color: rgba(31, 143, 90, 0.28);
   color: #176e45;
 }
+.library-import {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #e5ebf2;
+  background: #f4f8fb;
+}
+.library-import span { color: var(--text-tertiary); font-size: 11px; }
+.hidden-file-input { display: none; }
 .library-categories {
   flex: 1;
   overflow-y: auto;
@@ -5735,9 +6013,16 @@ onUnmounted(() => {
 }
 
 /* 变量选择 checkbox */
+.var-binding-search { display: flex; align-items: center; gap: 8px; margin: 6px 0 8px; }
+.var-binding-search input { min-width: 0; flex: 1; height: 32px; padding: 0 9px; font-size: var(--fs-sm); }
+.var-binding-search span { flex: 0 0 auto; min-width: 42px; color: var(--text-placeholder); font-family: var(--font-mono); font-size: 12px; text-align: right; }
 .var-checkbox-list { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 8px; background: var(--surface-muted); }
 .var-select-group { display: flex; flex-direction: column; gap: 4px; }
-.var-select-group-title { display: flex; align-items: center; justify-content: space-between; min-height: 24px; padding: 0 6px; color: var(--text-secondary); font-size: var(--fs-sm); font-weight: 800; }
+.var-select-group-title { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 28px; padding: 0 6px; color: var(--text-secondary); font-size: var(--fs-sm); font-weight: 800; border-radius: var(--radius-sm); text-align: left; }
+.var-select-group-title:hover { background: var(--bg-hover); }
+.var-select-group-name { display: inline-flex; align-items: center; min-width: 0; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.var-select-group-name b { width: 11px; color: var(--text-placeholder); font-size: 11px; }
+.var-select-group-items { display: flex; flex-direction: column; gap: 2px; }
 .var-select-group-title span { min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-full); background: #edf4f7; border: 1px solid #d9e5ec; color: var(--text-tertiary); font-family: var(--font-mono); font-size: 12px; line-height: 18px; text-align: center; }
 .var-checkbox { display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 8px; min-height: 32px; padding: 4px 6px; border-radius: var(--radius-sm); cursor: pointer; font-size: var(--fs-sm); transition: background var(--transition-fast); }
 .var-checkbox input[type="checkbox"] { margin: 0; width: 15px; height: 15px; accent-color: var(--accent); }
@@ -5779,7 +6064,7 @@ onUnmounted(() => {
 }
 .application-zoom-controls {
   display: inline-grid;
-  grid-template-columns: 30px 58px 30px;
+  grid-template-columns: 30px 66px 30px 44px;
   align-items: center;
   gap: 4px;
   padding: 3px;
@@ -5788,7 +6073,8 @@ onUnmounted(() => {
   background: var(--surface-muted);
 }
 .application-zoom-button,
-.application-zoom-value {
+.application-zoom-value,
+.application-zoom-reset {
   height: 28px;
   padding: 0;
   border: 0;
@@ -5801,11 +6087,29 @@ onUnmounted(() => {
   transition: background 0.16s ease-out, color 0.16s ease-out;
 }
 .application-zoom-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
   font-size: 13px;
   font-weight: 700;
+  cursor: text;
 }
+.application-zoom-value input {
+  width: 43px;
+  min-width: 0;
+  height: 25px;
+  padding: 0 2px;
+  border: 0;
+  outline: 0;
+  text-align: right;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+.application-zoom-reset { font-size: 11px; font-weight: 700; }
 .application-zoom-button:hover,
-.application-zoom-value:hover {
+.application-zoom-reset:hover {
   background: var(--bg-hover);
   color: var(--accent);
 }

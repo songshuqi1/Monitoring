@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS variable_definitions (
     source          VARCHAR(32)     NOT NULL DEFAULT 'OPCUA' COMMENT '数据来源: OPCUA, UDP, SIMULATED',
     opcua_node_id   VARCHAR(256)    DEFAULT '' COMMENT 'OPC UA 节点ID (如 ns=1;s=temperature)',
     udp_port        INT             DEFAULT 0 COMMENT 'UDP 端口（仅UDP来源时有效）',
+    resource_id     VARCHAR(160)    DEFAULT '' COMMENT '采集通信资源ID',
+    resource_name   VARCHAR(128)    DEFAULT '' COMMENT '采集通信资源名称',
+    scope_id        VARCHAR(160)    DEFAULT '' COMMENT '项目或应用范围ID',
+    scope_name      VARCHAR(128)    DEFAULT '' COMMENT '项目或应用范围名称',
     min_value       DOUBLE          DEFAULT NULL COMMENT '量程最小值',
     max_value       DOUBLE          DEFAULT NULL COMMENT '量程最大值',
     unit            VARCHAR(32)     DEFAULT '' COMMENT '工程单位',
@@ -156,3 +160,18 @@ END//
 DELIMITER ;
 
 SET GLOBAL event_scheduler = ON;
+
+-- 通信资源表（软件定义通信：OPC UA / UDP 采集任务的服务端持久化）
+CREATE TABLE IF NOT EXISTS communication_resources (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    type VARCHAR(16) NOT NULL COMMENT 'OPCUA / UDP',
+    endpoint VARCHAR(512) DEFAULT '' COMMENT 'OPC UA 端点 URL',
+    address VARCHAR(64) DEFAULT '0.0.0.0' COMMENT 'UDP 绑定地址',
+    port INT DEFAULT 0 COMMENT 'UDP 监听端口',
+    poll_interval_ms INT DEFAULT 1000 COMMENT '采集间隔(毫秒)',
+    enabled TINYINT(1) DEFAULT 0 COMMENT '是否随服务启动',
+    nodes_json TEXT COMMENT 'OPC UA 节点列表 JSON',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='软件定义通信资源';

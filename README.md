@@ -371,6 +371,8 @@ cmake --build build --config Release
 | `OPCUA_SERVER_PORT`   | `4840`                      | OPC UA 服务器端口         |
 | `UDP_RECEIVE_PORT`    | `8888`                      | UDP 接收端口              |
 | `HTTP_PORT`           | `8080`                      | HTTP REST 服务端口        |
+| `MONITOR_DATA_DIR`    | `./data`                    | 通信资源等本地持久化数据目录；生产环境建议配置为绝对路径 |
+| `MONITOR_AUTH_FILE`    | `auth_users.tsv`           | 本地账号库路径；可配置为绝对路径，必须随生产部署一并备份 |
 
 ### 5. 运行后端
 

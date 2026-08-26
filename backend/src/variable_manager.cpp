@@ -1,6 +1,8 @@
 #include "variable_manager.h"
 #include "database.h"
 #include <algorithm>
+#include <cctype>
+#include <unordered_set>
 
 VariableManager& VariableManager::instance() {
     static VariableManager inst;
@@ -48,16 +50,64 @@ bool VariableManager::addOrUpdateDefinition(const VariableInfo& info) {
 }
 
 bool VariableManager::removeDefinition(int varId) {
-    if (DatabaseManager::instance().deleteVariableDefinition(varId)) {
+    return !removeDefinitions({varId}).empty();
+}
+
+std::vector<int> VariableManager::removeDefinitions(const std::vector<int>& varIds) {
+    std::unordered_set<int> targets;
+    for (int id : varIds) {
+        if (id != 0) targets.insert(id);
+    }
+    if (targets.empty()) return {};
+
+    std::vector<int> existing;
+    {
+        std::shared_lock lock(defMutex_);
+        existing.reserve(targets.size());
+        for (int id : targets) {
+            if (definitions_.count(id)) existing.push_back(id);
+        }
+    }
+    if (existing.empty()) return {};
+
+    auto& db = DatabaseManager::instance();
+    const bool persisted = !db.isConnected() || db.deleteVariableDefinitions(existing);
+    if (!persisted) return {};
+
+    {
         std::unique_lock lock(defMutex_);
-        auto it = definitions_.find(varId);
-        if (it != definitions_.end()) {
+        for (int id : existing) {
+            auto it = definitions_.find(id);
+            if (it == definitions_.end()) continue;
             nameToId_.erase(it->second.name);
             definitions_.erase(it);
         }
-        return true;
     }
-    return false;
+    {
+        std::unique_lock lock(rtMutex_);
+        for (int id : existing) realtimeData_.erase(id);
+    }
+    {
+        std::unique_lock lock(histMutex_);
+        for (int id : existing) historyCache_.erase(id);
+    }
+    return existing;
+}
+
+std::vector<int> VariableManager::removeOfflineDefinitions() {
+    std::vector<int> offlineIds;
+    auto definitions = getAllDefinitions();
+    for (const auto& definition : definitions) {
+        const auto point = getLatestData(definition.id);
+        std::string quality = point.quality;
+        std::transform(quality.begin(), quality.end(), quality.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        if (point.varId == 0 || quality == "OFFLINE" || quality == "DISCONNECTED") {
+            offlineIds.push_back(definition.id);
+        }
+    }
+    return removeDefinitions(offlineIds);
 }
 
 std::vector<VariableInfo> VariableManager::getAllDefinitions() const {
@@ -207,6 +257,7 @@ bool VariableManager::flushToDatabase() {
     }
 
     for (auto& dp : snapshot) {
+        if (!definitionNames.count(dp.varId)) continue;
         if (dp.varName.empty()) {
             auto it = definitionNames.find(dp.varId);
             if (it != definitionNames.end()) dp.varName = it->second;

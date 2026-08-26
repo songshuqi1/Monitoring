@@ -14,6 +14,7 @@
 #include "database.h"
 #include "opcua_manager.h"
 #include "udp_manager.h"
+#include "communication_manager.h"
 #include "http_server.h"
 #include <csignal>
 #include <iostream>
@@ -116,9 +117,11 @@ int main() {
     }
     OPCUAManager::instance().startServer(static_cast<uint16_t>(opcuaServerPort));
 
-    // ========== 3. 启动 UDP 接收器 ==========
-    // UDP 接收器由前端通信资源页面控制，不再自动启动
-    Log(LogLevel::INFO, "UDP Receiver: waiting for frontend to start (port configured in Communication Resources)");
+    // ========== 3. 加载软件定义通信资源并自动启动启用的任务 ==========
+    // 通信资源由前端「通信资源」页面动态定义，持久化在 data/communication_resources.json；
+    // 服务重启后自动恢复并启动 enabled=true 的采集任务。
+    CommunicationManager::instance().load();
+    CommunicationManager::instance().startAllEnabled();
 
     // ========== 4. 启动 HTTP 服务器 ==========
     int httpServerPort = 8081;
@@ -155,6 +158,7 @@ int main() {
     OPCUAManager::instance().stopPolling();
     OPCUAManager::instance().stopServer();
     UDPManager::instance().stopReceiver();
+    CommunicationManager::instance().stopAll();
     HttpServer::instance().stop();
 
     Log(LogLevel::INFO, "Shutdown complete.");

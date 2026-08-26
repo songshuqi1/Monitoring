@@ -49,7 +49,8 @@ export default {
   setup() {
     const router = useRouter()
     const username = ref('admin')
-    const password = ref('sapi.1992')
+    // 不在浏览器包中预置密码，避免凭据随前端静态文件泄露。
+    const password = ref('')
     const loading = ref(false)
     const errorMsg = ref('')
 

@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/NEU/Desktop/Monitoring - 7/backend
+# Install script for directory: C:/Users/dell/Desktop/Monitoring - T/backend
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/MonitoringPlatform")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/MonitoringPlatform")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,25 +33,21 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/Release/MonitoringPlatform.exe")
-  endif()
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/MonitoringPlatform.exe")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/CMakeFiles/MonitoringPlatform.dir/install-cxx-module-bmi-Release.cmake" OPTIONAL)
-  endif()
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/CMakeFiles/MonitoringPlatform.dir/install-cxx-module-bmi-Release.cmake" OPTIONAL)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/sql" TYPE FILE FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/sql/init.sql")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/sql" TYPE FILE FILES "C:/Users/dell/Desktop/Monitoring - T/backend/sql/init.sql")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/install_local_manifest.txt"
+  file(WRITE "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -67,6 +63,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

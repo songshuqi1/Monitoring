@@ -1,7 +1,0 @@
-C:\Users\NEU\Desktop\Monitoring\backend\src\main.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\main.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\variable_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\variable_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\database.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\database.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\opcua_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\opcua_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\udp_manager.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\udp_manager.obj
-C:\Users\NEU\Desktop\Monitoring\backend\src\http_server.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\http_server.obj
-C:\Users\NEU\Desktop\Monitoring\backend\generated\frontend_assets.cpp;C:\Users\NEU\Desktop\Monitoring\backend\build\MonitoringPlatform.dir\Debug\frontend_assets.obj

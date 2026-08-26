@@ -11,6 +11,26 @@ $BackendDir = Join-Path $Root "backend"
 $BackendBuildDir = Join-Path $Root "backend\build-runtime"
 $ReleaseDir = Join-Path $Root "release\MonitoringRuntime"
 
+$VsDevCmdCandidates = @(
+    (Join-Path $env:ProgramFiles "Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"),
+    (Join-Path $env:ProgramFiles "Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat")
+)
+$VsDevCmd = $VsDevCmdCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $VsDevCmd) {
+    throw "Visual Studio C++ build tools were not found. Install Desktop development with C++."
+}
+
+$PythonCandidates = @(
+    (Join-Path $env:LocalAppData "Programs\Python\Python310\python.exe"),
+    (Join-Path $env:LocalAppData "Programs\Python\Python311\python.exe"),
+    (Join-Path $env:LocalAppData "Programs\Python\Python312\python.exe"),
+    (Join-Path $env:LocalAppData "Programs\Python\Python313\python.exe")
+)
+$PythonExe = $PythonCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $PythonExe) {
+    throw "Python 3 is required by open62541. Install Python and run this script again."
+}
+
 Write-Host "Building frontend..."
 Push-Location $FrontendDir
 try {
@@ -27,24 +47,16 @@ Write-Host "Embedding frontend assets..."
 
 Write-Host "Building backend ($Configuration)..."
 New-Item -ItemType Directory -Force -Path $BackendBuildDir | Out-Null
-Push-Location $Root
-try {
-    cmake -S $BackendDir -B $BackendBuildDir "-DCMAKE_CONFIGURATION_TYPES=$Configuration" -UMYSQL_LIB -UMYSQL_INCLUDE_DIR
-    if ($LASTEXITCODE -ne 0) {
-        throw "Backend configure failed with exit code $LASTEXITCODE"
-    }
-} finally {
-    Pop-Location
+$ConfigureCommand = 'call "{0}" -arch=x64 -host_arch=x64 && cmake -S "{1}" -B "{2}" -G Ninja -DCMAKE_BUILD_TYPE={3} -DPYTHON_EXECUTABLE="{4}" -UMYSQL_LIB -UMYSQL_INCLUDE_DIR' -f $VsDevCmd, $BackendDir, $BackendBuildDir, $Configuration, $PythonExe
+& cmd.exe /d /s /c $ConfigureCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "Backend configure failed with exit code $LASTEXITCODE"
 }
 
-Push-Location $BackendBuildDir
-try {
-    cmake --build . --config $Configuration
-    if ($LASTEXITCODE -ne 0) {
-        throw "Backend build failed with exit code $LASTEXITCODE"
-    }
-} finally {
-    Pop-Location
+$BuildCommand = 'call "{0}" -arch=x64 -host_arch=x64 && cmake --build "{1}" --parallel' -f $VsDevCmd, $BackendBuildDir
+& cmd.exe /d /s /c $BuildCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "Backend build failed with exit code $LASTEXITCODE"
 }
 
 $ExePath = Join-Path $BackendBuildDir "$Configuration\MonitoringPlatform.exe"
@@ -216,6 +228,10 @@ Public internet access without hardware:
 Communication resources:
   The public URL only exposes this web/API service on port 8081.
   OPC UA and UDP data sources are still connected by this computer's backend.
+  Software-defined communication (SDC) is configured in Communication Resources.
+  Enter the Monitor Agent address (for example http://DEVICE-IP:9100); the runtime
+  directly polls /api/runtime/stream and expects {"vars":{"name": value}}.
+  Enabled SDC resources are saved under data and automatically restart with the runtime.
   For OPC UA, the endpoint must be reachable from this computer, for example:
     opc.tcp://DEVICE-IP:4840
   Cloudflare Quick Tunnel does not expose OPC UA/UDP ports automatically.

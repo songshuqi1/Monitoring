@@ -3,6 +3,8 @@
 #include "database.h"
 #include "opcua_manager.h"
 #include "udp_manager.h"
+#include "communication_manager.h"
+#include "auth_manager.h"
 #include "frontend_assets.h"
 #include <wincrypt.h>
 #include <ws2tcpip.h>
@@ -13,57 +15,15 @@
 #include <cctype>
 #include <filesystem>
 #include <fstream>
-#include <random>
 
-// ============ 硬编码认证 ============
-static const char* HARDCODED_USERNAME = "admin";
-static const char* HARDCODED_PASSWORD = "sapi.1992";
-static const char* HARDCODED_TOKEN = "monitoring-platform-fixed-token";
 static const char* LAN_ACCESS_HOST = "202.118.21.28";
 static const int DEV_FRONTEND_PORT = 5170;
-
-// 简易会话管理
-static std::map<std::string, std::string> g_sessions;  // token -> username
-static std::mutex g_sessionMutex;
-
-static std::string generateToken() {
-    static const char hexChars[] = "0123456789abcdef";
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 15);
-    std::string token(64, '\0');
-    for (int i = 0; i < 64; ++i) {
-        token[i] = hexChars[dis(gen)];
-    }
-    return token;
-}
-
-static bool verifySession(const std::string& token, std::string& username) {
-    if (token == HARDCODED_TOKEN) {
-        username = HARDCODED_USERNAME;
-        return true;
-    }
-
-    std::lock_guard lock(g_sessionMutex);
-    auto it = g_sessions.find(token);
-    if (it != g_sessions.end()) {
-        username = it->second;
-        return true;
-    }
-    return false;
-}
-
-static bool removeSession(const std::string& token) {
-    std::lock_guard lock(g_sessionMutex);
-    return g_sessions.erase(token) > 0;
-}
 
 // 判断 API 路径是否需要认证
 static bool isPublicApiPath(const std::vector<std::string>& parts) {
     // 允许无需认证的公开 API
     if (parts.size() >= 2 && parts[0] == "api" && parts[1] == "auth") return true;
     if (parts.size() >= 2 && parts[0] == "api" && parts[1] == "status") return true;
-    if (parts.size() >= 2 && parts[0] == "api" && parts[1] == "network") return true;
     return false;
 }
 
@@ -205,6 +165,97 @@ static bool writeCustomComponentsJson(const std::string& body) {
     if (!out) return false;
     out << body;
     return static_cast<bool>(out);
+}
+
+// 从单个 JSON 对象字符串中提取字符串字段值（不含引号）
+static std::string extractJsonStringField(const std::string& obj, const std::string& key) {
+    std::string searchKey = "\"" + key + "\"";
+    auto pos = obj.find(searchKey);
+    if (pos == std::string::npos) return "";
+    auto colon = obj.find(':', pos);
+    if (colon == std::string::npos) return "";
+    auto start = obj.find('"', colon + 1);
+    if (start == std::string::npos) return "";
+    auto end = obj.find('"', start + 1);
+    if (end == std::string::npos) return "";
+    return obj.substr(start + 1, end - start - 1);
+}
+
+// 把 JSON 数组（或单个对象）拆成顶层对象字符串列表（按花括号深度匹配）
+static std::vector<std::string> splitJsonArrayObjects(const std::string& body) {
+    std::vector<std::string> objs;
+    size_t pos = 0;
+    while (pos < body.size()) {
+        auto open = body.find('{', pos);
+        if (open == std::string::npos) break;
+        int depth = 0;
+        size_t close = open;
+        for (size_t i = open; i < body.size(); ++i) {
+            if (body[i] == '{') depth++;
+            else if (body[i] == '}') {
+                depth--;
+                if (depth == 0) { close = i; break; }
+            }
+        }
+        if (depth != 0) break;
+        objs.push_back(body.substr(open, close - open + 1));
+        pos = close + 1;
+    }
+    return objs;
+}
+
+// 按 id（退化为 name）合并组件库：导入的组件覆盖同 id/name 的旧组件，否则追加
+static std::string mergeComponentLibrary(const std::string& current, const std::string& incoming) {
+    std::vector<std::string> currentObjs = splitJsonArrayObjects(current);
+    std::vector<std::string> incomingObjs = splitJsonArrayObjects(incoming);
+
+    for (const auto& inc : incomingObjs) {
+        std::string incId = extractJsonStringField(inc, "id");
+        std::string incName = extractJsonStringField(inc, "name");
+        bool replaced = false;
+        for (auto& cur : currentObjs) {
+            std::string curId = extractJsonStringField(cur, "id");
+            std::string curName = extractJsonStringField(cur, "name");
+            if ((!incId.empty() && curId == incId) ||
+                (!incName.empty() && curName == incName)) {
+                cur = inc;
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) currentObjs.push_back(inc);
+    }
+
+    std::string out = "[";
+    for (size_t i = 0; i < currentObjs.size(); ++i) {
+        if (i) out += ",";
+        out += currentObjs[i];
+    }
+    out += "]";
+    return out;
+}
+
+// 文件下载响应（带 Content-Disposition）
+static std::string fileDownloadResponse(const std::string& body, const std::string& contentType,
+                                        const std::string& filename) {
+    std::string safeFilename;
+    safeFilename.reserve(filename.size());
+    for (unsigned char c : filename) {
+        if (std::isalnum(c) || c == '.' || c == '-' || c == '_') safeFilename.push_back(static_cast<char>(c));
+    }
+    if (safeFilename.empty()) safeFilename = "download.json";
+
+    std::stringstream ss;
+    ss << "HTTP/1.1 200 OK\r\n"
+       << "Content-Type: " << contentType << "\r\n"
+       << "Access-Control-Allow-Origin: *\r\n"
+       << "Content-Disposition: attachment; filename=\"" << safeFilename << "\"\r\n"
+       << "Cache-Control: no-store\r\n"
+       << "Content-Length: " << body.size() << "\r\n"
+       << "Connection: close\r\n"
+       << "\r\n"
+       << body;
+    return ss.str();
 }
 
 static std::filesystem::path findFrontendDist() {
@@ -599,7 +650,7 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
         // 对非公开 API 路径进行认证检查（authToken 由调用方从 HTTP 请求头中提取并传入）
         if (parts.size() >= 2 && parts[0] == "api" && !isPublicApiPath(parts)) {
             std::string username;
-            if (!verifySession(authToken_, username)) {
+            if (!AuthManager::instance().validateToken(authToken_, username)) {
                 return jsonResponse("{\"error\":\"unauthorized\",\"message\":\"请先登录\"}", 401);
             }
         }
@@ -623,29 +674,25 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 std::string username = extractStr("username");
                 std::string password = extractStr("password");
 
-                if (username == HARDCODED_USERNAME && password == HARDCODED_PASSWORD) {
-                    std::string token = HARDCODED_TOKEN;
-                    {
-                        std::lock_guard lock(g_sessionMutex);
-                        g_sessions[token] = username;
-                    }
-                    Log(LogLevel::INFO, "User '" + username + "' logged in, token=" + token.substr(0, 16) + "...");
+                std::string token;
+                std::string error;
+                if (AuthManager::instance().login(username, password, token, error)) {
                     std::string json = "{\"status\":\"ok\",\"token\":\"" + escapeJson(token) +
                                       "\",\"username\":\"" + escapeJson(username) + "\"}";
                     return jsonResponse(json);
-                } else {
-                    return jsonResponse("{\"error\":\"invalid_credentials\",\"message\":\"账号或密码错误\"}", 401);
                 }
+                return jsonResponse("{\"error\":\"invalid_credentials\",\"message\":\"" +
+                                    escapeJson(error.empty() ? "账号或密码错误" : error) + "\"}", 401);
             }
             // POST /api/auth/logout
             if (parts[2] == "logout" && method == "POST") {
-                removeSession(authToken_);
+                AuthManager::instance().logout(authToken_);
                 return jsonResponse("{\"status\":\"ok\"}");
             }
             // GET /api/auth/check
             if (parts[2] == "check" && method == "GET") {
                 std::string username;
-                if (verifySession(authToken_, username)) {
+                if (AuthManager::instance().validateToken(authToken_, username)) {
                     return jsonResponse("{\"authenticated\":true,\"username\":\"" + escapeJson(username) + "\"}");
                 } else {
                     return jsonResponse("{\"authenticated\":false}", 401);
@@ -667,9 +714,79 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
             return jsonResponse("{\"error\":\"method not allowed\"}", 405);
         }
 
+        // ========== API: 组件导入/导出（软件定义组件） ==========
+        if (parts.size() >= 3 && parts[0] == "api" && parts[1] == "custom-components") {
+            // GET /api/custom-components/export?name=xxx   -> 导出组件库（或单个组件）JSON 文件
+            if (parts[2] == "export" && method == "GET") {
+                std::string name;
+                auto nameIt = queryParams.find("name");
+                if (nameIt != queryParams.end()) name = nameIt->second;
+
+                std::string current = readCustomComponentsJson();
+                if (!name.empty()) {
+                    auto objs = splitJsonArrayObjects(current);
+                    std::string found;
+                    for (const auto& o : objs) {
+                        if (extractJsonStringField(o, "name") == name ||
+                            extractJsonStringField(o, "id") == name) {
+                            found = o;
+                            break;
+                        }
+                    }
+                    if (found.empty()) return jsonResponse("{\"error\":\"component not found\"}", 404);
+                    current = "[" + found + "]";
+                }
+                std::string filename = name.empty() ? "custom-components.json" : (name + ".json");
+                return fileDownloadResponse(current, "application/json; charset=utf-8", filename);
+            }
+
+            // POST /api/custom-components/import   -> 导入并合并组件（body 为单个组件对象或数组）
+            if (parts[2] == "import" && method == "POST") {
+                std::string current = readCustomComponentsJson();
+                std::string merged = mergeComponentLibrary(current, body);
+                if (!writeCustomComponentsJson(merged)) {
+                    return jsonResponse("{\"error\":\"merge failed\"}", 400);
+                }
+                return jsonResponse(merged);
+            }
+        }
+
         // ========== API: 变量定义 ==========
         if (parts.size() >= 2 && parts[0] == "api" && parts[1] == "variables") {
-            if (method == "GET" && parts.size() == 2) {
+            if (method == "POST" && parts.size() == 3 && parts[2] == "bulk-delete") {
+                std::string mode = "all";
+                const auto modeKey = body.find("\"mode\"");
+                if (modeKey != std::string::npos) {
+                    const auto colon = body.find(':', modeKey);
+                    const auto start = colon == std::string::npos ? std::string::npos : body.find('"', colon + 1);
+                    const auto end = start == std::string::npos ? std::string::npos : body.find('"', start + 1);
+                    if (end != std::string::npos) mode = body.substr(start + 1, end - start - 1);
+                }
+                std::transform(mode.begin(), mode.end(), mode.begin(), [](unsigned char ch) {
+                    return static_cast<char>(std::tolower(ch));
+                });
+
+                std::vector<int> deletedIds;
+                if (mode == "offline") {
+                    deletedIds = VariableManager::instance().removeOfflineDefinitions();
+                } else if (mode == "all") {
+                    std::vector<int> ids;
+                    for (const auto& variable : VariableManager::instance().getAllDefinitions()) ids.push_back(variable.id);
+                    deletedIds = VariableManager::instance().removeDefinitions(ids);
+                } else {
+                    return jsonResponse("{\"error\":\"unsupported delete mode\"}", 400);
+                }
+
+                std::string json = "{\"status\":\"ok\",\"mode\":\"" + escapeJson(mode) +
+                    "\",\"deletedCount\":" + std::to_string(deletedIds.size()) + ",\"deletedIds\":[";
+                for (size_t i = 0; i < deletedIds.size(); ++i) {
+                    if (i) json += ",";
+                    json += std::to_string(deletedIds[i]);
+                }
+                json += "]}";
+                return jsonResponse(json);
+            }
+            else if (method == "GET" && parts.size() == 2) {
                 auto vars = VariableManager::instance().getAllDefinitions();
                 std::string json = "[";
                 for (size_t i = 0; i < vars.size(); ++i) {
@@ -681,7 +798,11 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                             "\",\"source\":\"" + v.source +
                             "\",\"opcuaNodeId\":\"" + escapeJson(v.opcuaNodeId) +
                             "\",\"udpPort\":" + std::to_string(v.udpPort) +
-                            ",\"minValue\":" + (v.minValue ? std::to_string(v.minValue) : "null") +
+                            ",\"resourceId\":\"" + escapeJson(v.resourceId) +
+                            "\",\"resourceName\":\"" + escapeJson(v.resourceName) +
+                            "\",\"scopeId\":\"" + escapeJson(v.scopeId) +
+                            "\",\"scopeName\":\"" + escapeJson(v.scopeName) +
+                            "\",\"minValue\":" + (v.minValue ? std::to_string(v.minValue) : "null") +
                             ",\"maxValue\":" + (v.maxValue ? std::to_string(v.maxValue) : "null") +
                             ",\"unit\":\"" + escapeJson(v.unit) +
                             "\",\"color\":\"" + v.color +
@@ -734,10 +855,14 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 if (v.dataType.empty()) v.dataType = "FLOAT";
                 v.source = extractStr("source");
                 if (v.source.empty()) v.source = "OPCUA";
-                if (v.source != "OPCUA" && v.source != "UDP") {
+                if (v.source != "OPCUA" && v.source != "UDP" && v.source != "SDC") {
                     return jsonResponse("{\"error\":\"unsupported source\"}", 400);
                 }
                 v.opcuaNodeId = extractStr("opcuaNodeId");
+                v.resourceId = extractStr("resourceId");
+                v.resourceName = extractStr("resourceName");
+                v.scopeId = extractStr("scopeId");
+                v.scopeName = extractStr("scopeName");
                 v.unit = extractStr("unit");
                 v.color = extractStr("color");
                 if (v.color.empty()) v.color = "#2196F3";
@@ -813,11 +938,16 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 std::string writeStatus = "LOCAL_ONLY";
                 std::string writeDetail = "Local value updated";
 
-                // 也写入 OPC UA 服务器
-                if (!v.opcuaNodeId.empty()) {
+                // 只对 OPC UA 变量写入 OPC UA，避免把其他源误发到 OPC UA。
+                if (v.source == "OPCUA" && !v.opcuaNodeId.empty()) {
                     bool writeOk = OPCUAManager::instance().writeVariable(v.opcuaNodeId, value);
                     writeStatus = writeOk ? "SUCCESS" : "OPCUA_FAILED";
                     writeDetail = writeOk ? "OPC UA write succeeded" : "OPC UA write failed";
+                } else if (v.source == "SDC") {
+                    std::string sdcError;
+                    bool writeOk = CommunicationManager::instance().writeSdcValue(v.opcuaNodeId, value, sdcError);
+                    writeStatus = writeOk ? "SUCCESS" : "SDC_FAILED";
+                    writeDetail = writeOk ? "SDC write succeeded" : ("SDC write failed: " + sdcError);
                 }
 
                 DatabaseManager::instance().insertWriteRecord(
@@ -1262,6 +1392,76 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
             }
         }
 
+        // ========== API: 软件定义通信资源 ==========
+        // POST /api/sdc/test {"sdcUrl":"http://agent:9100"}
+        // Tests the Monitor Agent without creating a persistent resource.
+        if (parts.size() == 3 && parts[0] == "api" && parts[1] == "sdc" && parts[2] == "test" && method == "POST") {
+            const std::string sdcUrl = extractJsonStringField(body, "sdcUrl");
+            int variableCount = 0;
+            std::string error;
+            const bool connected = CommunicationManager::instance().testSdcEndpoint(sdcUrl, variableCount, error);
+            std::string json = "{\"connected\":" + std::string(connected ? "true" : "false") +
+                               ",\"variableCount\":" + std::to_string(variableCount) +
+                               ",\"message\":\"" + escapeJson(connected ? "连接成功" : error) + "\"}";
+            return jsonResponse(json, connected ? 200 : 400);
+        }
+
+        // GET /api/communication/status
+        if (parts.size() == 3 && parts[0] == "api" && parts[1] == "communication" && parts[2] == "status") {
+            if (method == "GET") {
+                auto resources = CommunicationManager::instance().listResources();
+                int total = 0, running = 0;
+                for (const auto& r : resources) {
+                    total++;
+                    if (CommunicationManager::instance().isTaskRunning(r.id)) running++;
+                }
+                std::string json = "{\"total\":" + std::to_string(total) +
+                                   ",\"running\":" + std::to_string(running) + "}";
+                return jsonResponse(json);
+            }
+        }
+
+        // GET /api/communication/resources
+        if (parts.size() == 3 && parts[0] == "api" && parts[1] == "communication" && parts[2] == "resources") {
+            if (method == "GET") {
+                return jsonResponse(CommunicationManager::instance().resourcesToJson());
+            }
+            if (method == "POST") {
+                CommunicationResource res;
+                if (!CommunicationManager::parseResourceJson(body, res)) {
+                    return jsonResponse("{\"error\":\"invalid resource payload\"}", 400);
+                }
+                if (res.id.empty()) {
+                    // 生成稳定 id（若前端未提供）
+                    res.id = "res-" + std::to_string(nowMs());
+                }
+                CommunicationManager::instance().upsertResource(res);
+                return jsonResponse("{\"status\":\"ok\",\"id\":\"" + escapeJson(res.id) + "\"}");
+            }
+        }
+
+        // DELETE /api/communication/resources/:id
+        // POST  /api/communication/resources/:id/start|stop
+        if (parts.size() >= 4 && parts[0] == "api" && parts[1] == "communication" && parts[2] == "resources") {
+            std::string resourceId = parts[3];
+            if (parts.size() == 4 && method == "DELETE") {
+                bool ok = CommunicationManager::instance().removeResource(resourceId);
+                return jsonResponse(ok ? "{\"status\":\"ok\"}" : "{\"error\":\"not found\"}", ok ? 200 : 404);
+            }
+            if (parts.size() == 5 && method == "POST") {
+                if (parts[4] == "start") {
+                    bool ok = CommunicationManager::instance().startTask(resourceId);
+                    return jsonResponse("{\"started\":" + std::string(ok ? "true" : "false") + "}",
+                                        ok ? 200 : 404);
+                }
+                if (parts[4] == "stop") {
+                    bool ok = CommunicationManager::instance().stopTask(resourceId);
+                    return jsonResponse("{\"stopped\":" + std::string(ok ? "true" : "false") + "}",
+                                        ok ? 200 : 404);
+                }
+            }
+        }
+
         // ========== 前端静态资源 ==========
         if (method == "GET" && (parts.empty() || parts[0] != "api")) {
             return staticFileResponse(path);
@@ -1378,7 +1578,16 @@ void HttpServer::serverLoop() {
             std::string upgrade = extractHeader(request, "Upgrade");
 
             if (upgrade == "websocket") {
-                if (performWebSocketHandshake(clientSock, request)) {
+                const auto queryParams = extractQueryParams(request);
+                const auto tokenIt = queryParams.find("token");
+                const std::string token = tokenIt == queryParams.end() ? "" : tokenIt->second;
+                std::string username;
+                if (path != "/ws/realtime" || !AuthManager::instance().validateToken(token, username)) {
+                    const std::string response = jsonResponse(
+                        "{\"error\":\"unauthorized\",\"message\":\"请先登录\"}", 401);
+                    send(clientSock, response.c_str(), (int)response.size(), 0);
+                    closesocket(clientSock);
+                } else if (performWebSocketHandshake(clientSock, request)) {
                     // HTTP body reads use a short timeout, but WebSocket is a
                     // long-lived idle connection. Clear the timeout after the
                     // protocol upgrade or the socket is closed every 3 seconds.

@@ -1,2 +1,0 @@
-C:\Users\NEU\Desktop\Monitoring\backend\build-runtime\open62541\open62541-object.dir\Release\open62541-object.lib
-C:\Users\NEU\Desktop\Monitoring - 7\backend\build-runtime\open62541\open62541-object.dir\Release\open62541-object.lib

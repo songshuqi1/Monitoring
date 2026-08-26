@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime",
+  "command": "\"C:\\PROGRA~1\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe\"  /nologo -DUA_ARCHITECTURE_WIN32 -DUA_DYNAMIC_LINKING_EXPORT -I\"C:\\Users\\dell\\Desktop\\Monitoring - T\\backend\\build-runtime\\open62541\" -I\"C:\\Users\\dell\\Desktop\\Monitoring - T\\open62541-1.0\\arch\" -I\"C:\\Users\\dell\\Desktop\\Monitoring - T\\open62541-1.0\\arch\\win32\" /DWIN32 /D_WINDOWS /W3 /WX /w44996 /O2 /Ob2 /DNDEBUG -MD /Foopen62541\\CMakeFiles\\open62541-object.dir\\open62541.c.obj /Fdopen62541\\CMakeFiles\\open62541-object.dir\\ /FS -c \"C:\\Users\\dell\\Desktop\\Monitoring - T\\backend\\build-runtime\\open62541\\open62541.c\"",
+  "file": "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.c",
+  "output": "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/CMakeFiles/open62541-object.dir/open62541.c.obj"
+}
+]

@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0
+# Install script for directory: C:/Users/dell/Desktop/Monitoring - T/open62541-1.0
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/MonitoringPlatform")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/MonitoringPlatform")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,9 +33,7 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/bin/Release/open62541.lib")
-  endif()
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/bin/open62541.lib")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
@@ -46,7 +44,7 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541/open62541Targets.cmake")
     file(DIFFERENT _cmake_export_file_changed FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541/open62541Targets.cmake"
-         "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets.cmake")
+         "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets.cmake")
     if(_cmake_export_file_changed)
       file(GLOB _cmake_old_config_files "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541/open62541Targets-*.cmake")
       if(_cmake_old_config_files)
@@ -59,52 +57,52 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
     endif()
     unset(_cmake_export_file_changed)
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541" TYPE FILE FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541" TYPE FILE FILES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets.cmake")
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541" TYPE FILE FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets-release.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541" TYPE FILE FILES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/CMakeFiles/Export/8cb9d92d46a89e68bf96c40f4a60fffd/open62541Targets-release.cmake")
   endif()
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/open62541" TYPE FILE FILES
-    "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/open62541Config.cmake"
-    "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/open62541ConfigVersion.cmake"
-    "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/open62541Macros.cmake"
+    "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541Config.cmake"
+    "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541ConfigVersion.cmake"
+    "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541Macros.cmake"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/open62541/tools" TYPE DIRECTORY FILES
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/certs"
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/nodeset_compiler"
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/schema"
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/deps/ua-nodeset"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/certs"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/nodeset_compiler"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/schema"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/deps/ua-nodeset"
     USE_SOURCE_PERMISSIONS FILES_MATCHING REGEX "/[^/]*$" REGEX "/[^/]*\\.pyc$" EXCLUDE)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/open62541/tools" TYPE FILE FILES
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/generate_datatypes.py"
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/generate_nodeid_header.py"
-    "C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/tools/generate_statuscode_descriptions.py"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/generate_datatypes.py"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/generate_nodeid_header.py"
+    "C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/generate_statuscode_descriptions.py"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/open62541.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.h")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/doc/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/tools/packaging/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/doc/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/tools/packaging/cmake_install.cmake")
 
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/install_local_manifest.txt"
+  file(WRITE "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

@@ -19,6 +19,8 @@ public:
     bool loadDefinitionsFromDB();                            // 从MySQL加载变量定义
     bool addOrUpdateDefinition(const VariableInfo& info);   // 添加/更新变量定义
     bool removeDefinition(int varId);
+    std::vector<int> removeDefinitions(const std::vector<int>& varIds);
+    std::vector<int> removeOfflineDefinitions();
     std::vector<VariableInfo> getAllDefinitions() const;
     VariableInfo getDefinition(int varId) const;
 

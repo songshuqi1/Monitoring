@@ -47,6 +47,8 @@ set(MONITOR_SOURCES
     src/database.cpp
     src/opcua_manager.cpp
     src/udp_manager.cpp
+    src/communication_manager.cpp
+    src/auth_manager.cpp
     src/http_server.cpp
     "${FRONTEND_ASSETS_SOURCE}"
 )
@@ -89,7 +91,7 @@ endif()
 # ============================================================
 # 链接库
 # ============================================================
-set(LIBS open62541 ws2_32 crypt32)
+set(LIBS open62541 ws2_32 crypt32 winhttp)
 find_library(MYSQL_LIB
     NAMES libmysql mysqlclient
     PATHS

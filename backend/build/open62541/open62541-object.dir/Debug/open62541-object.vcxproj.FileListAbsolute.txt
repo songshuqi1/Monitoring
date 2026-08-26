@@ -1,1 +1,0 @@
-C:\Users\NEU\Desktop\Monitoring\backend\build\open62541\open62541-object.dir\Debug\open62541-object.lib

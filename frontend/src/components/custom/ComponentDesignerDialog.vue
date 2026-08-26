@@ -103,14 +103,25 @@
                   共 {{ store.customComponents.length }} 个，显示 {{ filteredCustomComponents.length }} 个
                 </div>
               </div>
-              <button
-                v-if="customComponentSearch"
-                type="button"
-                class="btn btn-sm"
-                @click="customComponentSearch = ''"
-              >
-                清空
-              </button>
+              <div class="saved-component-header-actions">
+                <input
+                  ref="importFileInput"
+                  type="file"
+                  accept=".json,application/json"
+                  class="hidden-file-input"
+                  @change="importComponentLibrary"
+                />
+                <button type="button" class="btn btn-sm" @click="triggerImport">导入</button>
+                <button type="button" class="btn btn-sm" @click="exportComponentLibrary">导出</button>
+                <button
+                  v-if="customComponentSearch"
+                  type="button"
+                  class="btn btn-sm"
+                  @click="customComponentSearch = ''"
+                >
+                  清空
+                </button>
+              </div>
             </div>
             <div class="saved-component-tools">
               <input v-model.trim="customComponentSearch" placeholder="搜索功能块名称" />
@@ -407,6 +418,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useMonitorStore } from '../../store/index.js'
+import api from '../../api/index.js'
 
 const store = useMonitorStore()
 const stageRef = ref(null)
@@ -415,6 +427,7 @@ const saveMessage = ref('')
 const copiedShape = ref(null)
 const customComponentSearch = ref('')
 const customComponentSort = ref('name-asc')
+const importFileInput = ref(null)
 const leftPanelWidth = ref(readPanelWidth('left', 300))
 const rightPanelWidth = ref(readPanelWidth('right', 320))
 
@@ -1222,6 +1235,50 @@ function saveComponent() {
   }
   window.setTimeout(() => { saveMessage.value = '' }, 2200)
 }
+
+function triggerImport() {
+  importFileInput.value?.click()
+}
+
+function exportComponentLibrary() {
+  api.exportCustomComponents()
+    .then(r => {
+      const blob = new Blob([r.data], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'custom-components.json'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      saveMessage.value = '组件库已导出'
+    })
+    .catch(() => {
+      saveMessage.value = '导出失败：后端不可用或组件库为空'
+    })
+    .finally(() => {
+      window.setTimeout(() => { saveMessage.value = '' }, 2400)
+    })
+}
+
+function importComponentLibrary(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = async () => {
+    try {
+      const payload = JSON.parse(String(reader.result))
+      await store.importCustomComponentsFromServer(payload)
+      saveMessage.value = '组件导入成功'
+    } catch {
+      saveMessage.value = '导入失败：请确认是有效的组件 JSON'
+    }
+    window.setTimeout(() => { saveMessage.value = '' }, 2600)
+    event.target.value = ''
+  }
+  reader.readAsText(file, 'utf-8')
+}
 </script>
 
 <style scoped>
@@ -1496,6 +1553,15 @@ function saveComponent() {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 700;
+}
+.saved-component-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hidden-file-input {
+  display: none;
 }
 .saved-component-tools {
   display: grid;

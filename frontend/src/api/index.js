@@ -74,6 +74,9 @@ const api = {
   deleteVariable(id) {
     return http.delete(`/variables/${id}`)
   },
+  bulkDeleteVariables(mode = 'all', ids = []) {
+    return http.post('/variables/bulk-delete', { mode, ids })
+  },
 
   // ---- 实时数据 ----
   getRealtime() {
@@ -178,6 +181,41 @@ const api = {
   },
   udpStop() {
     return http.post('/udp/stop', {})
+  },
+
+  testSdc(sdcUrl) {
+    return http.post('/sdc/test', { sdcUrl })
+  },
+
+  // ---- 软件定义通信资源（后端持久化 + 多任务） ----
+  getCommunicationResources() {
+    return http.get('/communication/resources')
+  },
+  saveCommunicationResource(resource) {
+    return http.post('/communication/resources', resource)
+  },
+  deleteCommunicationResource(id) {
+    return http.delete(`/communication/resources/${id}`)
+  },
+  startCommunicationResource(id) {
+    return http.post(`/communication/resources/${id}/start`)
+  },
+  stopCommunicationResource(id) {
+    return http.post(`/communication/resources/${id}/stop`)
+  },
+  getCommunicationStatus() {
+    return http.get('/communication/status')
+  },
+
+  // ---- 组件导入/导出 ----
+  exportCustomComponents(name) {
+    return http.get('/custom-components/export', {
+      params: name ? { name } : {},
+      responseType: 'blob'
+    })
+  },
+  importCustomComponents(payload) {
+    return http.post('/custom-components/import', payload)
   }
 }
 

@@ -1,13 +1,17 @@
 <template>
-  <TrendChartWidget v-if="widget.type === 'trendChart'"     :widget="widget" />
+  <TrendChartWidget v-if="widget.type === 'trendChart' || widget.type === 'trendChartLite'" :widget="widget" />
   <DigitalDisplayWidget v-else-if="widget.type === 'digitalDisplay'" :widget="widget" />
+  <ValueColumnWidget v-else-if="widget.type === 'valueColumn'" :widget="widget" />
   <GaugeWidget v-else-if="widget.type === 'gauge'"          :widget="widget" />
   <ButtonWidget v-else-if="widget.type === 'button'"        :widget="widget" />
+  <WinccToggleButtonWidget v-else-if="widget.type === 'winccToggleButton'" :widget="widget" />
+  <StepperControlWidget v-else-if="widget.type === 'stepperControl'" :widget="widget" />
   <AlarmListWidget v-else-if="widget.type === 'alarmList'"  :widget="widget" />
   <IndicatorWidget v-else-if="widget.type === 'indicator'"  :widget="widget" />
   <StatusCircleWidget v-else-if="widget.type === 'statusCircle'" :widget="widget" />
   <LabelWidget v-else-if="widget.type === 'label'"          :widget="widget" />
   <FrameBoxWidget v-else-if="widget.type === 'frameBox'"    :widget="widget" />
+  <ScadaSvgWidget v-else-if="widget.type === 'scadaSvg'" :widget="widget" />
   <CustomShapeWidget v-else-if="widget.type === 'customShape'" :widget="widget" />
   <ProcessValueTagWidget v-else-if="widget.type === 'processValueTag'" :widget="widget" />
   <ProcessDeviceWidget v-else-if="widgetType.startsWith('process')" :widget="widget" :readonly="readonly" />
@@ -20,13 +24,17 @@
 import { computed } from 'vue'
 import TrendChartWidget from '../widgets/TrendChartWidget.vue'
 import DigitalDisplayWidget from '../widgets/DigitalDisplayWidget.vue'
+import ValueColumnWidget from '../widgets/ValueColumnWidget.vue'
 import GaugeWidget from '../widgets/GaugeWidget.vue'
 import ButtonWidget from '../widgets/ButtonWidget.vue'
+import WinccToggleButtonWidget from '../widgets/WinccToggleButtonWidget.vue'
+import StepperControlWidget from '../widgets/StepperControlWidget.vue'
 import AlarmListWidget from '../widgets/AlarmListWidget.vue'
 import IndicatorWidget from '../widgets/IndicatorWidget.vue'
 import StatusCircleWidget from '../widgets/StatusCircleWidget.vue'
 import LabelWidget from '../widgets/LabelWidget.vue'
 import FrameBoxWidget from '../widgets/FrameBoxWidget.vue'
+import ScadaSvgWidget from '../widgets/ScadaSvgWidget.vue'
 import CustomShapeWidget from '../widgets/CustomShapeWidget.vue'
 import ProcessDeviceWidget from '../widgets/ProcessDeviceWidget.vue'
 import ProcessValueTagWidget from '../widgets/ProcessValueTagWidget.vue'

@@ -30,6 +30,7 @@ public:
     std::vector<VariableInfo> loadVariableDefinitions();
     bool saveVariableDefinition(const VariableInfo& info);
     bool deleteVariableDefinition(int varId);
+    bool deleteVariableDefinitions(const std::vector<int>& varIds);
     bool updateVariableDefinition(const VariableInfo& info);
 
     // ---- 实时数据操作 ----

@@ -12,6 +12,7 @@
       'label-shell': isLabelWidget,
       'status-circle-shell': isStatusCircleWidget,
       'frame-shell': isFrameBoxWidget,
+      'scada-svg-shell': isScadaSvgWidget,
       'name-hidden': hideName,
       'connection-mode': connectionMode,
       'connection-source': connectionSource
@@ -227,12 +228,13 @@ const isButtonWidget = computed(() => props.widget.type === 'button')
 const isLabelWidget = computed(() => props.widget.type === 'label')
 const isStatusCircleWidget = computed(() => props.widget.type === 'statusCircle')
 const isFrameBoxWidget = computed(() => props.widget.type === 'frameBox')
+const isScadaSvgWidget = computed(() => props.widget.type === 'scadaSvg')
 const isCustomShapeWidget = computed(() => props.widget.type === 'customShape')
 const isProcessWidget = computed(() => String(props.widget.type || '').startsWith('process'))
 const isConnectableWidget = computed(() =>
-  (isProcessWidget.value || isCustomShapeWidget.value) && props.widget.type !== 'processValueTag'
+  (isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value) && props.widget.type !== 'processValueTag'
 )
-const isFramelessWidget = computed(() => isButtonWidget.value || isProcessWidget.value || isCustomShapeWidget.value || isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value)
+const isFramelessWidget = computed(() => isButtonWidget.value || isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value || isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value)
 const showConnectionPorts = computed(() =>
   !props.readonly &&
   isConnectableWidget.value &&

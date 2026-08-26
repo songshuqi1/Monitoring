@@ -4,7 +4,7 @@
       <canvas ref="canvasRef"></canvas>
         <div v-if="!hasData" class="no-data">等待数据...</div>
     </div>
-    <div class="trend-legend" v-if="visibleVars.length > 0">
+    <div class="trend-legend" v-if="showLegend && visibleVars.length > 0">
       <div v-for="(item, idx) in visibleVars" :key="item.id" class="trend-legend-item">
         <span class="tl-dot" :style="{ background: colors[idx % colors.length] }"></span>
         <span class="tl-name">{{ item.name }}</span>
@@ -36,6 +36,7 @@ let redrawFrame = 0
 let zoomRedrawPending = false
 
 const colors = ['#4f6fb8', '#a66a1f', '#2f8f63', '#c2414b', '#6f5fb8', '#9b4d7d']
+const showLegend = computed(() => props.widget?.type !== 'trendChartLite')
 
 function renderScale() {
   const dpr = window.devicePixelRatio || 1

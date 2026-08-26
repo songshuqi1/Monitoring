@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/NEU/Desktop/Monitoring - 7/open62541-1.0/arch
+# Install script for directory: C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/arch
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/MonitoringPlatform")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/MonitoringPlatform")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,18 +34,18 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/posix/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/win32/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/freertosLWIP/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/vxworks/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/eCos/cmake_install.cmake")
-  include("C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/wec7/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/posix/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/win32/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/freertosLWIP/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/vxworks/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/eCos/cmake_install.cmake")
+  include("C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/wec7/cmake_install.cmake")
 
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/NEU/Desktop/Monitoring - 7/backend/build-runtime/open62541/arch/install_local_manifest.txt"
+  file(WRITE "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/arch/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
