@@ -1,8 +1,31 @@
 #include "variable_manager.h"
 #include "database.h"
+#include "communication_manager.h"
 #include <algorithm>
 #include <cctype>
+#include <unordered_map>
 #include <unordered_set>
+
+namespace {
+std::string uppercaseCopy(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::toupper(ch));
+    });
+    return value;
+}
+
+bool isCollectedProtocol(const std::string& source) {
+    return source == "OPCUA" || source == "MODBUS" || source == "UDP" || source == "SDC";
+}
+
+int64_t staleAfterMs(const CommunicationResource& resource, const std::string& source) {
+    const int64_t interval = std::clamp<int64_t>(resource.pollIntervalMs, 50, 600000);
+    // Allow for an entire collection cycle and normal transport jitter, while
+    // still making a stopped source visible quickly in the client.
+    const int64_t cycles = source == "UDP" ? 3 : 4;
+    return std::max<int64_t>(5000, interval * cycles + 1000);
+}
+}
 
 VariableManager& VariableManager::instance() {
     static VariableManager inst;
@@ -97,8 +120,13 @@ std::vector<int> VariableManager::removeDefinitions(const std::vector<int>& varI
 std::vector<int> VariableManager::removeOfflineDefinitions() {
     std::vector<int> offlineIds;
     auto definitions = getAllDefinitions();
+    const auto realtime = getAllLatestData();
+    std::unordered_map<int, DataPoint> latestById;
+    latestById.reserve(realtime.size());
+    for (const auto& point : realtime) latestById[point.varId] = point;
     for (const auto& definition : definitions) {
-        const auto point = getLatestData(definition.id);
+        const auto pointIt = latestById.find(definition.id);
+        const DataPoint point = pointIt == latestById.end() ? DataPoint{} : pointIt->second;
         std::string quality = point.quality;
         std::transform(quality.begin(), quality.end(), quality.begin(), [](unsigned char c) {
             return static_cast<char>(std::toupper(c));
@@ -161,11 +189,42 @@ DataPoint VariableManager::getLatestData(int varId) const {
 }
 
 std::vector<DataPoint> VariableManager::getAllLatestData() const {
-    std::shared_lock lock(rtMutex_);
     std::vector<DataPoint> result;
-    result.reserve(realtimeData_.size());
-    for (const auto& [id, dp] : realtimeData_) {
-        result.push_back(dp);
+    {
+        std::shared_lock lock(rtMutex_);
+        result.reserve(realtimeData_.size());
+        for (const auto& [id, dp] : realtimeData_) {
+            result.push_back(dp);
+        }
+    }
+
+    // Quality has two parts: the protocol's latest result and the freshness
+    // of that result.  A previously GOOD value must never remain normal after
+    // its communication resource stops delivering data.
+    const auto definitions = getAllDefinitions();
+    std::unordered_map<int, VariableInfo> definitionsById;
+    definitionsById.reserve(definitions.size());
+    for (const auto& definition : definitions) definitionsById[definition.id] = definition;
+
+    const auto resources = CommunicationManager::instance().listResources();
+    std::unordered_map<std::string, CommunicationResource> resourcesById;
+    resourcesById.reserve(resources.size());
+    for (const auto& resource : resources) resourcesById[resource.id] = resource;
+
+    const int64_t currentMs = nowMs();
+    for (auto& point : result) {
+        const auto definitionIt = definitionsById.find(point.varId);
+        if (definitionIt == definitionsById.end()) continue;
+        const auto& definition = definitionIt->second;
+        const std::string source = uppercaseCopy(definition.source);
+        if (!isCollectedProtocol(source) || definition.resourceId.empty()) continue;
+
+        const auto resourceIt = resourcesById.find(definition.resourceId);
+        const bool resourceMissing = resourceIt == resourcesById.end();
+        const bool resourceDisabled = !resourceMissing && !resourceIt->second.enabled;
+        const int64_t timeoutMs = resourceMissing ? 5000 : staleAfterMs(resourceIt->second, source);
+        const bool stale = point.timestampMs <= 0 || currentMs - point.timestampMs > timeoutMs;
+        if (resourceMissing || resourceDisabled || stale) point.quality = "OFFLINE";
     }
     return result;
 }

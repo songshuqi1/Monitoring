@@ -391,11 +391,27 @@ export const useMonitorStore = defineStore('monitor', () => {
   // ============ 原始数据 ============
   const variables        = ref([])
   const realtimeData     = ref({})
+  const communicationResources = ref([])
+  const writeAuditRecords = ref([])
+  const historyWideTable = ref({ columns: ['id', 'time'], rows: [] })
+  const historyWideLoading = ref(false)
   const wsConnected      = ref(false)
   const alarms           = ref([])
   const systemStatus     = ref({ opcuaServer: false, opcuaClient: false, udpReceiver: false, database: false })
+  const networkUrls      = ref({
+    frontendPort: 8081,
+    backendPort: 8081,
+    devFrontendPort: 5170,
+    primaryUrl: '',
+    addresses: [],
+    frontendUrls: [],
+    backendUrls: []
+  })
   const operationLogs    = ref([])
   const customComponents = ref([])
+  const residentReady    = ref(false)
+  const dataClockMs      = ref(Date.now())
+  let residentLoadPromise = null
     // ============ 趋势曲线数据缓冲 (持久化, 跨页面切换) ============
   const trendBuffers = ref({})
   const TREND_MAX_POINTS = 2000
@@ -1090,6 +1106,7 @@ export const useMonitorStore = defineStore('monitor', () => {
   }
 
   async function loadRealtime() {
+    dataClockMs.value = Date.now()
     try {
       const res = await api.getRealtime()
       const d = {}
@@ -1109,9 +1126,100 @@ export const useMonitorStore = defineStore('monitor', () => {
     catch { /* ignore */ }
   }
 
+  async function loadNetworkUrls() {
+    try {
+      const response = await api.getNetworkUrls()
+      const data = response.data || {}
+      const primaryUrl = data.primaryUrl || ''
+      networkUrls.value = {
+        frontendPort: data.frontendPort || 8081,
+        backendPort: data.backendPort || 8081,
+        devFrontendPort: data.devFrontendPort || 5170,
+        primaryUrl,
+        addresses: Array.isArray(data.addresses) ? data.addresses : [],
+        frontendUrls: Array.isArray(data.frontendUrls) && data.frontendUrls.length ? data.frontendUrls : (primaryUrl ? [primaryUrl] : []),
+        backendUrls: Array.isArray(data.backendUrls) && data.backendUrls.length ? data.backendUrls : (primaryUrl ? [primaryUrl] : [])
+      }
+      return true
+    } catch (e) {
+      if (!isExpectedRequestError(e)) console.warn('loadNetworkUrls failed:', e?.message || e)
+      return false
+    }
+  }
+
   async function loadLogs() {
     try { operationLogs.value = (await api.getLogs()).data }
     catch { /* ignore */ }
+  }
+
+  async function loadCommunicationResources() {
+    try {
+      const response = await api.getCommunicationResources()
+      communicationResources.value = Array.isArray(response.data) ? response.data : []
+      return true
+    } catch (e) {
+      if (!isExpectedRequestError(e)) console.warn('loadCommunicationResources failed:', e?.message || e)
+      return false
+    }
+  }
+
+  async function loadWriteAudit() {
+    try {
+      const response = await api.getWriteAudit()
+      writeAuditRecords.value = Array.isArray(response.data) ? response.data : []
+      return true
+    } catch (e) {
+      if (!isExpectedRequestError(e)) console.warn('loadWriteAudit failed:', e?.message || e)
+      return false
+    }
+  }
+
+  async function loadHistoryWide() {
+    if (historyWideLoading.value) return false
+    historyWideLoading.value = true
+    try {
+      const response = await api.getHistoryDbWide(0, 0, 5000)
+      historyWideTable.value = {
+        columns: Array.isArray(response.data?.columns) && response.data.columns.length ? response.data.columns : ['id', 'time'],
+        rows: Array.isArray(response.data?.rows) ? response.data.rows : []
+      }
+      return true
+    } catch (e) {
+      if (!isExpectedRequestError(e)) console.warn('loadHistoryWide failed:', e?.message || e)
+      historyWideTable.value = { columns: ['id', 'time'], rows: [] }
+      return false
+    } finally {
+      historyWideLoading.value = false
+    }
+  }
+
+  function tickDataClock() {
+    dataClockMs.value = Date.now()
+  }
+
+  async function refreshResidentMetadata() {
+    await Promise.all([
+      loadVariables(),
+      loadCommunicationResources(),
+      loadAlarms(),
+      loadLogs(),
+      loadWriteAudit(),
+      loadNetworkUrls()
+    ])
+  }
+
+  async function loadResidentData() {
+    if (residentLoadPromise) return residentLoadPromise
+    residentLoadPromise = Promise.all([
+      refreshResidentMetadata(),
+      loadRealtime(),
+      loadHistoryWide()
+    ]).then(() => {
+      residentReady.value = true
+    }).finally(() => {
+      residentLoadPromise = null
+    })
+    return residentLoadPromise
   }
 
   // ============ WebSocket ============
@@ -1131,6 +1239,7 @@ export const useMonitorStore = defineStore('monitor', () => {
     }
     ws.onmessage = (event) => {
       try {
+        dataClockMs.value = Date.now()
         const data = JSON.parse(event.data)
         if (Array.isArray(data)) {
           data.forEach(dp => {
@@ -1148,7 +1257,8 @@ export const useMonitorStore = defineStore('monitor', () => {
   function disconnectWebSocket() { if (ws) { ws.close(); ws = null } }
 
   return {
-    variables, realtimeData, wsConnected, alarms, systemStatus, operationLogs, onlineCount, customComponents,
+    variables, realtimeData, communicationResources, writeAuditRecords, historyWideTable, historyWideLoading, wsConnected, alarms, systemStatus, networkUrls, operationLogs, onlineCount, customComponents,
+      residentReady, dataClockMs,
       trendBuffers, appendTrendData, sampleTrendData, startTrendSampler, stopTrendSampler, pruneTrendData, TREND_MAX_POINTS,
     widgets, connections, layoutSnapshot, canUndo, canRedo,
     loadCustomComponents, refreshCustomComponentsFromServer, importCustomComponentsFromServer,
@@ -1156,7 +1266,8 @@ export const useMonitorStore = defineStore('monitor', () => {
     loadLayout, addWidget, duplicateWidget, duplicateWidgetsWithConnections, updateWidget, removeWidget, removeWidgets, moveWidget, resizeWidget,
     addConnection, splitConnectionWithJunction, removeConnection, updateConnection, resetLayout, replaceLayout,
     undoLayout, redoLayout,
-    loadVariables, loadRealtime, loadAlarms, fetchStatus, loadLogs,
+    loadVariables, loadRealtime, loadAlarms, fetchStatus, loadNetworkUrls, loadLogs, loadCommunicationResources, loadWriteAudit, loadHistoryWide,
+      tickDataClock, refreshResidentMetadata, loadResidentData,
     connectWebSocket, disconnectWebSocket,
   }
 })

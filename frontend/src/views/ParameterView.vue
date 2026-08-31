@@ -5,7 +5,15 @@
         <h2>参数在线下发</h2>
         <p>由已启用通信资源采集到的变量自动生成；不需要重复填写通信地址。</p>
       </div>
-      <button class="btn btn-primary" :disabled="loading" @click="loadAll">{{ loading ? '同步中…' : '同步通信资源' }}</button>
+      <div class="pv-header-actions">
+        <button class="btn btn-primary" :disabled="loading || deletingNodes" @click="loadAll">{{ loading ? '同步中…' : '同步通信资源' }}</button>
+        <button class="btn btn-danger" :disabled="!offlineParameters.length || deletingNodes" @click="openBulkDeleteDialog('offline')">
+          删除离线节点{{ offlineParameters.length ? ` (${offlineParameters.length})` : '' }}
+        </button>
+        <button class="btn btn-danger" :disabled="!filteredParameters.length || deletingNodes" @click="openBulkDeleteDialog('all')">
+          删除全部节点{{ filteredParameters.length ? ` (${filteredParameters.length})` : '' }}
+        </button>
+      </div>
     </header>
 
     <div v-if="message.text" class="pv-message" :class="message.ok ? 'ok' : 'error'">{{ message.text }}</div>
@@ -39,6 +47,9 @@
           <button class="btn btn-primary" :disabled="submittingId === parameter.id || Boolean(commandBlockReason(parameter))" @click="requestWrite(parameter)">
             {{ submittingId === parameter.id ? '下发中…' : '确认下发' }}
           </button>
+        </div>
+        <div class="pv-node-actions">
+          <button class="btn btn-sm btn-danger" :disabled="deletingNodes || submittingId === parameter.id" @click="deleteTarget = parameter">删除此节点</button>
         </div>
         <small v-if="commandBlockReason(parameter)" class="pv-readonly">{{ commandBlockReason(parameter) }}</small>
       </article>
@@ -83,6 +94,30 @@
       @confirm="executeWrite"
     />
     <ConfirmDialog
+      v-if="deleteTarget"
+      title="删除数据节点"
+      :message="`确认删除数据节点“${deleteTarget.name}”？`"
+      detail="将删除该节点的变量定义、实时缓存与历史缓存；通信资源本身不会被删除。采集恢复后，该资源可重新自动创建节点。"
+      confirm-text="确认删除"
+      submitting-text="删除中…"
+      :submitting="deletingNodes"
+      danger
+      @close="deleteTarget = null"
+      @confirm="confirmDeleteNode"
+    />
+    <ConfirmDialog
+      v-if="bulkDeleteDialog"
+      :title="bulkDeleteDialog.title"
+      :message="bulkDeleteDialog.message"
+      :detail="bulkDeleteDialog.detail"
+      confirm-text="确认删除"
+      submitting-text="删除中…"
+      :submitting="deletingNodes"
+      danger
+      @close="bulkDeleteDialog = null"
+      @confirm="confirmBulkDeleteNodes"
+    />
+    <ConfirmDialog
       v-if="clearAuditDialog"
       title="删除下发审计记录"
       message="确认删除全部下发审计记录吗？"
@@ -97,26 +132,43 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import api from '../api/index.js'
+import { useMonitorStore } from '../store/index.js'
 import { useProjectStore } from '../store/projectStore.js'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import { writeCollectedVariable } from '../services/automaticParameterService.js'
 
 const projectStore = useProjectStore()
-const resources = ref([])
-const variables = ref([])
+const store = useMonitorStore()
+const resources = computed(() => store.communicationResources)
+const variables = computed(() => {
+  const realtimeById = new Map(Object.values(store.realtimeData).map((point) => [String(point.varId), point]))
+  return store.variables.map((variable) => {
+    const latest = realtimeById.get(String(variable.id))
+    return latest ? { ...variable, value: latest.value, quality: latest.quality, timestamp: latest.timestamp } : variable
+  })
+})
 const loading = ref(false)
 const submittingId = ref(null)
 const selectedScope = ref('all')
 const pendingCommand = ref(null)
-const commands = ref([])
+const commands = computed(() => store.writeAuditRecords.map(normalizeAuditRecord).reverse())
 const auditLoading = ref(false)
 const auditClearing = ref(false)
 const clearAuditDialog = ref(false)
+const deleteTarget = ref(null)
+const bulkDeleteDialog = ref(null)
+const deletingNodes = ref(false)
 const draftValues = reactive({})
 const message = reactive({ ok: true, text: '' })
 const collectedSources = new Set(['OPCUA', 'MODBUS', 'UDP', 'SDC'])
+
+watch(variables, (items) => {
+  items.forEach((variable) => {
+    if (!(variable.id in draftValues)) draftValues[variable.id] = Number(variable.value) || 0
+  })
+}, { immediate: true })
 
 const scopeOptions = computed(() => {
   const scopes = new Map()
@@ -135,6 +187,22 @@ const filteredParameters = computed(() => variables.value.filter((variable) => {
   if (selectedScope.value === 'global') return !variable.scopeId
   return variable.scopeId === selectedScope.value
 }))
+
+function parameterIsOffline(parameter) {
+  const point = store.realtimeData[parameter.id]
+  if (!point) return true
+  const source = String(parameter.source || '').toUpperCase()
+  const resource = resources.value.find((item) => String(item.id) === String(parameter.resourceId))
+  if (!resource || !resource.enabled) return true
+  const interval = Math.min(600000, Math.max(50, Number(resource.pollIntervalMs) || 1000))
+  const maxAge = Math.max(5000, interval * (source === 'UDP' ? 3 : 4) + 1000)
+  const timestamp = Number(point.timestamp)
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || Date.now() - timestamp > maxAge) return true
+  const quality = String(point.quality || '').toUpperCase()
+  return quality === 'OFFLINE' || quality === 'DISCONNECTED'
+}
+
+const offlineParameters = computed(() => filteredParameters.value.filter(parameterIsOffline))
 
 function protocolLabel(value) {
   return ({ OPCUA: 'OPC UA', MODBUS: 'Modbus TCP', UDP: 'UDP', SDC: '软件定义通信' })[String(value || '').toUpperCase()] || value || '-'
@@ -219,16 +287,7 @@ async function loadAll() {
   loading.value = true
   message.text = ''
   try {
-    const [resourceResult, variableResult, realtimeResult] = await Promise.all([api.getCommunicationResources(), api.getVariables(), api.getRealtime()])
-    resources.value = Array.isArray(resourceResult.data) ? resourceResult.data : []
-    const realtimeById = new Map((Array.isArray(realtimeResult.data) ? realtimeResult.data : []).map((point) => [String(point.varId), point]))
-    variables.value = (Array.isArray(variableResult.data) ? variableResult.data : []).map((variable) => {
-      const latest = realtimeById.get(String(variable.id))
-      return latest ? { ...variable, value: latest.value, quality: latest.quality, timestamp: latest.timestamp } : variable
-    })
-    variables.value.forEach((variable) => {
-      if (!(variable.id in draftValues)) draftValues[variable.id] = Number(variable.value) || 0
-    })
+    await Promise.all([store.refreshResidentMetadata(), store.loadRealtime()])
     const currentId = projectStore.currentProject?.id
     const currentScope = currentId == null ? '' : `project:${currentId}`
     if (selectedScope.value === 'all' && currentScope && scopeOptions.value.some((scope) => scope.id === currentScope)) selectedScope.value = currentScope
@@ -244,9 +303,8 @@ async function refreshAuditRecords() {
   if (auditLoading.value) return
   auditLoading.value = true
   try {
-    const response = await api.getWriteAudit()
-    const records = Array.isArray(response.data) ? response.data : []
-    commands.value = records.map(normalizeAuditRecord).reverse()
+    const loaded = await store.loadWriteAudit()
+    if (!loaded) throw new Error('后端不可用')
   } catch (error) {
     message.ok = false
     message.text = `刷新下发审计记录失败：${error?.message || '后端不可用'}`
@@ -260,7 +318,7 @@ async function clearAuditRecords() {
   auditClearing.value = true
   try {
     await api.clearWriteAudit()
-    commands.value = []
+    await store.loadWriteAudit()
     clearAuditDialog.value = false
     message.ok = true
     message.text = '下发审计记录已删除'
@@ -269,6 +327,71 @@ async function clearAuditRecords() {
     message.text = `删除下发审计记录失败：${error?.message || '后端不可用'}`
   } finally {
     auditClearing.value = false
+  }
+}
+
+async function refreshAfterNodeDelete() {
+  await Promise.all([
+    store.refreshResidentMetadata(),
+    store.loadRealtime(),
+    store.loadHistoryWide()
+  ])
+}
+
+function clearDeletedDraftValues(ids) {
+  ids.forEach((id) => { delete draftValues[id] })
+}
+
+function openBulkDeleteDialog(mode) {
+  const targets = mode === 'offline' ? offlineParameters.value : filteredParameters.value
+  if (!targets.length || deletingNodes.value) return
+  const count = targets.length
+  bulkDeleteDialog.value = {
+    ids: targets.map((parameter) => parameter.id),
+    title: mode === 'offline' ? '删除离线数据节点' : '删除全部数据节点',
+    message: mode === 'offline'
+      ? `确认删除当前范围内的 ${count} 个离线数据节点？`
+      : `确认删除当前范围内的全部 ${count} 个数据节点？`,
+    detail: '仅删除当前筛选范围内由通信资源自动采集的节点；通信资源本身不会被删除。删除后，恢复采集的资源会自动重新创建对应节点。'
+  }
+}
+
+async function confirmDeleteNode() {
+  const target = deleteTarget.value
+  if (!target || deletingNodes.value) return
+  deletingNodes.value = true
+  try {
+    await api.deleteVariable(target.id)
+    clearDeletedDraftValues([target.id])
+    deleteTarget.value = null
+    await refreshAfterNodeDelete()
+    message.ok = true
+    message.text = `数据节点“${target.name}”已删除`
+  } catch (error) {
+    message.ok = false
+    message.text = `删除数据节点失败：${error?.message || '后端不可用'}`
+  } finally {
+    deletingNodes.value = false
+  }
+}
+
+async function confirmBulkDeleteNodes() {
+  const dialog = bulkDeleteDialog.value
+  if (!dialog?.ids?.length || deletingNodes.value) return
+  deletingNodes.value = true
+  try {
+    const response = await api.bulkDeleteVariables('selected', dialog.ids)
+    const deletedIds = Array.isArray(response.data?.deletedIds) ? response.data.deletedIds : dialog.ids
+    clearDeletedDraftValues(deletedIds)
+    bulkDeleteDialog.value = null
+    await refreshAfterNodeDelete()
+    message.ok = true
+    message.text = `已删除 ${deletedIds.length} 个数据节点`
+  } catch (error) {
+    message.ok = false
+    message.text = `批量删除数据节点失败：${error?.message || '后端不可用'}`
+  } finally {
+    deletingNodes.value = false
   }
 }
 
@@ -316,15 +439,12 @@ async function executeWrite() {
   }
 }
 
-onMounted(async () => {
-  await Promise.all([loadAll(), refreshAuditRecords()])
-})
 </script>
 
 <style scoped>
 .parameter-view { height: calc(100vh - var(--header-height) - var(--statusbar-height)); overflow: auto; padding: 24px 28px 42px; background: var(--bg-secondary); color: var(--text-primary); }
 .pv-header, .pv-notice, .pv-filter, .pv-grid, .pv-empty, .pv-audit, .pv-message { max-width: 1320px; margin-left: auto; margin-right: auto; }
-.pv-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }.pv-header h2 { margin: 0 0 6px; font-size: var(--fs-2xl); }.pv-header p { margin: 0; color: var(--text-muted); }.pv-notice, .pv-filter, .pv-audit, .pv-empty { border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); }.pv-notice { padding: 12px 14px; line-height: 1.6; color: var(--text-secondary); }.pv-filter { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 14px; }.pv-filter span { color: var(--text-muted); font-size: var(--fs-sm); }.pv-filter select { min-width: 230px; }.pv-message { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--success-border); border-radius: var(--radius-md); background: var(--success-bg); color: var(--success-text); }.pv-message.error { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-text); }.pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }.pv-card { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: var(--shadow-xs); }.pv-card-title { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }.pv-protocol { padding: 3px 8px; border-radius: 999px; background: var(--surface-muted); color: var(--text-secondary); font-size: 11px; }.pv-protocol.opcua { background: #e7f0ff; color: #245bab; }.pv-protocol.modbus { background: #f7edda; color: #8d5b12; }.pv-protocol.udp { background: #efe7ff; color: #6a43a3; }.pv-protocol.sdc { background: #dff4ec; color: #1e7855; }.pv-meta { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; margin: 7px 0; font-size: var(--fs-sm); }.pv-meta > span { color: var(--text-muted); }.pv-meta code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.pv-meta b.good { color: var(--success-text); }.pv-meta b.bad { color: var(--danger-text); }.pv-current { margin-top: 12px; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); }.pv-current strong { margin: 0 5px; font-family: var(--font-mono); color: var(--text-primary); }.pv-command { display: flex; gap: 8px; margin-top: 12px; }.pv-command input { flex: 1; min-width: 0; }.pv-readonly { display: block; margin-top: 8px; color: var(--danger-text); }.pv-empty { margin-top: 14px; padding: 42px; text-align: center; }.pv-empty h3 { margin: 0 0 8px; }.pv-empty p { margin: 0; color: var(--text-muted); }
+.pv-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }.pv-header h2 { margin: 0 0 6px; font-size: var(--fs-2xl); }.pv-header p { margin: 0; color: var(--text-muted); }.pv-header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }.pv-notice, .pv-filter, .pv-audit, .pv-empty { border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); }.pv-notice { padding: 12px 14px; line-height: 1.6; color: var(--text-secondary); }.pv-filter { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 14px; }.pv-filter span { color: var(--text-muted); font-size: var(--fs-sm); }.pv-filter select { min-width: 230px; }.pv-message { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--success-border); border-radius: var(--radius-md); background: var(--success-bg); color: var(--success-text); }.pv-message.error { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-text); }.pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }.pv-card { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: var(--shadow-xs); }.pv-card-title { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }.pv-protocol { padding: 3px 8px; border-radius: 999px; background: var(--surface-muted); color: var(--text-secondary); font-size: 11px; }.pv-protocol.opcua { background: #e7f0ff; color: #245bab; }.pv-protocol.modbus { background: #f7edda; color: #8d5b12; }.pv-protocol.udp { background: #efe7ff; color: #6a43a3; }.pv-protocol.sdc { background: #dff4ec; color: #1e7855; }.pv-meta { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; margin: 7px 0; font-size: var(--fs-sm); }.pv-meta > span { color: var(--text-muted); }.pv-meta code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.pv-meta b.good { color: var(--success-text); }.pv-meta b.bad { color: var(--danger-text); }.pv-current { margin-top: 12px; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); }.pv-current strong { margin: 0 5px; font-family: var(--font-mono); color: var(--text-primary); }.pv-command { display: flex; gap: 8px; margin-top: 12px; }.pv-command input { flex: 1; min-width: 0; }.pv-node-actions { display: flex; justify-content: flex-end; margin-top: 8px; }.pv-readonly { display: block; margin-top: 8px; color: var(--danger-text); }.pv-empty { margin-top: 14px; padding: 42px; text-align: center; }.pv-empty h3 { margin: 0 0 8px; }.pv-empty p { margin: 0; color: var(--text-muted); }
 .pv-audit { margin-top: 18px; overflow: auto; }.pv-audit-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border-light); }.pv-audit h3 { margin: 0; font-size: var(--fs-lg); }.pv-audit-header p { margin: 4px 0 0; color: var(--text-muted); font-size: var(--fs-sm); }.pv-audit-actions { display: flex; flex: 0 0 auto; gap: 8px; }.pv-audit table { width: 100%; border-collapse: collapse; min-width: 1060px; }.pv-audit th, .pv-audit td { padding: 10px 14px; border-bottom: 1px solid var(--border-light); text-align: left; font-size: var(--fs-sm); }.pv-audit th { background: var(--surface-muted); color: var(--text-muted); }.pv-audit-detail { min-width: 230px; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.command-ok { color: var(--success-text); }.command-error { color: var(--danger-text); }.pv-no-logs { color: var(--text-muted); text-align: center !important; }
 .readback-match { color: var(--success-text); }
 .readback-error { color: var(--danger-text); }

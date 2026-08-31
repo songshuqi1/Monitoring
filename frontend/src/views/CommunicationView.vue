@@ -305,7 +305,7 @@ export default {
   setup() {
     const store = useMonitorStore()
     const projectStore = useProjectStore()
-    const resources = ref([])
+    const resources = computed(() => store.communicationResources)
     const scopeFilter = ref('all')
     const showDialog = ref(false)
     const editingIdx = ref(-1)
@@ -356,20 +356,20 @@ export default {
       try {
         for (let attempt = 0; attempt < 2; attempt += 1) {
           try {
-            const r = await api.getCommunicationResources()
-            resources.value = Array.isArray(r.data) ? r.data : []
-            resourceLoadFailed.value = false
-            resourceLoadError.value = ''
-            return
+            const loaded = await store.loadCommunicationResources()
+            if (loaded) {
+              resourceLoadFailed.value = false
+              resourceLoadError.value = ''
+              return
+            }
+            lastError = new Error('通信资源暂时不可用')
           } catch (e) {
             lastError = e
-            // Backend startup can overlap the first page visit. Retry only a
-            // response-less network failure, never a server-side API error.
-            if (attempt === 0 && !e?.response && e?.code !== 'ECONNABORTED') await wait(450)
-            else break
           }
+          // Backend startup can overlap the first page visit. Retry only once.
+          if (attempt === 0) await wait(450)
+          else break
         }
-        resources.value = []
         resourceLoadFailed.value = true
         resourceLoadError.value = formatConnectionError(lastError)
       } finally {
@@ -682,9 +682,8 @@ export default {
     }
 
     onMounted(() => {
-      loadResources()
-      store.loadVariables()
-      projectStore.fetchProjects().catch(() => {})
+      if (!store.residentReady) loadResources()
+      if (!projectStore.list.length) projectStore.fetchProjects().catch(() => {})
     })
 
     return {

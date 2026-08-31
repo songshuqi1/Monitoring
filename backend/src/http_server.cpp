@@ -14,6 +14,7 @@
 #include <map>
 #include <regex>
 #include <cctype>
+#include <unordered_set>
 #include <filesystem>
 #include <fstream>
 
@@ -839,6 +840,31 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 std::vector<int> deletedIds;
                 if (mode == "offline") {
                     deletedIds = VariableManager::instance().removeOfflineDefinitions();
+                } else if (mode == "selected") {
+                    const auto idsKey = body.find("\"ids\"");
+                    const auto arrayStart = idsKey == std::string::npos ? std::string::npos : body.find('[', idsKey);
+                    const auto arrayEnd = arrayStart == std::string::npos ? std::string::npos : body.find(']', arrayStart + 1);
+                    if (arrayEnd == std::string::npos) {
+                        return jsonResponse("{\"error\":\"selected delete requires ids\"}", 400);
+                    }
+
+                    std::unordered_set<int> uniqueIds;
+                    const std::string idsText = body.substr(arrayStart + 1, arrayEnd - arrayStart - 1);
+                    size_t pos = 0;
+                    while (pos < idsText.size()) {
+                        while (pos < idsText.size() && idsText[pos] != '-' && !std::isdigit(static_cast<unsigned char>(idsText[pos]))) ++pos;
+                        const size_t start = pos;
+                        if (pos < idsText.size() && idsText[pos] == '-') ++pos;
+                        const size_t digits = pos;
+                        while (pos < idsText.size() && std::isdigit(static_cast<unsigned char>(idsText[pos]))) ++pos;
+                        if (digits == pos) continue;
+                        try {
+                            const int id = std::stoi(idsText.substr(start, pos - start));
+                            if (id != 0) uniqueIds.insert(id);
+                        } catch (...) {}
+                    }
+                    std::vector<int> ids(uniqueIds.begin(), uniqueIds.end());
+                    deletedIds = VariableManager::instance().removeDefinitions(ids);
                 } else if (mode == "all") {
                     std::vector<int> ids;
                     for (const auto& variable : VariableManager::instance().getAllDefinitions()) ids.push_back(variable.id);

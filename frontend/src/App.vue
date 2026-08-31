@@ -91,11 +91,13 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMonitorStore } from './store/index.js'
+import { useProjectStore } from './store/projectStore.js'
 import api from './api/index.js'
 
 const router = useRouter()
 const route = useRoute()
 const store = useMonitorStore()
+const projectStore = useProjectStore()
 const clock = ref('')
 const mobileMenuOpen = ref(false)
 const authUsername = ref(localStorage.getItem('auth_username') || 'admin')
@@ -126,6 +128,7 @@ const handleLogout = async () => {
 let clockTimer = null
 let statusTimer = null
 let realtimeTimer = null
+let residentTimer = null
 let layoutLoaded = false
 let runtimeStarted = false
 
@@ -138,12 +141,12 @@ function startDataLoading() {
     store.loadLayout()
     layoutLoaded = true
   }
-  store.loadVariables()
-  store.loadRealtime()
-  store.loadAlarms()
+  store.loadResidentData()
   if (!runtimeStarted) {
     store.connectWebSocket()
     store.startTrendSampler()
+    projectStore.fetchProjects().catch(() => {})
+    projectStore.restoreCurrentProject().catch(() => {})
     runtimeStarted = true
   }
   store.fetchStatus()
@@ -172,9 +175,15 @@ onMounted(() => {
   clockTimer = setInterval(update, 1000)
   realtimeTimer = setInterval(() => {
     if (isAuthenticated()) {
+      store.tickDataClock()
       store.loadRealtime()
     }
   }, 1000)
+  residentTimer = setInterval(() => {
+    if (isAuthenticated()) {
+      store.refreshResidentMetadata()
+    }
+  }, 3000)
   statusTimer = setInterval(() => {
     if (isAuthenticated()) {
       store.fetchStatus()
@@ -188,6 +197,7 @@ onUnmounted(() => {
   if (clockTimer) clearInterval(clockTimer)
   if (statusTimer) clearInterval(statusTimer)
   if (realtimeTimer) clearInterval(realtimeTimer)
+  if (residentTimer) clearInterval(residentTimer)
 })
 </script>
 

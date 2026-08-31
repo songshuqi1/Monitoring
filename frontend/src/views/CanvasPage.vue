@@ -5456,8 +5456,6 @@ function exitApplicationMode() {
 }
 
 onMounted(() => {
-  store.loadLayout()
-  projectStore.restoreCurrentProject()
   updateCanvasAreaSize()
   requestAnimationFrame(updateCanvasAreaSize)
   document.addEventListener('keydown', handleKeyDown)

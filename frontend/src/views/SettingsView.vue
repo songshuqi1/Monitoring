@@ -138,15 +138,7 @@ export default {
     const dbConnected = ref(false)
     const dbStatusText = ref('未检测')
     const copyMessage = ref('')
-    const networkUrls = ref({
-      frontendPort: 8081,
-      backendPort: 8081,
-      devFrontendPort: 5170,
-      primaryUrl: 'http://202.118.21.28:8081',
-      addresses: ['202.118.21.28'],
-      frontendUrls: ['http://202.118.21.28:8081'],
-      backendUrls: ['http://202.118.21.28:8081']
-    })
+    const networkUrls = computed(() => store.networkUrls)
 
     // 加载本地保存的数据库配置
     function loadDbConfig() {
@@ -191,7 +183,7 @@ export default {
     }
 
     const config = ref({ chartRefresh: 500, historyRetention: 30 })
-    const status = ref({ opcuaServer: false, opcuaClient: false, udpReceiver: false, database: false })
+    const status = computed(() => store.systemStatus)
 
     const statusItems = computed(() => [
       { key: 'opcuaServer', label: 'OPC UA 服务器', value: status.value.opcuaServer, text: status.value.opcuaServer ? '运行中' : '已停止' },
@@ -202,25 +194,15 @@ export default {
     ])
 
     const refreshStatus = async () => {
-      try { const r = await api.getStatus(); status.value = r.data; dbConnected.value = r.data.database; dbStatusText.value = r.data.database ? '数据库已连接' : '数据库未连接' }
+      try {
+        await store.fetchStatus()
+        dbConnected.value = Boolean(store.systemStatus.database)
+        dbStatusText.value = dbConnected.value ? '数据库已连接' : '数据库未连接'
+      }
       catch {}
     }
 
-    const loadNetworkUrls = async () => {
-      try {
-        const r = await api.getNetworkUrls()
-        const primaryUrl = r.data.primaryUrl || 'http://202.118.21.28:8081'
-        networkUrls.value = {
-          frontendPort: r.data.frontendPort || 8081,
-          backendPort: r.data.backendPort || 8081,
-          devFrontendPort: r.data.devFrontendPort || 5170,
-          primaryUrl,
-          addresses: r.data.addresses || [],
-          frontendUrls: r.data.frontendUrls?.length ? r.data.frontendUrls : [primaryUrl],
-          backendUrls: r.data.backendUrls?.length ? r.data.backendUrls : [primaryUrl]
-        }
-      } catch {}
-    }
+    const loadNetworkUrls = () => store.loadNetworkUrls()
 
     const copyUrl = async (url) => {
       try {
@@ -235,7 +217,7 @@ export default {
     onMounted(async () => {
       loadDbConfig()
       await refreshStatus()
-      await loadNetworkUrls()
+      if (!store.residentReady || !store.networkUrls.primaryUrl) await loadNetworkUrls()
     })
 
     return {

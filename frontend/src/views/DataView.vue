@@ -256,7 +256,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useMonitorStore } from '../store/index.js'
 import api from '../api/index.js'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
@@ -284,14 +284,14 @@ export default {
   components: { ConfirmDialog },
   setup() {
     const store = useMonitorStore()
-    const logs = ref([])
+    const logs = computed(() => store.operationLogs)
     const activeTab = ref('realtime')
     const showWriteDialog = ref(false)
     const writeVar = ref(null)
     const writeValue = ref(0)
-    const historyColumns = ref(['id', 'time'])
-    const historyRows = ref([])
-    const historyLoading = ref(false)
+    const historyColumns = computed(() => store.historyWideTable.columns || ['id', 'time'])
+    const historyRows = computed(() => store.historyWideTable.rows || [])
+    const historyLoading = computed(() => store.historyWideLoading)
     const deleteTarget = ref(null)
     const bulkDeleteDialog = ref(null)
     const bulkDeleting = ref(false)
@@ -300,7 +300,7 @@ export default {
     const variableQualityFilter = ref('all')
     const variableScopeFilter = ref('all')
     const variableResourceFilter = ref('all')
-    const communicationResources = ref([])
+    const communicationResources = computed(() => store.communicationResources)
     const collapsedVariableGroups = ref({})
     const variableGroupMap = ref(loadVariableGroupMap())
 
@@ -322,9 +322,22 @@ export default {
       const dp = store.realtimeData[id]
       return dp && dp.value !== undefined ? formatValue(dp.value) : '---'
     }
+    const staleAfterMs = (id) => {
+      const variable = store.variables.find(item => String(item.id) === String(id))
+      const source = String(variable?.source || '').toUpperCase()
+      if (!variable?.resourceId || !['OPCUA', 'MODBUS', 'UDP', 'SDC'].includes(source)) return null
+      const resource = store.communicationResources.find(item => String(item.id) === String(variable.resourceId))
+      if (!resource || !resource.enabled) return 0
+      const interval = Math.min(600000, Math.max(50, Number(resource.pollIntervalMs) || 1000))
+      return Math.max(5000, interval * (source === 'UDP' ? 3 : 4) + 1000)
+    }
     const getQualityKey = (id) => {
       const dp = store.realtimeData[id]
       if (!dp) return 'offline'
+      const maxAge = staleAfterMs(id)
+      const timestamp = Number(dp.timestamp)
+      const now = Number(store.dataClockMs) || Date.now()
+      if (maxAge !== null && (!Number.isFinite(timestamp) || timestamp <= 0 || now - timestamp > maxAge)) return 'offline'
       const q = String(dp.quality || '').toUpperCase()
       if (q === 'OFFLINE' || q === 'DISCONNECTED') return 'offline'
       if (q === 'GOOD') return 'good'
@@ -571,47 +584,15 @@ export default {
     }
 
     const loadHistoryDb = async () => {
-      historyLoading.value = true
-      try {
-        const res = await api.getHistoryDbWide(0, 0, 5000)
-        historyColumns.value = res.data?.columns?.length ? res.data.columns : ['id', 'time']
-        historyRows.value = Array.isArray(res.data?.rows) ? res.data.rows : []
-      }
-      catch (e) {
-        console.error('Load history DB failed:', e)
-        historyColumns.value = ['id', 'time']
-        historyRows.value = []
-      }
-      finally { historyLoading.value = false }
+      await store.loadHistoryWide()
     }
 
     const refreshAll = async () => {
-      await store.loadRealtime(); await store.loadAlarms(); await loadLogs(); await store.loadVariables(); await loadCommunicationResources()
-      if (activeTab.value === 'history') await loadHistoryDb()
+      await Promise.all([store.refreshResidentMetadata(), store.loadRealtime(), store.loadHistoryWide()])
     }
 
-    const loadLogs = async () => { try { logs.value = (await api.getLogs()).data } catch {} }
-    const loadCommunicationResources = async () => {
-      try {
-        const response = await api.getCommunicationResources()
-        communicationResources.value = Array.isArray(response.data) ? response.data : []
-      } catch {
-        communicationResources.value = []
-      }
-    }
-
-    watch(activeTab, async (tab) => {
-      if (tab === 'history') {
-        if (historyRows.value.length === 0) await loadHistoryDb()
-      }
-    })
-
-    let timer = null
-    onMounted(async () => {
-      await store.loadVariables(); await store.loadRealtime(); await store.loadAlarms(); await loadLogs(); await loadCommunicationResources()
-      timer = setInterval(async () => { await store.loadRealtime(); await store.loadAlarms() }, 5000)
-    })
-    onUnmounted(() => { clearInterval(timer) })
+    const loadLogs = async () => { await store.loadLogs() }
+    const loadCommunicationResources = async () => { await store.loadCommunicationResources() }
 
     return {
       store, logs, activeTab, tabs, showWriteDialog, writeVar, writeValue,

@@ -1,1 +1,1 @@
-[{"id":"1788143505940-0","timestamp":1788143505940,"varId":-1,"name":"2","source":"OPCUA","targetValue":1.000000,"writeStatus":"SUCCESS","readbackStatus":"MATCH","readbackValue":1.000000,"hasReadbackValue":true,"readbackMessage":"OPC UA readback matches the command","ok":true,"operator":"admin","message":"OPC UA write succeeded","detail":"OPC UA write succeeded; Readback: OPC UA readback matches the command"}]
+[]
