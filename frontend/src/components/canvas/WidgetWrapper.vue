@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div
     class="widget-wrapper"
     :class="{
@@ -7,14 +7,14 @@
       selected: !readonly && selected,
       readonly,
       'button-shell': isButtonWidget,
-      'compact-control-shell': isCompactControlWidget,
-      'value-column-shell': isValueColumnWidget,
       'process-shell': isProcessWidget,
+      'process-value-tag-shell': isProcessValueTagWidget,
       'custom-shell': isCustomShapeWidget,
       'label-shell': isLabelWidget,
       'status-circle-shell': isStatusCircleWidget,
       'frame-shell': isFrameBoxWidget,
       'scada-svg-shell': isScadaSvgWidget,
+      'ports-visible': showConnectionPorts,
       'name-hidden': hideName,
       'connection-mode': connectionMode,
       'connection-source': connectionSource
@@ -26,14 +26,10 @@
   >
     <div v-if="!isFramelessWidget && !hideName" class="ww-header" :style="{ borderTopColor: headerColor }">
       <span class="ww-title" :style="titleStyle">{{ displayTitle }}</span>
-      <div v-if="!readonly" class="ww-actions" :style="actionGroupStyle">
-        <button class="btn-icon widget-action-btn" :style="actionButtonStyle" title="设置" @mousedown.stop @click.stop="$emit('open-config')">⚙</button>
-        <button class="btn-icon widget-action-btn" :style="actionButtonStyle" title="删除" @mousedown.stop @click.stop="remove">✕</button>
-      </div>
     </div>
-    <div v-else-if="!readonly" class="ww-actions ww-floating-actions" :style="floatingActionsStyle">
-      <button class="btn-icon widget-action-btn" :style="actionButtonStyle" title="设置" @mousedown.stop @click.stop="$emit('open-config')">⚙</button>
-      <button class="btn-icon widget-action-btn" :style="actionButtonStyle" title="删除" @mousedown.stop @click.stop="remove">✕</button>
+    <div v-if="!readonly && selected" class="ww-actions ww-floating-actions" @mousedown.stop @mouseup.stop @click.stop>
+      <button type="button" class="btn-icon widget-action-btn" title="编辑组件" @mousedown.stop.prevent="openConfig" @click.stop.prevent="openConfig">⚙</button>
+      <button type="button" class="btn-icon widget-action-btn" title="删除组件" @mousedown.stop.prevent="remove" @click.stop.prevent="remove">✕</button>
     </div>
     <div class="ww-body" :class="{ 'ww-body-full': isFramelessWidget }">
       <WidgetFactory :widget="widget" :readonly="readonly" />
@@ -128,12 +124,14 @@ const endWidgetTransform = inject('endWidgetTransform', null)
 const isDragging = ref(false)
 const isResizing = ref(false)
 const MIN_RESIZE_SIZE = 12
+const DRAG_START_THRESHOLD = 3
 
 const typeColors = {
-  trendChart: '#4f6fb8', digitalDisplay: '#2f8f63', gauge: '#a66a1f',
-  button: '#c2414b', alarmList: '#a66a1f', indicator: '#6f5fb8', statusCircle: '#22c55e', label: '#667085',
+  trendChart: '#4f6fb8', trendChartLite: '#3b82f6', digitalDisplay: '#2f8f63', valueColumn: '#ec4899', gauge: '#a66a1f',
+  button: '#c2414b', winccToggleButton: '#18c93a', stepperControl: '#64748b', alarmList: '#a66a1f', indicator: '#6f5fb8', statusCircle: '#22c55e', label: '#667085',
   frameBox: '#4f6fb8',
   customShape: '#2563eb',
+  scadaSvg: '#0ea5e9',
   processPump: '#178447', processPool: '#0ea5b7', processTank: '#64748b',
   processDam: '#111827', processMixer: '#0ea5e9', processDosingMachine: '#256f9c', processJunction: '#178447', processValve: '#16a34a',
   processValveVertical: '#16a34a', processPipeEnd: '#14b8a6', processValueTag: '#a66a1f',
@@ -149,14 +147,19 @@ const headerColor = computed(() => typeColors[props.widget.type] || '#4f6fb8')
 
 const typeLabels = {
   trendChart: '趋势曲线',
+  trendChartLite: '简洁趋势曲线',
   digitalDisplay: '数值显示',
+  valueColumn: '液柱显示',
   gauge: '仪表盘',
   button: '控制按钮',
+  winccToggleButton: '状态切换按钮',
+  stepperControl: '加减调节',
   indicator: '状态指示',
   statusCircle: '状态圆点',
   label: '文本标签',
   frameBox: '边框容器',
   customShape: '自定义组件',
+  scadaSvg: 'Scada组件',
   alarmList: '报警列表',
   processPump: '水泵/气泵',
   processDosingMachine: '加药机',
@@ -196,54 +199,22 @@ const titleStyle = computed(() => {
   const size = Number(props.widget.config.titleFontSize)
   return { fontSize: (Number.isFinite(size) ? Math.max(8, Math.min(72, size)) : 12) + 'px' }
 })
-const actionMetrics = computed(() => {
-  const minSide = Math.max(24, Math.min(Number(props.widget.w) || 24, Number(props.widget.h) || 24))
-  const baseSize = isFramelessWidget.value ? minSide * 0.16 : minSide * 0.14
-  const size = Math.max(isFramelessWidget.value ? 14 : 16, Math.min(isFramelessWidget.value ? 18 : 22, Math.round(baseSize)))
-  const iconSize = Math.max(9, Math.min(12, Math.round(size * 0.54)))
-  const gap = Math.max(1, Math.round(size * 0.08))
-  const padding = Math.max(1, Math.round(size * 0.08))
-  return {
-    size,
-    iconSize,
-    gap,
-    padding
-  }
-})
-const actionButtonStyle = computed(() => ({
-  width: `${actionMetrics.value.size}px`,
-  height: `${actionMetrics.value.size}px`,
-  fontSize: `${actionMetrics.value.iconSize}px`
-}))
-const actionGroupStyle = computed(() => ({
-  gap: `${actionMetrics.value.gap}px`
-}))
-const floatingActionsStyle = computed(() => ({
-  top: `${Math.max(4, actionMetrics.value.padding + 2)}px`,
-  right: `${Math.max(4, actionMetrics.value.padding + 2)}px`,
-  padding: `${actionMetrics.value.padding}px`,
-  gap: `${actionMetrics.value.gap}px`
-}))
-const isButtonWidget = computed(() => props.widget.type === 'button')
-const isCompactControlWidget = computed(() => ['winccToggleButton', 'stepperControl'].includes(props.widget.type))
-const isValueColumnWidget = computed(() => props.widget.type === 'valueColumn')
+const isButtonWidget = computed(() => ['button', 'winccToggleButton', 'stepperControl'].includes(props.widget.type))
 const isLabelWidget = computed(() => props.widget.type === 'label')
 const isStatusCircleWidget = computed(() => props.widget.type === 'statusCircle')
 const isFrameBoxWidget = computed(() => props.widget.type === 'frameBox')
-const isScadaSvgWidget = computed(() => props.widget.type === 'scadaSvg')
 const isCustomShapeWidget = computed(() => props.widget.type === 'customShape')
+const isScadaSvgWidget = computed(() => props.widget.type === 'scadaSvg')
+const isProcessValueTagWidget = computed(() => props.widget.type === 'processValueTag')
 const isProcessWidget = computed(() => String(props.widget.type || '').startsWith('process'))
-const isConnectableWidget = computed(() =>
-  (isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value) && props.widget.type !== 'processValueTag'
-)
-// These widgets are their own complete visual controls.  Giving them the
-// generic module header steals most of a 40px-high control and causes the
-// initial compressed appearance seen immediately after dragging.
-const isFramelessWidget = computed(() =>
-  isButtonWidget.value || isCompactControlWidget.value || isValueColumnWidget.value ||
-  isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value ||
-  isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value
-)
+function isConnectableWidgetType(type) {
+  const normalized = String(type || '')
+  if (normalized === 'scadaSvg' || normalized === 'customShape') return true
+  if (normalized.startsWith('process')) return !['processValueTag', 'processStatusMatrix'].includes(normalized)
+  return false
+}
+const isConnectableWidget = computed(() => isConnectableWidgetType(props.widget.type))
+const isFramelessWidget = computed(() => isButtonWidget.value || isProcessWidget.value || isCustomShapeWidget.value || isScadaSvgWidget.value || isLabelWidget.value || isStatusCircleWidget.value || isFrameBoxWidget.value)
 const showConnectionPorts = computed(() =>
   !props.readonly &&
   isConnectableWidget.value &&
@@ -363,19 +334,115 @@ const widgetRotation = computed(() => {
   return Number.isFinite(value) ? value : 0
 })
 
+function clampStyleNumber(value, min, max, fallback = null) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return fallback
+  return Math.max(min, Math.min(max, number))
+}
+
+function hexToRgb(color) {
+  if (typeof color !== 'string') return null
+  let hex = color.trim()
+  if (!hex.startsWith('#')) return null
+  hex = hex.slice(1)
+  if (hex.length === 3) hex = hex.split('').map(char => char + char).join('')
+  if (hex.length !== 6) return null
+  const value = Number.parseInt(hex, 16)
+  if (!Number.isFinite(value)) return null
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255
+  }
+}
+
+function colorWithOpacity(color, opacity = 1) {
+  const rgb = hexToRgb(color)
+  if (!rgb) return color || 'transparent'
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.max(0, Math.min(1, opacity))})`
+}
+
+function colorValue(value, fallback) {
+  return typeof value === 'string' && /^#[0-9a-f]{3,6}$/i.test(value) ? value : fallback
+}
+
+function isActiveRuntimeValue(value) {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'number') return Number.isFinite(value) && value !== 0
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (!normalized) return false
+    if (['false', 'off', 'stop', 'stopped', '0'].includes(normalized)) return false
+    return true
+  }
+  return Boolean(value)
+}
+
+const visualStatusColor = computed(() => {
+  const config = props.widget.config || {}
+  if (!config.bindVariable || config.varId == null || config.varId === '') return null
+  const dp = store.realtimeData[config.varId]
+  if (!dp || dp.quality === 'BAD') return colorValue(config.statusOffColor, '#64748b')
+  return isActiveRuntimeValue(dp.value)
+    ? colorValue(config.statusOnColor, '#22c55e')
+    : colorValue(config.statusOffColor, '#64748b')
+})
+
+const wrapperAppearanceStyle = computed(() => {
+  const config = props.widget.config || {}
+  const style = {}
+  const opacity = clampStyleNumber(config.opacity, 0, 100, null)
+  if (opacity != null && opacity < 100) style.opacity = opacity / 100
+
+  const backgroundOpacity = clampStyleNumber(config.backgroundOpacity, 0, 100, null)
+  if (backgroundOpacity != null && backgroundOpacity > 0) {
+    style.background = colorWithOpacity(colorValue(config.background, '#ffffff'), backgroundOpacity / 100)
+  }
+
+  const borderRadius = clampStyleNumber(config.borderRadius, 0, 120, null)
+  // The base wrapper has a theme radius.  A configured 0 must explicitly
+  // override it; otherwise rectangle components still render as rounded.
+  if (Object.prototype.hasOwnProperty.call(config, 'borderRadius')) {
+    style.borderRadius = `${borderRadius ?? 0}px`
+  }
+
+  const configuredBorderWidth = clampStyleNumber(config.borderWidth, 0, 40, null)
+  const highlightColor = visualStatusColor.value
+  const borderWidth = highlightColor && (!configuredBorderWidth || configuredBorderWidth < 1)
+    ? 1
+    : configuredBorderWidth
+  if (borderWidth != null && borderWidth > 0) {
+    style.borderWidth = `${borderWidth}px`
+    style.borderStyle = 'solid'
+    style.borderColor = highlightColor || colorValue(config.borderColor, '#4f6fb8')
+  } else if (highlightColor) {
+    style.borderWidth = '1px'
+    style.borderStyle = 'solid'
+    style.borderColor = highlightColor
+  }
+
+  return style
+})
+
 // 像素级定位：x = left px, y = top px, w = width px, h = height px
 const wrapperStyle = computed(() => ({
   left: Math.round(props.widget.x + (Number(props.canvasOffset?.x) || 0)) + 'px',
   top: Math.round(props.widget.y + (Number(props.canvasOffset?.y) || 0)) + 'px',
   width: Math.max(1, Math.round(props.widget.w)) + 'px',
   height: Math.max(1, Math.round(props.widget.h)) + 'px',
+  ...wrapperAppearanceStyle.value,
   transform: widgetRotation.value ? `rotate(${widgetRotation.value}deg)` : undefined,
   transformOrigin: 'center center',
   zIndex: isFrameBoxWidget.value
     ? (isDragging.value || isResizing.value ? 1000 : (props.selected ? 1 : 0))
     : (isDragging.value || isResizing.value ? 1000 : 2)
 }))
+function isWidgetActionTarget(event) {
+  return Boolean(event?.target?.closest?.('.ww-actions, .widget-action-btn'))
+}
+
 function onMouseDown(e) {
+  if (isWidgetActionTarget(e)) return
   if (!props.readonly && isConnectableWidget.value && e.button === 0 && e.ctrlKey) {
     emit('select')
     emit('custom-port-connection-start', {
@@ -404,16 +471,17 @@ function startPortConnection(port, e, anchor = null) {
 
 function startDrag(e) {
   if (e.button !== 0) return
+  if (isWidgetActionTarget(e)) return
   emit('select')
-  if (typeof beginWidgetTransform === 'function') beginWidgetTransform(props.widget.id)
-  isDragging.value = true
   const startX = e.clientX
   const startY = e.clientY
   const origX = props.widget.x
   const origY = props.widget.y
-  const z = canvasZoom.value
+  const z = Number(canvasZoom.value) || 1
   let dragFrame = 0
   let pendingPosition = null
+  let dragStarted = false
+  let transformStarted = false
 
   const flushMove = () => {
     dragFrame = 0
@@ -423,6 +491,21 @@ function startDrag(e) {
   }
 
   function onMove(ev) {
+    if ((ev.buttons & 1) !== 1) {
+      onUp()
+      return
+    }
+    const clientDx = ev.clientX - startX
+    const clientDy = ev.clientY - startY
+    if (!dragStarted && Math.hypot(clientDx, clientDy) < DRAG_START_THRESHOLD) return
+    if (!dragStarted) {
+      dragStarted = true
+      isDragging.value = true
+      if (typeof beginWidgetTransform === 'function') {
+        beginWidgetTransform(props.widget.id)
+        transformStarted = true
+      }
+    }
     const dx = (ev.clientX - startX) / z
     const dy = (ev.clientY - startY) / z
     const nextX = origX + dx
@@ -447,12 +530,14 @@ function startDrag(e) {
       pendingPosition = null
     }
     if (typeof clearWidgetDragAlignment === 'function') clearWidgetDragAlignment(props.widget.id)
-    if (typeof endWidgetTransform === 'function') endWidgetTransform(props.widget.id)
+    if (transformStarted && typeof endWidgetTransform === 'function') endWidgetTransform(props.widget.id)
     document.removeEventListener('mousemove', onMove)
     document.removeEventListener('mouseup', onUp)
+    window.removeEventListener('blur', onUp)
   }
   document.addEventListener('mousemove', onMove)
   document.addEventListener('mouseup', onUp)
+  window.addEventListener('blur', onUp)
 }
 
 function startResize(dir, event) {
@@ -513,6 +598,7 @@ function startResize(dir, event) {
   document.addEventListener('mouseup', onUp)
 }
 
+function openConfig() { emit('open-config', props.widget) }
 function remove() { emit('request-remove', props.widget) }
 </script>
 
@@ -536,7 +622,11 @@ function remove() { emit('request-remove', props.widget) }
   will-change: left, top, width, height;
 }
 .widget-wrapper:hover { box-shadow: var(--shadow-md); }
-.widget-wrapper.selected { border-color: var(--accent); box-shadow: var(--shadow-focus), var(--shadow-md); }
+.widget-wrapper.selected {
+  border-color: var(--widget-action-hover-text);
+  box-shadow: var(--shadow-focus), var(--shadow-md);
+  overflow: visible;
+}
 .widget-wrapper.button-shell {
   background: transparent;
   border-color: transparent;
@@ -544,32 +634,30 @@ function remove() { emit('request-remove', props.widget) }
   overflow: visible;
 }
 .widget-wrapper.button-shell:hover,
-.widget-wrapper.compact-control-shell:hover,
-.widget-wrapper.value-column-shell:hover,
 .widget-wrapper.process-shell:hover,
 .widget-wrapper.custom-shell:hover,
-.widget-wrapper.scada-svg-shell:hover,
 .widget-wrapper.label-shell:hover,
 .widget-wrapper.status-circle-shell:hover,
+.widget-wrapper.scada-svg-shell:hover,
 .widget-wrapper.frame-shell:hover {
   box-shadow: none;
 }
 .widget-wrapper.button-shell.selected,
-.widget-wrapper.compact-control-shell.selected,
-.widget-wrapper.value-column-shell.selected,
 .widget-wrapper.process-shell.selected,
 .widget-wrapper.custom-shell.selected,
-.widget-wrapper.scada-svg-shell.selected,
 .widget-wrapper.label-shell.selected,
 .widget-wrapper.status-circle-shell.selected,
+.widget-wrapper.scada-svg-shell.selected,
 .widget-wrapper.frame-shell.selected {
-  border-color: var(--accent);
+  border-color: var(--widget-action-hover-text);
   box-shadow: var(--shadow-focus);
+}
+.widget-wrapper.process-value-tag-shell.selected {
+  border-color: transparent;
+  box-shadow: none;
 }
 .widget-wrapper.label-shell,
 .widget-wrapper.status-circle-shell,
-.widget-wrapper.compact-control-shell,
-.widget-wrapper.value-column-shell,
 .widget-wrapper.process-shell,
 .widget-wrapper.custom-shell,
 .widget-wrapper.scada-svg-shell,
@@ -636,7 +724,7 @@ function remove() { emit('request-remove', props.widget) }
 }
 .ww-actions {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
@@ -644,24 +732,53 @@ function remove() { emit('request-remove', props.widget) }
 .widget-wrapper.selected .ww-actions,
 .ww-actions:focus-within {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: none;
 }
 .widget-action-btn {
   flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
   line-height: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  pointer-events: auto;
 }
 .ww-floating-actions {
   position: absolute;
-  z-index: 30;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--border-light);
+  z-index: 1201;
+  top: -48px;
+  right: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 0;
+  padding: 3px;
+  background: var(--widget-action-bg);
+  border: 1px solid var(--widget-action-border);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--widget-action-shadow);
   transform: translateY(-2px);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.ww-floating-actions .widget-action-btn {
+  color: var(--widget-action-text);
+  border-color: transparent;
+}
+.ww-floating-actions .widget-action-btn:hover {
+  background: var(--widget-action-hover-bg);
+  color: var(--widget-action-hover-text);
+}
+.ww-floating-actions .widget-action-btn:last-child:hover {
+  color: var(--danger-text);
 }
 .widget-wrapper.selected .ww-floating-actions,
 .ww-floating-actions:focus-within {
-  transform: translateY(0);
+  transform: translateY(-6px);
+  pointer-events: none;
 }
 
 .ww-body { flex: 1; overflow: hidden; }
@@ -714,13 +831,46 @@ function remove() { emit('request-remove', props.widget) }
 .resize-handle { position: absolute; z-index: 10; }
 .resize-handle.br { right: -2px; bottom: -2px; width: 14px; height: 14px; cursor: nwse-resize; }
 .resize-handle.b { left: 0; bottom: 0; width: 100%; height: 6px; cursor: ns-resize; }
-.resize-handle.r { right: 0; top: 0; width: 6px; height: 100%; cursor: ew-resize; }
+.resize-handle.r { right: -10px; top: 0; width: 20px; height: 100%; cursor: ew-resize; }
+.widget-wrapper.custom-shell .resize-handle.r::before,
+.widget-wrapper.scada-svg-shell .resize-handle.r::before {
+  content: '';
+  position: absolute;
+  left: 58%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  border: 2px solid rgba(79, 111, 184, 0.68);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+  transform: translate(-50%, -50%);
+}
+.widget-wrapper.custom-shell .resize-handle.r::after,
+.widget-wrapper.scada-svg-shell .resize-handle.r::after {
+  content: '';
+  position: absolute;
+  left: 58%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid #4f6fb8;
+  border-right: 2px solid #4f6fb8;
+  transform: translate(-50%, -50%);
+}
+.widget-wrapper.custom-shell.ports-visible .resize-handle.r::before,
+.widget-wrapper.scada-svg-shell.ports-visible .resize-handle.r::before,
+.widget-wrapper.custom-shell.ports-visible .resize-handle.r::after,
+.widget-wrapper.scada-svg-shell.ports-visible .resize-handle.r::after {
+  top: 28%;
+  left: 64%;
+}
 .scale-handle {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface-raised);
   border: 1px solid rgba(79, 111, 184, 0.42);
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
 }
@@ -758,7 +908,7 @@ function remove() { emit('request-remove', props.widget) }
   padding: 0;
   border: 1.5px solid rgba(14, 165, 233, 0.95);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--surface-raised);
   box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.18), 0 1px 4px rgba(15, 23, 42, 0.18);
   transform: translate(-50%, -50%);
   cursor: crosshair;
@@ -789,3 +939,4 @@ function remove() { emit('request-remove', props.widget) }
   pointer-events: none;
 }
 </style>
+

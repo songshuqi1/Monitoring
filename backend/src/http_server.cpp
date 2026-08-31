@@ -9,6 +9,7 @@
 #include <wincrypt.h>
 #include <ws2tcpip.h>
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <map>
 #include <regex>
@@ -47,8 +48,11 @@ static std::string jsonResponse(const std::string& body, int statusCode = 200) {
     std::string statusStr = (statusCode == 200) ? "200 OK" :
                             (statusCode == 400) ? "400 Bad Request" :
                             (statusCode == 401) ? "401 Unauthorized" :
+                            (statusCode == 403) ? "403 Forbidden" :
                             (statusCode == 404) ? "404 Not Found" :
+                            (statusCode == 409) ? "409 Conflict" :
                             (statusCode == 405) ? "405 Method Not Allowed" :
+                            (statusCode == 502) ? "502 Bad Gateway" :
                             (statusCode == 500) ? "500 Internal Server Error" : "200 OK";
     std::stringstream ss;
     ss << "HTTP/1.1 " << statusStr << "\r\n"
@@ -61,6 +65,12 @@ static std::string jsonResponse(const std::string& body, int statusCode = 200) {
        << "\r\n"
        << body;
     return ss.str();
+}
+
+static bool readbackMatchesCommand(double expected, double actual) {
+    if (!std::isfinite(expected) || !std::isfinite(actual)) return false;
+    const double tolerance = std::max(1e-6, std::max(std::abs(expected), std::abs(actual)) * 1e-6);
+    return std::abs(expected - actual) <= tolerance;
 }
 
 static std::string htmlResponse(const std::string& body, int statusCode = 200) {
@@ -179,6 +189,17 @@ static std::string extractJsonStringField(const std::string& obj, const std::str
     auto end = obj.find('"', start + 1);
     if (end == std::string::npos) return "";
     return obj.substr(start + 1, end - start - 1);
+}
+
+static int extractJsonIntField(const std::string& obj, const std::string& key, int fallback) {
+    std::string searchKey = "\"" + key + "\"";
+    auto pos = obj.find(searchKey);
+    if (pos == std::string::npos) return fallback;
+    auto colon = obj.find(':', pos);
+    if (colon == std::string::npos) return fallback;
+    auto start = obj.find_first_of("-0123456789", colon + 1);
+    if (start == std::string::npos) return fallback;
+    try { return std::stoi(obj.substr(start)); } catch (...) { return fallback; }
 }
 
 // 把 JSON 数组（或单个对象）拆成顶层对象字符串列表（按花括号深度匹配）
@@ -812,11 +833,36 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 json += "]";
                 return jsonResponse(json);
             }
-            else if (method == "GET" && parts.size() >= 3) {
-                int id = std::stoi(parts[2]);
+            else if (method == "GET" && parts.size() == 3) {
+                int id = 0;
+                try {
+                    size_t parsed = 0;
+                    id = std::stoi(parts[2], &parsed);
+                    if (parsed != parts[2].size() || id == 0) throw std::invalid_argument("invalid variable id");
+                } catch (...) {
+                    return jsonResponse("{\"error\":\"invalid variable id\"}", 400);
+                }
                 auto v = VariableManager::instance().getDefinition(id);
                 if (v.id == 0) return jsonResponse("{\"error\":\"not found\"}", 404);
-                std::string json = "{\"id\":" + std::to_string(v.id) + "...}"; // simplified
+                // Keep the single-variable response structurally identical to
+                // GET /api/variables.  The parameter write screen relies on
+                // source/resourceId/opcuaNodeId to route a command correctly.
+                std::string json = "{\"id\":" + std::to_string(v.id) +
+                    ",\"name\":\"" + escapeJson(v.name) +
+                    "\",\"description\":\"" + escapeJson(v.description) +
+                    "\",\"dataType\":\"" + escapeJson(v.dataType) +
+                    "\",\"source\":\"" + escapeJson(v.source) +
+                    "\",\"opcuaNodeId\":\"" + escapeJson(v.opcuaNodeId) +
+                    "\",\"udpPort\":" + std::to_string(v.udpPort) +
+                    ",\"resourceId\":\"" + escapeJson(v.resourceId) +
+                    "\",\"resourceName\":\"" + escapeJson(v.resourceName) +
+                    "\",\"scopeId\":\"" + escapeJson(v.scopeId) +
+                    "\",\"scopeName\":\"" + escapeJson(v.scopeName) +
+                    "\",\"minValue\":" + std::to_string(v.minValue) +
+                    ",\"maxValue\":" + std::to_string(v.maxValue) +
+                    ",\"unit\":\"" + escapeJson(v.unit) +
+                    "\",\"color\":\"" + escapeJson(v.color) +
+                    "\",\"enabled\":" + (v.enabled ? "true" : "false") + "}";
                 return jsonResponse(json);
             }
             else if (method == "POST") {
@@ -918,38 +964,163 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
         }
 
         // ========== API: 写入变量 ==========
-        if (parts.size() >= 3 && parts[0] == "api" && parts[1] == "write") {
+        if (parts.size() == 3 && parts[0] == "api" && parts[1] == "write") {
             if (method == "POST") {
-                int varId = std::stoi(parts[2]);
+                int varId = 0;
+                try {
+                    size_t parsed = 0;
+                    varId = std::stoi(parts[2], &parsed);
+                    // A runtime without MySQL assigns negative in-memory IDs
+                    // to collected variables.  Only zero is the sentinel for
+                    // a missing variable, so negative IDs are valid here.
+                    if (parsed != parts[2].size() || varId == 0) throw std::invalid_argument("invalid variable id");
+                } catch (...) {
+                    return jsonResponse("{\"error\":\"invalid variable id\"}", 400);
+                }
                 // Parse value from body
                 auto valPos = body.find("\"value\"");
                 if (valPos == std::string::npos) return jsonResponse("{\"error\":\"value required\"}", 400);
                 auto colon = body.find(':', valPos);
-                auto start = body.find_first_of("-0123456789.", colon);
+                if (colon == std::string::npos) return jsonResponse("{\"error\":\"invalid value\"}", 400);
+                auto start = body.find_first_not_of(" \t\r\n", colon + 1);
                 if (start == std::string::npos) return jsonResponse("{\"error\":\"invalid value\"}", 400);
-                auto end = body.find_first_not_of(".0123456789eE-+", start);
-                double value = (end == std::string::npos) ? std::stod(body.substr(start))
-                                                          : std::stod(body.substr(start, end - start));
+                double value = 0.0;
+                try {
+                    size_t consumed = 0;
+                    value = std::stod(body.substr(start), &consumed);
+                    const auto tail = body.find_first_not_of(" \t\r\n", start + consumed);
+                    if (tail != std::string::npos && body[tail] != ',' && body[tail] != '}') {
+                        throw std::invalid_argument("invalid JSON number terminator");
+                    }
+                } catch (...) {
+                    return jsonResponse("{\"error\":\"invalid value\"}", 400);
+                }
+                if (!std::isfinite(value)) return jsonResponse("{\"error\":\"value must be finite\"}", 400);
 
                 auto v = VariableManager::instance().getDefinition(varId);
+                if (v.id != varId) return jsonResponse("{\"error\":\"variable not found\"}", 404);
                 auto oldData = VariableManager::instance().getLatestData(varId);
-                VariableManager::instance().updateValue(varId, value, "GOOD");
 
                 std::string writeStatus = "LOCAL_ONLY";
                 std::string writeDetail = "Local value updated";
-
-                // 只对 OPC UA 变量写入 OPC UA，避免把其他源误发到 OPC UA。
-                if (v.source == "OPCUA" && !v.opcuaNodeId.empty()) {
-                    bool writeOk = OPCUAManager::instance().writeVariable(v.opcuaNodeId, value);
-                    writeStatus = writeOk ? "SUCCESS" : "OPCUA_FAILED";
-                    writeDetail = writeOk ? "OPC UA write succeeded" : "OPC UA write failed";
-                } else if (v.source == "SDC") {
-                    std::string sdcError;
-                    bool writeOk = CommunicationManager::instance().writeSdcValue(v.opcuaNodeId, value, sdcError);
-                    writeStatus = writeOk ? "SUCCESS" : "SDC_FAILED";
-                    writeDetail = writeOk ? "SDC write succeeded" : ("SDC write failed: " + sdcError);
+                bool writeOk = v.enabled;
+                int failureHttpStatus = v.enabled ? 502 : 409;
+                double opcuaReadbackValue = 0.0;
+                std::string opcuaReadbackError;
+                bool opcuaReadbackAttempted = false;
+                if (!v.enabled) {
+                    writeStatus = "VARIABLE_DISABLED";
+                    writeDetail = "Variable is disabled and cannot receive a command";
                 }
 
+                // All collected protocols use the originating communication
+                // resource. A failed controller write never changes the local
+                // real-time value to a value that the device did not accept.
+                std::string source = v.source;
+                std::transform(source.begin(), source.end(), source.begin(), [](unsigned char ch) {
+                    return static_cast<char>(std::toupper(ch));
+                });
+                if (writeOk && source == "OPCUA") {
+                    const auto resource = CommunicationManager::instance().getResource(v.resourceId);
+                    std::string opcuaError;
+                    if (resource.id.empty() || resource.type != "OPCUA") {
+                        opcuaError = "The originating OPC UA communication resource no longer exists";
+                        writeOk = false;
+                    } else if (!resource.enabled) {
+                        opcuaError = "The originating OPC UA communication resource is disabled";
+                        writeOk = false;
+                    } else if (v.opcuaNodeId.empty()) {
+                        opcuaError = "OPC UA variable has no NodeId binding";
+                        writeOk = false;
+                    } else {
+                        opcuaReadbackAttempted = true;
+                        writeOk = OPCUAManager::instance().writeRemoteValue(
+                            resource.endpoint, v.opcuaNodeId, value, opcuaError,
+                            &opcuaReadbackValue, &opcuaReadbackError);
+                    }
+                    writeStatus = writeOk ? "SUCCESS" : "OPCUA_FAILED";
+                    writeDetail = writeOk ? "OPC UA write succeeded" : ("OPC UA write failed: " + opcuaError);
+                } else if (writeOk && source == "SDC") {
+                    std::string sdcError;
+                    writeOk = CommunicationManager::instance().writeSdcValue(v.opcuaNodeId, value, sdcError);
+                    writeStatus = writeOk ? "SUCCESS" : "SDC_FAILED";
+                    writeDetail = writeOk ? "SDC write succeeded" : ("SDC write failed: " + sdcError);
+                } else if (writeOk && source == "MODBUS") {
+                    std::string modbusError;
+                    writeOk = CommunicationManager::instance().writeModbusValue(v.resourceId, v.opcuaNodeId, value, modbusError);
+                    writeStatus = writeOk ? "SUCCESS" : "MODBUS_FAILED";
+                    writeDetail = writeOk ? "Modbus write succeeded" : ("Modbus write failed: " + modbusError);
+                } else if (writeOk && source == "UDP") {
+                    std::string udpError;
+                    writeOk = CommunicationManager::instance().writeUdpValue(v.resourceId, v.opcuaNodeId.empty() ? v.name : v.opcuaNodeId, value, udpError);
+                    writeStatus = writeOk ? "SUCCESS" : "UDP_FAILED";
+                    writeDetail = writeOk ? "UDP command datagram sent" : ("UDP write failed: " + udpError);
+                }
+
+                // A successful transport write only proves that the command
+                // was accepted. Confirm it with a protocol readback whenever
+                // the protocol defines one. The local realtime cache is only
+                // updated from an actual readback, never from the requested
+                // value itself.
+                std::string readbackStatus = "NOT_EXECUTED";
+                std::string readbackDetail = "Write did not succeed, so no readback was performed";
+                double readbackValue = 0.0;
+                bool hasReadbackValue = false;
+                if (writeOk && source == "OPCUA") {
+                    const auto resource = CommunicationManager::instance().getResource(v.resourceId);
+                    if (!opcuaReadbackAttempted || resource.id.empty() || resource.type != "OPCUA" || v.opcuaNodeId.empty()) {
+                        readbackStatus = "FAILED";
+                        readbackDetail = "OPC UA readback route is unavailable";
+                    } else if (opcuaReadbackError.empty()) {
+                        readbackValue = opcuaReadbackValue;
+                        hasReadbackValue = true;
+                        readbackStatus = readbackMatchesCommand(value, readbackValue) ? "MATCH" : "MISMATCH";
+                        readbackDetail = readbackStatus == "MATCH"
+                            ? "OPC UA readback matches the command"
+                            : "OPC UA readback differs from the command";
+                    } else {
+                        readbackStatus = "FAILED";
+                        readbackDetail = "OPC UA readback failed: " + opcuaReadbackError;
+                    }
+                } else if (writeOk && source == "MODBUS") {
+                    std::string readError;
+                    if (CommunicationManager::instance().readModbusValue(v.resourceId, v.opcuaNodeId, readbackValue, readError)) {
+                        hasReadbackValue = true;
+                        readbackStatus = readbackMatchesCommand(value, readbackValue) ? "MATCH" : "MISMATCH";
+                        readbackDetail = readbackStatus == "MATCH"
+                            ? "Modbus readback matches the command"
+                            : "Modbus readback differs from the command";
+                    } else {
+                        readbackStatus = "FAILED";
+                        readbackDetail = "Modbus readback failed: " + readError;
+                    }
+                } else if (writeOk && source == "SDC") {
+                    std::string readError;
+                    if (CommunicationManager::instance().readSdcValue(v.opcuaNodeId, readbackValue, readError)) {
+                        hasReadbackValue = true;
+                        readbackStatus = readbackMatchesCommand(value, readbackValue) ? "MATCH" : "MISMATCH";
+                        readbackDetail = readbackStatus == "MATCH"
+                            ? "SDC readback matches the command"
+                            : "SDC readback differs from the command";
+                    } else {
+                        readbackStatus = "FAILED";
+                        readbackDetail = "SDC readback failed: " + readError;
+                    }
+                } else if (writeOk && source == "UDP") {
+                    const auto resource = CommunicationManager::instance().getResource(v.resourceId);
+                    readbackStatus = resource.udpRequireAck ? "ACK_CONFIRMED" : "NOT_SUPPORTED";
+                    readbackDetail = resource.udpRequireAck
+                        ? "UDP controller ACK confirmed; the UDP resource has no standard value-readback request"
+                        : "UDP resource has no standard value-readback request";
+                } else if (writeOk) {
+                    readbackStatus = "LOCAL_VALUE";
+                    readbackDetail = "Local variable value was updated";
+                    readbackValue = value;
+                    hasReadbackValue = true;
+                }
+                if (hasReadbackValue) VariableManager::instance().updateValue(varId, readbackValue, "GOOD");
+
+                const std::string auditDetail = writeDetail + "; Readback: " + readbackDetail;
                 DatabaseManager::instance().insertWriteRecord(
                     varId,
                     v.name,
@@ -957,7 +1128,7 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                     v.opcuaNodeId,
                     writeStatus,
                     "OPERATOR",
-                    writeDetail,
+                    auditDetail,
                     nowMs()
                 );
 
@@ -969,10 +1140,16 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 log.oldValue = oldData.varId == varId ? oldData.value : 0.0;
                 log.newValue = value;
                 log.operator_ = "OPERATOR";
-                log.detail = "Set variable to " + std::to_string(value) + " (" + writeStatus + ")";
+                log.detail = "Set variable to " + std::to_string(value) + " (" + writeStatus + "); " + readbackDetail;
                 DatabaseManager::instance().insertOperationLog(log);
 
-                return jsonResponse("{\"status\":\"ok\",\"writeStatus\":\"" + writeStatus + "\"}");
+                const int httpStatus = writeOk ? 200 : failureHttpStatus;
+                return jsonResponse("{\"status\":\"" + std::string(writeOk ? "ok" : "error") +
+                                    "\",\"writeStatus\":\"" + writeStatus +
+                                    "\",\"message\":\"" + escapeJson(writeDetail) +
+                                    "\",\"readbackStatus\":\"" + readbackStatus +
+                                    "\",\"readbackValue\":" + (hasReadbackValue ? std::to_string(readbackValue) : "null") +
+                                    ",\"readbackMessage\":\"" + escapeJson(readbackDetail) + "\"}", httpStatus);
             }
         }
 
@@ -1392,6 +1569,20 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
             }
         }
 
+        // ========== API: Modbus TCP connection test ==========
+        if (parts.size() == 3 && parts[0] == "api" && parts[1] == "modbus" && parts[2] == "test" && method == "POST") {
+            std::string host = extractJsonStringField(body, "host");
+            if (host.empty()) host = extractJsonStringField(body, "modbusHost");
+            const int port = extractJsonIntField(body, "port", 502);
+            const int timeoutMs = extractJsonIntField(body, "timeoutMs", 2500);
+            std::string error;
+            const bool connected = CommunicationManager::instance().testModbusEndpoint(host, port, timeoutMs, error);
+            std::string json = "{\"connected\":" + std::string(connected ? "true" : "false") +
+                               ",\"host\":\"" + escapeJson(host) + "\",\"port\":" + std::to_string(port) +
+                               ",\"message\":\"" + escapeJson(connected ? "Modbus TCP connected" : error) + "\"}";
+            return jsonResponse(json, connected ? 200 : 400);
+        }
+
         // ========== API: 软件定义通信资源 ==========
         // POST /api/sdc/test {"sdcUrl":"http://agent:9100"}
         // Tests the Monitor Agent without creating a persistent resource.
@@ -1521,13 +1712,16 @@ void HttpServer::serverLoop() {
     Log(LogLevel::INFO, "HTTP Server started on port " + std::to_string(port_));
 
     fd_set readSet;
-    struct timeval tv;
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
 
     while (running_) {
         FD_ZERO(&readSet);
         FD_SET(listenSock_, &readSet);
+
+        // select may change its timeout. Reset it for every iteration so the
+        // listener keeps a predictable wait period instead of spinning.
+        struct timeval tv;
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
 
         int ret = select(0, &readSet, NULL, NULL, &tv);
         if (ret > 0 && FD_ISSET(listenSock_, &readSet)) {
@@ -1537,14 +1731,20 @@ void HttpServer::serverLoop() {
 
             if (clientSock == INVALID_SOCKET) continue;
 
+            // Apply timeouts before the initial recv as well. Previously the
+            // first client that opened a TCP connection without immediately
+            // sending an HTTP request could block the sole server loop
+            // indefinitely, leaving every API request in the browser pending.
+            DWORD clientTimeout = 3000;
+            setsockopt(clientSock, SOL_SOCKET, SO_RCVTIMEO,
+                       (const char*)&clientTimeout, sizeof(clientTimeout));
+            setsockopt(clientSock, SOL_SOCKET, SO_SNDTIMEO,
+                       (const char*)&clientTimeout, sizeof(clientTimeout));
+
             char buffer[65536];
             int total = recv(clientSock, buffer, sizeof(buffer) - 1, 0);
             if (total <= 0) { closesocket(clientSock); continue; }
             buffer[total] = '\0';
-
-            // 设置 3s 超时用于后续补读
-            DWORD rcvto = 3000;
-            setsockopt(clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&rcvto, sizeof(rcvto));
 
             std::string request(buffer);
 

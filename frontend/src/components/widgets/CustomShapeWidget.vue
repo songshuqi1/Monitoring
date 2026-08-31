@@ -6,17 +6,47 @@
       preserveAspectRatio="none"
       aria-hidden="true"
     >
+      <defs>
+        <linearGradient :id="scadaDefinitionId('metal')" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff" /><stop offset="0.17" stop-color="#d8d8d8" />
+          <stop offset="0.48" stop-color="#8a8a8a" /><stop offset="0.7" stop-color="#eeeeee" />
+          <stop offset="1" stop-color="#777777" />
+        </linearGradient>
+        <linearGradient :id="scadaDefinitionId('metal-v')" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ffffff" /><stop offset="0.22" stop-color="#d5d5d5" />
+          <stop offset="0.56" stop-color="#777777" /><stop offset="0.78" stop-color="#eeeeee" />
+          <stop offset="1" stop-color="#767676" />
+        </linearGradient>
+        <linearGradient :id="scadaDefinitionId('cyan')" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#eaffff" /><stop offset="0.5" stop-color="#75dce1" /><stop offset="1" stop-color="#299aa2" />
+        </linearGradient>
+      </defs>
       <template v-for="shape in definition.shapes" :key="shape.id">
         <g :transform="shapeTransform(shape)">
+          <g v-if="isScadaSymbol(shape.kind)">
+            <path
+              v-for="part in scadaSymbolParts(shape)"
+              :key="part.key"
+              :d="part.d"
+              :transform="part.transform"
+              :fill="scadaPartFill(part)"
+              :fill-opacity="part.fillOpacity"
+              :stroke="scadaPartStroke(part)"
+              :stroke-opacity="part.strokeOpacity"
+              :stroke-width="part.strokeWidth || Math.max(1, shape.strokeWidth)"
+              :stroke-linecap="part.strokeLinecap || 'round'"
+              :stroke-linejoin="part.strokeLinejoin || 'round'"
+            />
+          </g>
           <rect
-            v-if="['rect', 'square', 'round-rect', 'capsule'].includes(shape.kind)"
+            v-else-if="['rect', 'square', 'round-rect', 'capsule'].includes(shape.kind)"
             :x="shape.x"
             :y="shape.y"
             :width="Math.max(0, Number(shape.w) || 0)"
             :height="Math.max(0, Number(shape.h) || 0)"
             :rx="shape.kind === 'capsule' ? Math.max(0, shape.h / 2) : (shape.radius || 0)"
-            :fill="shapeFill(shape)"
-            :stroke="shape.stroke"
+            :fill="scadaShapePaint(shape)"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="shape.strokeWidth"
           />
           <ellipse
@@ -25,34 +55,34 @@
             :cy="shape.y + shape.h / 2"
             :rx="Math.max(0, shape.w / 2)"
             :ry="Math.max(0, shape.h / 2)"
-            :fill="shapeFill(shape)"
-            :stroke="shape.stroke"
+            :fill="scadaShapePaint(shape)"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="shape.strokeWidth"
           />
           <polygon
             v-else-if="polygonShapeKinds.includes(shape.kind)"
             :points="polygonPoints(shape)"
-            :fill="shapeFill(shape)"
-            :stroke="shape.stroke"
+            :fill="scadaShapePaint(shape)"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="shape.strokeWidth"
           />
           <path
             v-else-if="pathShapeKinds.includes(shape.kind)"
             :d="shapePath(shape)"
             :fill="pathShapeFill(shape)"
-            :stroke="shape.stroke"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="Math.max(1, shape.strokeWidth)"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
           <g v-else-if="threeDShapeKinds.includes(shape.kind)">
             <path
-              v-for="part in threeDShapeParts(shape, shapeFill(shape))"
+            v-for="part in threeDShapeParts(shape, scadaShapePaint(shape))"
               :key="part.key"
               :d="part.d"
               :fill="part.fill"
               :fill-opacity="part.fillOpacity"
-              :stroke="part.stroke || shape.stroke"
+            :stroke="part.stroke || scadaShapeStroke(shape)"
               :stroke-opacity="part.strokeOpacity"
               :stroke-width="Math.max(1, shape.strokeWidth)"
               stroke-linejoin="round"
@@ -65,7 +95,7 @@
             :y1="shape.y + shape.h / 2"
             :x2="shape.x + shape.w"
             :y2="shape.y + shape.h / 2"
-            :stroke="shape.stroke"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="Math.max(1, shape.strokeWidth)"
             stroke-linecap="round"
           />
@@ -75,7 +105,7 @@
             :y1="shape.y"
             :x2="shape.x + shape.w / 2"
             :y2="shape.y + shape.h"
-            :stroke="shape.stroke"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="Math.max(1, shape.strokeWidth)"
             stroke-linecap="round"
           />
@@ -85,7 +115,7 @@
             :y1="shape.y + shape.h"
             :x2="shape.x + shape.w"
             :y2="shape.y"
-            :stroke="shape.stroke"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="Math.max(1, shape.strokeWidth)"
             stroke-linecap="round"
           />
@@ -95,7 +125,7 @@
             :y1="shape.y"
             :x2="shape.x + shape.w"
             :y2="shape.y + shape.h"
-            :stroke="shape.stroke"
+            :stroke="scadaShapeStroke(shape)"
             :stroke-width="Math.max(1, shape.strokeWidth)"
             stroke-linecap="round"
           />
@@ -105,7 +135,7 @@
               :y1="shape.y + shape.h / 2"
               :x2="shape.x + shape.w"
               :y2="shape.y + shape.h / 2"
-              :stroke="shape.stroke"
+              :stroke="scadaShapeStroke(shape)"
               :stroke-width="Math.max(1, shape.strokeWidth)"
               stroke-linecap="round"
             />
@@ -114,7 +144,7 @@
               :y1="shape.y"
               :x2="shape.x + shape.w / 2"
               :y2="shape.y + shape.h"
-              :stroke="shape.stroke"
+              :stroke="scadaShapeStroke(shape)"
               :stroke-width="Math.max(1, shape.strokeWidth)"
               stroke-linecap="round"
             />
@@ -122,19 +152,32 @@
         </g>
       </template>
     </svg>
-    <div v-if="label && !hideName" class="custom-shape-label" :style="labelStyle">{{ label }}</div>
+    <div
+      v-if="label && !hideName"
+      class="custom-shape-label"
+      :class="{ draggable: !readonly }"
+      :style="labelStyle"
+      @mousedown.stop.prevent="startLabelDrag"
+    >{{ label }}</div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useMonitorStore } from '../../store/index.js'
+import {
+  isScadaSymbol,
+  scadaSymbolParts
+} from '../../services/scadaClassicSymbolService.js'
 
 const props = defineProps({
-  widget: { type: Object, required: true }
+  widget: { type: Object, required: true },
+  readonly: { type: Boolean, default: false }
 })
 
 const store = useMonitorStore()
+const canvasZoom = inject('canvasZoom', ref(1))
+const scadaIdPrefix = computed(() => `custom-scada-${String(props.widget?.id || 'shape').replace(/[^a-zA-Z0-9_-]/g, '-')}`)
 
 const definition = computed(() => {
   const source = props.widget.config?.definition || {}
@@ -184,6 +227,48 @@ function shapeFill(shape) {
     return '#263544'
   }
   return shape.fill || 'transparent'
+}
+
+function scadaDefinitionId(layer) {
+  return `${scadaIdPrefix.value}-${layer}`
+}
+
+function scadaDefinitionUrl(layer) {
+  return `url(#${scadaDefinitionId(layer)})`
+}
+
+function scadaPaint(paint = 'metal') {
+  if (paint === 'none') return 'none'
+  if (paint === 'outline') return '#111111'
+  if (paint === 'highlight') return '#ffffff'
+  if (paint === 'shade') return '#6e6e6e'
+  if (paint === 'cyan') return scadaDefinitionUrl('cyan')
+  if (paint === 'blue') return '#0000ff'
+  if (paint === 'metal-v') return scadaDefinitionUrl('metal-v')
+  return scadaDefinitionUrl('metal')
+}
+
+function scadaShapePaint(shape) {
+  if (statusColor.value && shape.bindStatus !== false && !lineShapeKinds.includes(shape.kind)) return shapeFill(shape)
+  if (shape?.scadaStyle === 'metal') return scadaPaint('metal')
+  if (shape?.scadaStyle === 'instrument') return scadaPaint('cyan')
+  if (shape?.scadaStyle === 'flow') return scadaPaint('blue')
+  return shapeFill(shape)
+}
+
+function scadaShapeStroke(shape) {
+  return shape?.scadaStyle && shape.scadaStyle !== 'none'
+    ? scadaPaint('outline')
+    : (shape?.stroke || '#263544')
+}
+
+function scadaPartFill(part) {
+  return scadaPaint(part.paint)
+}
+
+function scadaPartStroke(part) {
+  if (part.stroke === 'none') return 'none'
+  return part.strokePaint ? scadaPaint(part.strokePaint) : scadaPaint('outline')
 }
 
 function regularPolygonPoints(shape, sides, rotationDeg = -90) {
@@ -242,7 +327,7 @@ function starPoints(shape) {
 }
 
 function pathShapeFill(shape) {
-  return filledPathShapeKinds.includes(shape.kind) ? shapeFill(shape) : 'none'
+  return filledPathShapeKinds.includes(shape.kind) ? scadaShapePaint(shape) : 'none'
 }
 
 function ellipsePath(cx, cy, rx, ry) {
@@ -351,12 +436,13 @@ function shapeRotation(shape) {
 
 function shapeTransform(shape) {
   const rotate = shapeRotation(shape)
-  if (!rotate) return ''
   const x = Number(shape.x) || 0
   const y = Number(shape.y) || 0
   const w = Number(shape.w) || 0
   const h = Number(shape.h) || 0
-  return `rotate(${rotate} ${x + w / 2} ${y + h / 2})`
+  const cx = x + w / 2
+  const cy = y + h / 2
+  return rotate ? `rotate(${rotate} ${cx} ${cy})` : ''
 }
 
 const label = computed(() => props.widget.config?.label || props.widget.config?.title || '')
@@ -365,6 +451,30 @@ const labelStyle = computed(() => ({
   transform: `translate(-50%, 0) translate(${Number(props.widget.config?.labelOffsetX) || 0}px, ${Number(props.widget.config?.labelOffsetY) || 0}px)`,
   fontSize: `${Math.max(8, Math.min(72, Number(props.widget.config?.labelFontSize) || 12))}px`
 }))
+
+function startLabelDrag(e) {
+  if (props.readonly) return
+  const startX = e.clientX
+  const startY = e.clientY
+  const originX = Number(props.widget.config?.labelOffsetX) || 0
+  const originY = Number(props.widget.config?.labelOffsetY) || 0
+  const z = Number(canvasZoom.value) || 1
+  const onMove = (ev) => {
+    store.updateWidget(props.widget.id, {
+      config: {
+        ...props.widget.config,
+        labelOffsetX: originX + (ev.clientX - startX) / z,
+        labelOffsetY: originY + (ev.clientY - startY) / z
+      }
+    })
+  }
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
 </script>
 
 <style scoped>
@@ -389,10 +499,16 @@ const labelStyle = computed(() => ({
   max-width: 160%;
   padding: 2px 7px;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(120, 133, 146, 0.28);
-  color: var(--text-primary);
+  background: var(--widget-label-bg);
+  border: 1px solid var(--widget-label-border);
+  color: var(--widget-label-text);
   font-weight: 700;
   white-space: nowrap;
+  box-shadow: var(--widget-label-shadow);
+  backdrop-filter: blur(8px);
+}
+.custom-shape-label.draggable {
+  cursor: move;
+  pointer-events: auto;
 }
 </style>

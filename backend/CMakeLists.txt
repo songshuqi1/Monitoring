@@ -92,6 +92,7 @@ endif()
 # 链接库
 # ============================================================
 set(LIBS open62541 ws2_32 crypt32 winhttp)
+option(MONITOR_DISABLE_MYSQL "Build without MySQL support" OFF)
 find_library(MYSQL_LIB
     NAMES libmysql mysqlclient
     PATHS
@@ -103,8 +104,8 @@ find_library(MYSQL_LIB
         "C:/Program Files (x86)/MySQL/MySQL Connector C 6.1/lib"
         "$ENV{MYSQL_CONNECTOR_DIR}/lib"
 )
-if(NOT MYSQL_LIB)
-    message(WARNING "MySQL library not found. DB features disabled at runtime.")
+if(MONITOR_DISABLE_MYSQL OR NOT MYSQL_LIB)
+    message(STATUS "MySQL support disabled for this build.")
     add_compile_definitions(MONITOR_NO_MYSQL)
 else()
     list(APPEND LIBS "${MYSQL_LIB}")

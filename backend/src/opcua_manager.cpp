@@ -3,6 +3,9 @@
 #include "database.h"
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <cmath>
+#include <limits>
 #include <regex>
 
 OPCUAManager& OPCUAManager::instance() {
@@ -185,7 +188,7 @@ static size_t findNodeIdIdentifierStart(const std::string& s, size_t searchFrom)
 //   "ns=1;s=temperature" → 字符串型, namespace 1, id="temperature"
 //   "temperature"     → 字符串型, namespace 1, id="temperature"
 static UA_NodeId parseNodeId(const std::string& nodeIdStr) {
-    int ns = 1;
+    UA_UInt16 ns = 1;
     std::string remain = trimCopy(nodeIdStr);
     std::string original = remain;
 
@@ -194,10 +197,14 @@ static UA_NodeId parseNodeId(const std::string& nodeIdStr) {
         auto semi = original.find(';', 3);
         if (semi != std::string::npos) {
             try {
-                ns = std::stoi(original.substr(3, semi - 3));
+                const long long parsedNamespace = std::stoll(original.substr(3, semi - 3));
+                if (parsedNamespace < 0 || parsedNamespace > std::numeric_limits<UA_UInt16>::max()) {
+                    return UA_NODEID_NULL;
+                }
+                ns = static_cast<UA_UInt16>(parsedNamespace);
                 remain = original.substr(semi + 1);
             } catch (...) {
-                remain = original;
+                return UA_NODEID_NULL;
             }
         }
     }
@@ -205,15 +212,18 @@ static UA_NodeId parseNodeId(const std::string& nodeIdStr) {
     // 判断是数值型 (i=...) 还是字符串型 (s=...)
     if (remain.size() >= 2 && remain[0] == 'i' && remain[1] == '=') {
         try {
-            int id = std::stoi(remain.substr(2));
-            return UA_NODEID_NUMERIC(ns, id);
+            const unsigned long long id = std::stoull(remain.substr(2));
+            if (id > std::numeric_limits<UA_UInt32>::max()) return UA_NODEID_NULL;
+            return UA_NODEID_NUMERIC(ns, static_cast<UA_UInt32>(id));
         } catch (...) {
             return UA_NODEID_NULL;
         }
     } else if (remain.size() >= 2 && remain[0] == 's' && remain[1] == '=') {
+        if (remain.size() == 2) return UA_NODEID_NULL;
         return UA_NODEID_STRING_ALLOC(ns, remain.substr(2).c_str());
     } else {
         // 纯字符串名称
+        if (remain.empty()) return UA_NODEID_NULL;
         return UA_NODEID_STRING_ALLOC(ns, remain.c_str());
     }
 }
@@ -257,7 +267,7 @@ static bool parseNodeIdWithNamespaceUri(UA_Client* client,
     std::string resolved = "ns=" + std::to_string(namespaceIndex) + ";" + identifier;
     out = parseNodeId(resolved);
     resolvedInfo = "resolved " + s + " -> " + resolved;
-    return true;
+    return out.identifierType != UA_NODEIDTYPE_NUMERIC || out.identifier.numeric != 0 || out.namespaceIndex != 0;
 }
 
 static void browseNodeRecursive(UA_Client* client,
@@ -516,27 +526,200 @@ bool OPCUAManager::readVariable(const std::string& nodeId, double& value, std::s
     return false;
 }
 
-bool OPCUAManager::writeVariable(const std::string& nodeId, double value) {
-    if (!client_ || !clientConnected_) return false;
-
-    UA_NodeId uaNodeId;
-    std::string resolvedInfo;
-    if (!parseNodeIdWithNamespaceUri(client_, nodeId, uaNodeId, resolvedInfo)) {
-        Log(LogLevel::WARN, "OPC UA write invalid nodeId=" + nodeId + " " + resolvedInfo);
+static bool writeOpcUaValueWithClient(UA_Client* client, const std::string& nodeId,
+                                      double value, std::string& error) {
+    if (!client) {
+        error = "OPC UA client is unavailable";
         return false;
     }
-    UA_Variant var;
-    UA_Variant_setScalar(&var, &value, &UA_TYPES[UA_TYPES_DOUBLE]);
+    if (!std::isfinite(value)) {
+        error = "OPC UA write value must be finite";
+        return false;
+    }
+    if (nodeId.find('#') != std::string::npos) {
+        error = "This value is a field extracted from an OPC UA JSON string and cannot be written individually";
+        return false;
+    }
 
-    UA_StatusCode ret = UA_Client_writeValueAttribute(client_, uaNodeId, &var);
+    UA_NodeId uaNodeId;
+    UA_NodeId_init(&uaNodeId);
+    std::string resolvedInfo;
+    if (!parseNodeIdWithNamespaceUri(client, nodeId, uaNodeId, resolvedInfo)) {
+        error = "Invalid OPC UA NodeId" + (resolvedInfo.empty() ? "" : ": " + resolvedInfo);
+        return false;
+    }
+
+    UA_Variant current;
+    UA_Variant_init(&current);
+    UA_StatusCode ret = UA_Client_readValueAttribute(client, uaNodeId, &current);
+    if (ret != UA_STATUSCODE_GOOD || !UA_Variant_isScalar(&current) || !current.type || !current.data) {
+        error = ret == UA_STATUSCODE_GOOD
+            ? "OPC UA node is not a writable scalar"
+            : "OPC UA read before write failed: " + std::string(UA_StatusCode_name(ret));
+        UA_Variant_clear(&current);
+        UA_NodeId_clear(&uaNodeId);
+        return false;
+    }
+
+    UA_Variant writeValue;
+    UA_Variant_init(&writeValue);
+    auto setInteger = [&](auto example, size_t typeIndex) {
+        using ValueType = decltype(example);
+        const double rounded = std::round(value);
+        if (std::abs(value - rounded) > 1e-9 ||
+            (sizeof(ValueType) >= sizeof(UA_Int64) && std::abs(rounded) > 9007199254740991.0) ||
+            rounded < static_cast<double>(std::numeric_limits<ValueType>::lowest()) ||
+            rounded > static_cast<double>(std::numeric_limits<ValueType>::max())) {
+            error = "OPC UA integer write value is out of range or is not an integer";
+            return false;
+        }
+        const ValueType typed = static_cast<ValueType>(rounded);
+        ret = UA_Variant_setScalarCopy(&writeValue, &typed, &UA_TYPES[typeIndex]);
+        if (ret != UA_STATUSCODE_GOOD) {
+            error = "OPC UA could not prepare write value: " + std::string(UA_StatusCode_name(ret));
+            return false;
+        }
+        return true;
+    };
+
+    bool prepared = false;
+    if (current.type == &UA_TYPES[UA_TYPES_BOOLEAN]) {
+        if (value != 0.0 && value != 1.0) {
+            error = "OPC UA Boolean value must be 0 or 1";
+        } else {
+            const UA_Boolean typed = value != 0.0;
+            ret = UA_Variant_setScalarCopy(&writeValue, &typed, &UA_TYPES[UA_TYPES_BOOLEAN]);
+            prepared = ret == UA_STATUSCODE_GOOD;
+            if (!prepared) error = "OPC UA could not prepare Boolean value: " + std::string(UA_StatusCode_name(ret));
+        }
+    } else if (current.type == &UA_TYPES[UA_TYPES_SBYTE]) {
+        prepared = setInteger(UA_SByte{}, UA_TYPES_SBYTE);
+    } else if (current.type == &UA_TYPES[UA_TYPES_BYTE]) {
+        prepared = setInteger(UA_Byte{}, UA_TYPES_BYTE);
+    } else if (current.type == &UA_TYPES[UA_TYPES_INT16]) {
+        prepared = setInteger(UA_Int16{}, UA_TYPES_INT16);
+    } else if (current.type == &UA_TYPES[UA_TYPES_UINT16]) {
+        prepared = setInteger(UA_UInt16{}, UA_TYPES_UINT16);
+    } else if (current.type == &UA_TYPES[UA_TYPES_INT32]) {
+        prepared = setInteger(UA_Int32{}, UA_TYPES_INT32);
+    } else if (current.type == &UA_TYPES[UA_TYPES_UINT32]) {
+        prepared = setInteger(UA_UInt32{}, UA_TYPES_UINT32);
+    } else if (current.type == &UA_TYPES[UA_TYPES_INT64]) {
+        prepared = setInteger(UA_Int64{}, UA_TYPES_INT64);
+    } else if (current.type == &UA_TYPES[UA_TYPES_UINT64]) {
+        prepared = setInteger(UA_UInt64{}, UA_TYPES_UINT64);
+    } else if (current.type == &UA_TYPES[UA_TYPES_FLOAT]) {
+        const UA_Float typed = static_cast<UA_Float>(value);
+        if (!std::isfinite(typed)) error = "OPC UA Float value is out of range";
+        else {
+            ret = UA_Variant_setScalarCopy(&writeValue, &typed, &UA_TYPES[UA_TYPES_FLOAT]);
+            prepared = ret == UA_STATUSCODE_GOOD;
+            if (!prepared) error = "OPC UA could not prepare Float value: " + std::string(UA_StatusCode_name(ret));
+        }
+    } else if (current.type == &UA_TYPES[UA_TYPES_DOUBLE]) {
+        const UA_Double typed = value;
+        ret = UA_Variant_setScalarCopy(&writeValue, &typed, &UA_TYPES[UA_TYPES_DOUBLE]);
+        prepared = ret == UA_STATUSCODE_GOOD;
+        if (!prepared) error = "OPC UA could not prepare Double value: " + std::string(UA_StatusCode_name(ret));
+    } else {
+        error = "OPC UA node data type is not supported for numeric parameter write";
+    }
+
+    if (prepared) {
+        ret = UA_Client_writeValueAttribute(client, uaNodeId, &writeValue);
+        if (ret != UA_STATUSCODE_GOOD) {
+            error = "OPC UA write failed: " + std::string(UA_StatusCode_name(ret));
+            prepared = false;
+        }
+    }
+    UA_Variant_clear(&writeValue);
+    UA_Variant_clear(&current);
     UA_NodeId_clear(&uaNodeId);
+    return prepared;
+}
 
-    if (ret != UA_STATUSCODE_GOOD) {
-        Log(LogLevel::WARN, "OPC UA write failed for " + nodeId +
-            " status: " + std::to_string(ret));
+static bool readOpcUaNumericValueWithClient(UA_Client* client, const std::string& nodeId,
+                                            double& value, std::string& error) {
+    if (!client) {
+        error = "OPC UA client is unavailable for readback";
+        return false;
+    }
+    UA_NodeId uaNodeId;
+    UA_NodeId_init(&uaNodeId);
+    std::string resolvedInfo;
+    if (!parseNodeIdWithNamespaceUri(client, nodeId, uaNodeId, resolvedInfo)) {
+        error = "Invalid OPC UA NodeId for readback" + (resolvedInfo.empty() ? "" : ": " + resolvedInfo);
+        return false;
+    }
+
+    UA_Variant current;
+    UA_Variant_init(&current);
+    const UA_StatusCode ret = UA_Client_readValueAttribute(client, uaNodeId, &current);
+    UA_NodeId_clear(&uaNodeId);
+    if (ret != UA_STATUSCODE_GOOD || !UA_Variant_isScalar(&current) || !current.type || !current.data) {
+        error = ret == UA_STATUSCODE_GOOD
+            ? "OPC UA readback node is not a numeric scalar"
+            : "OPC UA readback failed: " + std::string(UA_StatusCode_name(ret));
+        UA_Variant_clear(&current);
+        return false;
+    }
+    const bool converted = variantToDouble(current, value) && std::isfinite(value);
+    UA_Variant_clear(&current);
+    if (!converted) {
+        error = "OPC UA readback node data type is not supported for numeric confirmation";
         return false;
     }
     return true;
+}
+
+bool OPCUAManager::writeVariable(const std::string& nodeId, double value) {
+    if (!client_ || !clientConnected_) return false;
+    std::string error;
+    const bool ok = writeOpcUaValueWithClient(client_, nodeId, value, error);
+    if (!ok) Log(LogLevel::WARN, "OPC UA write failed for " + nodeId + ": " + error);
+    return ok;
+}
+
+bool OPCUAManager::writeRemoteValue(const std::string& endpointUrl, const std::string& nodeId,
+                                    double value, std::string& error,
+                                    double* readbackValue, std::string* readbackError) {
+    if (readbackError) readbackError->clear();
+    if (endpointUrl.empty()) {
+        error = "OPC UA communication resource has no endpoint URL";
+        return false;
+    }
+    UA_Client* client = UA_Client_new();
+    if (!client) {
+        error = "Unable to create OPC UA client";
+        return false;
+    }
+    configureClientDefaults(client);
+    const UA_StatusCode connectStatus = UA_Client_connect(client, endpointUrl.c_str());
+    if (connectStatus != UA_STATUSCODE_GOOD) {
+        error = "OPC UA connect failed: " + std::string(UA_StatusCode_name(connectStatus));
+        UA_Client_delete(client);
+        return false;
+    }
+    const bool ok = writeOpcUaValueWithClient(client, nodeId, value, error);
+    if (ok && readbackValue) {
+        bool receivedReadback = false;
+        std::string confirmationError;
+        // PLC/OPC UA servers may apply a write asynchronously. Retry a few
+        // times on the same isolated command session before declaring the
+        // post-write readback unavailable.
+        for (int attempt = 0; attempt < 3; ++attempt) {
+            if (readOpcUaNumericValueWithClient(client, nodeId, *readbackValue, confirmationError)) {
+                receivedReadback = true;
+                const double tolerance = std::max(1e-6, std::max(std::abs(value), std::abs(*readbackValue)) * 1e-6);
+                if (std::abs(value - *readbackValue) <= tolerance) break;
+            }
+            if (attempt < 2) std::this_thread::sleep_for(std::chrono::milliseconds(120));
+        }
+        if (!receivedReadback && readbackError) *readbackError = confirmationError;
+    }
+    UA_Client_disconnect(client);
+    UA_Client_delete(client);
+    return ok;
 }
 
 // ============ 轮询 ============

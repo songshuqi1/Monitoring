@@ -104,6 +104,7 @@ const viewMode = ref('2d')
 const navItems = [
   { path: '/canvas',   label: '监控画布', icon: '&#9632;' },
   { path: '/comm',     label: '通信资源', icon: '&#9741;' },
+  { path: '/parameters', label: '参数下发', icon: '&#8595;' },
   { path: '/data',     label: '数据视图', icon: '&#9776;' },
   { path: '/settings', label: '系统设置', icon: '&#9881;' },
   { path: '/component-config', label: '组件配置', icon: '' },

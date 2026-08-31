@@ -86,7 +86,7 @@ function defaultConfigForType(type) {
     case 'button':
       return { ...base, varId: null, buttonText: title, writeValue: 1 }
     case 'winccToggleButton':
-      return { ...base, varId: null, buttonText: title, activeValue: 1, inactiveValue: 0, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [] }
+      return { ...base, varId: null, buttonText: title, writeValue: 1, pressed: false, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [], exclusiveLabel: '' }
     case 'stepperControl':
       return { ...base, varId: null, defaultValue: 0, min: 0, max: 100, step: 1, decimals: 0, unit: '', minusText: '-', plusText: '+' }
     case 'indicator':
@@ -469,7 +469,7 @@ export const useMonitorStore = defineStore('monitor', () => {
     const name = String(component.name || '自定义组件').trim() || '自定义组件'
     const width = Math.max(1, finiteNumber(component.width, WIDGET_TYPES.customShape.defaultW))
     const height = Math.max(1, finiteNumber(component.height, WIDGET_TYPES.customShape.defaultH))
-    const customShapeKinds = ['line', 'line-v', 'slash', 'backslash', 'rect', 'square', 'round-rect', 'capsule', 'circle', 'ellipse', 'triangle', 'right-triangle', 'trapezoid', 'parallelogram', 'diamond', 'pentagon', 'hexagon', 'octagon', 'star', 'chevron', 'cross', 'arc', 'arrow-left', 'arrow-right', 'pipe-elbow', 'pipe-tee', 'cube', 'cylinder', 'cylinder-h', 'cone', 'frustum', 'tri-prism']
+    const customShapeKinds = ['line', 'line-v', 'slash', 'backslash', 'rect', 'square', 'round-rect', 'capsule', 'circle', 'ellipse', 'triangle', 'right-triangle', 'trapezoid', 'parallelogram', 'diamond', 'pentagon', 'hexagon', 'octagon', 'star', 'chevron', 'cross', 'arc', 'arrow-left', 'arrow-right', 'pipe-elbow', 'pipe-tee', 'cube', 'cylinder', 'cylinder-h', 'cone', 'frustum', 'tri-prism', 'scada-pipe-h', 'scada-pipe-v', 'scada-cylinder-h', 'scada-cylinder-v', 'scada-elbow', 'scada-tee', 'scada-flange', 'scada-flow-arrow', 'scada-heat-coil']
     const shapes = Array.isArray(component.shapes)
       ? component.shapes.filter(shape => shape && typeof shape === 'object').map((shape, index) => ({
           id: String(shape.id || `shape-${index + 1}`),
@@ -481,9 +481,10 @@ export const useMonitorStore = defineStore('monitor', () => {
           rotate: finiteNumber(shape.rotate, 0),
           fill: ['arrow-right', 'arrow-left'].includes(shape.kind) && (!shape.fill || shape.fill === 'transparent') ? '#263544' : (shape.fill || '#dbe4ea'),
           stroke: shape.stroke || '#263544',
-          strokeWidth: Math.max(0, Number(shape.strokeWidth) || 0),
-          radius: Math.max(0, Number(shape.radius) || 0),
-          bindStatus: shape.bindStatus !== false
+           strokeWidth: Math.max(0, Number(shape.strokeWidth) || 0),
+           radius: Math.max(0, Number(shape.radius) || 0),
+           scadaStyle: ['none', 'metal', 'instrument', 'flow'].includes(shape.scadaStyle) ? shape.scadaStyle : 'none',
+           bindStatus: shape.bindStatus !== false
         }))
       : []
     const ports = Array.isArray(component.ports)
@@ -803,12 +804,21 @@ export const useMonitorStore = defineStore('monitor', () => {
   function duplicateWidget(source, x = null, y = null) {
     if (!source || !WIDGET_TYPES[source.type]) return null
     recordHistory('paste-widget')
+    const copyConfig = clone(source.config || {})
+    // A single copied button must not remain linked to buttons in the source
+    // canvas.  A multi-selection copy remaps links below instead.
+    if (source.type === 'winccToggleButton') {
+      copyConfig.pressed = false
+      copyConfig.exclusiveEnabled = false
+      copyConfig.exclusivePeerIds = []
+      copyConfig.exclusiveLabel = ''
+    }
     const copy = normalizeWidget({
       ...clone(source),
       id: genId(),
       x: Number.isFinite(Number(x)) ? Number(x) : (Number(source.x) || 0) + 24,
       y: Number.isFinite(Number(y)) ? Number(y) : (Number(source.y) || 0) + 24,
-      config: clone(source.config || {})
+      config: copyConfig
     })
     if (copy.type === 'frameBox') widgets.value.unshift(copy)
     else widgets.value.push(copy)
@@ -857,6 +867,22 @@ export const useMonitorStore = defineStore('monitor', () => {
       })
       .filter(Boolean)
 
+    // Keep an exclusive group inside a copied selection, but never leave a
+    // copied button pointing at an original button that was not copied.
+    nextWidgets.forEach((widget) => {
+      if (widget.type !== 'winccToggleButton') return
+      const source = sources.find(item => String(idMap.get(String(item.id))) === String(widget.id))
+      const sourcePeers = Array.isArray(source?.config?.exclusivePeerIds) ? source.config.exclusivePeerIds : []
+      const mappedPeers = [...new Set(sourcePeers
+        .map(peerId => idMap.get(String(peerId)))
+        .filter(Boolean)
+        .map(String))]
+      widget.config.exclusivePeerIds = mappedPeers
+      widget.config.exclusiveEnabled = mappedPeers.length > 0
+      widget.config.exclusiveLabel = mappedPeers.length ? String(source?.config?.exclusiveLabel || '') : ''
+      widget.config.pressed = false
+    })
+
     const frameWidgets = nextWidgets.filter(widget => widget.type === 'frameBox')
     const normalWidgets = nextWidgets.filter(widget => widget.type !== 'frameBox')
     widgets.value.push(...frameWidgets, ...normalWidgets)
@@ -891,6 +917,7 @@ export const useMonitorStore = defineStore('monitor', () => {
     if (!widgets.value.some(w => w.id === id)) return
     recordHistory('remove-widget')
     widgets.value = widgets.value.filter(w => w.id !== id)
+    removeExclusivePeerReferences(new Set([String(id)]))
     connections.value = connections.value.filter(c => !c.from || !c.to || (c.from !== id && c.to !== id))
   }
 
@@ -900,11 +927,28 @@ export const useMonitorStore = defineStore('monitor', () => {
     recordHistory('remove-widgets')
     const removed = widgets.value.filter(widget => removeSet.has(String(widget.id)))
     widgets.value = widgets.value.filter(widget => !removeSet.has(String(widget.id)))
+    removeExclusivePeerReferences(removeSet)
     connections.value = connections.value.filter(connection =>
       !(connection.from && removeSet.has(String(connection.from))) &&
       !(connection.to && removeSet.has(String(connection.to)))
     )
     return removed
+  }
+
+  function removeExclusivePeerReferences(removedIds) {
+    widgets.value.forEach((widget) => {
+      if (widget.type !== 'winccToggleButton' || !widget.config) return
+      const peerIds = Array.isArray(widget.config.exclusivePeerIds)
+        ? widget.config.exclusivePeerIds.map(String)
+        : []
+      const retained = peerIds.filter(peerId => !removedIds.has(peerId))
+      if (retained.length === peerIds.length) return
+      widget.config.exclusivePeerIds = retained
+      if (!retained.length) {
+        widget.config.exclusiveEnabled = false
+        widget.config.exclusiveLabel = ''
+      }
+    })
   }
 
   function moveWidget(id, x, y)  { updateWidget(id, { x, y }, `move-widget:${id}`) }

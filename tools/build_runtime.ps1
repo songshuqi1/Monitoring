@@ -47,7 +47,7 @@ Write-Host "Embedding frontend assets..."
 
 Write-Host "Building backend ($Configuration)..."
 New-Item -ItemType Directory -Force -Path $BackendBuildDir | Out-Null
-$ConfigureCommand = 'call "{0}" -arch=x64 -host_arch=x64 && cmake -S "{1}" -B "{2}" -G Ninja -DCMAKE_BUILD_TYPE={3} -DPYTHON_EXECUTABLE="{4}" -UMYSQL_LIB -UMYSQL_INCLUDE_DIR' -f $VsDevCmd, $BackendDir, $BackendBuildDir, $Configuration, $PythonExe
+$ConfigureCommand = 'call "{0}" -arch=x64 -host_arch=x64 && cmake -S "{1}" -B "{2}" -G Ninja -DCMAKE_BUILD_TYPE={3} -DPYTHON_EXECUTABLE="{4}" -DMONITOR_DISABLE_MYSQL=ON -UMYSQL_LIB -UMYSQL_INCLUDE_DIR' -f $VsDevCmd, $BackendDir, $BackendBuildDir, $Configuration, $PythonExe
 & cmd.exe /d /s /c $ConfigureCommand
 if ($LASTEXITCODE -ne 0) {
     throw "Backend configure failed with exit code $LASTEXITCODE"
@@ -70,14 +70,9 @@ if (-not (Test-Path $ExePath)) {
 New-Item -ItemType Directory -Force -Path $ReleaseDir | Out-Null
 Copy-Item $ExePath (Join-Path $ReleaseDir "MonitoringRuntime.exe") -Force
 
-$MysqlDllCandidates = @(
-    "C:\Program Files\MySQL\MySQL Server 9.7\lib\libmysql.dll",
-    "C:\Program Files\MySQL\MySQL Server 8.0\lib\libmysql.dll",
-    "C:\Program Files\MySQL\MySQL Server 5.7\lib\libmysql.dll"
-)
-$MysqlDll = $MysqlDllCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-if ($MysqlDll) {
-    Copy-Item $MysqlDll (Join-Path $ReleaseDir "libmysql.dll") -Force
+$RuntimeMysqlDll = Join-Path $ReleaseDir "libmysql.dll"
+if (Test-Path $RuntimeMysqlDll) {
+    Remove-Item -LiteralPath $RuntimeMysqlDll -Force
 }
 
 $StartBat = @"
@@ -86,10 +81,18 @@ setlocal
 cd /d "%~dp0"
 if "%HTTP_SERVER_PORT%"=="" set "HTTP_SERVER_PORT=8081"
 if "%OPCUA_SERVER_PORT%"=="" set "OPCUA_SERVER_PORT=4841"
-echo Monitoring Runtime starting...
-echo Open http://127.0.0.1:%HTTP_SERVER_PORT% on this computer, or http://202.118.21.28:%HTTP_SERVER_PORT% from another computer on the same LAN.
-"%~dp0MonitoringRuntime.exe"
-echo Monitoring Runtime stopped.
+if not exist "%~dp0MonitoringRuntime.exe" (
+  echo MonitoringRuntime.exe was not found in:
+  echo %~dp0
+  pause
+  exit /b 1
+)
+
+echo Starting Monitoring Runtime in a separate window...
+start "Monitoring Runtime" /D "%~dp0" "%~dp0MonitoringRuntime.exe"
+echo A separate "Monitoring Runtime" window has opened.
+echo Keep that window open while using the platform, then open:
+echo http://127.0.0.1:%HTTP_SERVER_PORT%
 pause
 "@
 [System.IO.File]::WriteAllText((Join-Path $ReleaseDir "start_runtime.bat"), $StartBat, [System.Text.Encoding]::ASCII)

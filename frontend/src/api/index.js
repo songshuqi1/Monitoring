@@ -186,6 +186,9 @@ const api = {
   testSdc(sdcUrl) {
     return http.post('/sdc/test', { sdcUrl })
   },
+  testModbus(config) {
+    return http.post('/modbus/test', config, { timeout: 6000 })
+  },
 
   // ---- 软件定义通信资源（后端持久化 + 多任务） ----
   getCommunicationResources() {

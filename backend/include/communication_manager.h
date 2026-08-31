@@ -37,7 +37,12 @@ public:
     void startAllEnabled();
     void stopAll();
     bool testSdcEndpoint(const std::string& endpoint, int& variableCount, std::string& error) const;
+    bool testModbusEndpoint(const std::string& host, int port, int timeoutMs, std::string& error) const;
+    bool readSdcValue(const std::string& binding, double& value, std::string& error) const;
     bool writeSdcValue(const std::string& binding, double value, std::string& error) const;
+    bool readModbusValue(const std::string& resourceId, const std::string& binding, double& value, std::string& error) const;
+    bool writeModbusValue(const std::string& resourceId, const std::string& binding, double value, std::string& error) const;
+    bool writeUdpValue(const std::string& resourceId, const std::string& variableName, double value, std::string& error) const;
 
     // ---- JSON ----
     std::string resourcesToJson() const;   // 返回资源数组（含 running 状态）
@@ -67,6 +72,7 @@ private:
     static void opcuaWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res);
     static void udpWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res);
     static void sdcWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res);
+    static void modbusWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res);
 };
 
 #endif // MONITORING_COMMUNICATION_MANAGER_H

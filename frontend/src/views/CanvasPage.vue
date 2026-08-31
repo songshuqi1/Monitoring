@@ -586,11 +586,28 @@
         <div v-if="configWidget.type === 'button' || configWidget.type === 'winccToggleButton'" class="form-group"><label>按钮文本</label><input v-model="activeConfig.buttonText" @input="applyConfig" placeholder="按钮上显示的文字" /></div>
         <div v-if="configWidget.type === 'button'" class="form-group"><label>写入值</label><input type="number" v-model.number="activeConfig.writeValue" @input="applyConfig" /></div>
         <template v-if="configWidget.type === 'winccToggleButton'">
-          <div class="form-row two-col">
-            <div class="form-group"><label>激活值</label><input type="number" v-model.number="activeConfig.activeValue" @input="applyConfig" /></div>
-            <div class="form-group"><label>未激活值</label><input type="number" v-model.number="activeConfig.inactiveValue" @input="applyConfig" /></div>
-          </div>
+          <div class="form-group"><label>按下写入值</label><input type="number" v-model.number="activeConfig.writeValue" @input="applyConfig" /></div>
           <div class="form-group"><label>激活颜色</label><input type="color" v-model="activeConfig.activeColor" @input="applyConfig" /></div>
+          <div class="config-section mutual-exclusion-config">
+            <div class="section-title">互斥状态组</div>
+            <label class="inline-check">
+              <input type="checkbox" :checked="Boolean(activeConfig.exclusiveEnabled)" @change="setToggleExclusiveEnabled($event.target.checked)" />
+              与选定的状态切换按钮互斥
+            </label>
+            <template v-if="activeConfig.exclusiveEnabled">
+              <p class="mutual-exclusion-help">按“标题”勾选要互斥的状态切换按钮；按钮文本不会作为选择依据。点击任一按钮后，该按钮高亮，组内其他按钮恢复未激活颜色。</p>
+              <div v-if="toggleExclusivePeerOptions.length" class="mutual-exclusion-list">
+                <label v-for="peer in toggleExclusivePeerOptions" :key="peer.id" class="mutual-exclusion-item" :class="{ selected: peer.selected, disabled: Boolean(peer.titleIssue) && !peer.selected }">
+                  <input type="checkbox" :checked="peer.selected" :disabled="Boolean(peer.titleIssue) && !peer.selected" @change="setToggleExclusivePeer(peer.id, $event.target.checked)" />
+                  <span class="mutual-exclusion-item-text">
+                    <strong>标题：{{ peer.title }}</strong>
+                    <small v-if="peer.titleIssue" class="mutual-exclusion-warning">{{ peer.titleIssue }}</small>
+                  </span>
+                </label>
+              </div>
+              <p v-else class="mutual-exclusion-help">请先在画布中添加至少一个其他“状态切换按钮”。</p>
+            </template>
+          </div>
         </template>
         <template v-if="configWidget.type === 'stepperControl'">
           <div class="form-row two-col">
@@ -1022,6 +1039,34 @@ const configWidget = computed(() => {
 const activeConfig = computed(() => {
   if (!configWidget.value) return {}
   return ensureConfigDraft(configWidget.value)
+})
+
+const toggleExclusivePeerOptions = computed(() => {
+  if (!configWidget.value || configWidget.value.type !== 'winccToggleButton') return []
+  const ownId = String(configWidget.value.id)
+  const selectedIds = new Set(normalizeExclusivePeerIds(activeConfig.value.exclusivePeerIds))
+  const buttons = store.widgets.filter(widget => widget?.type === 'winccToggleButton')
+  const titles = buttons.map(widget => String(widget.config?.title || '').trim())
+  const titleCounts = titles.reduce((counts, title) => {
+    if (title) counts.set(title, (counts.get(title) || 0) + 1)
+    return counts
+  }, new Map())
+  return buttons
+    .filter(widget => String(widget.id) !== ownId)
+    .map(widget => {
+      const title = String(widget.config?.title || '').trim()
+      const titleIssue = !title
+        ? '未填写标题，请先填写唯一标题后再选择'
+        : titleCounts.get(title) > 1
+          ? '标题重复，请先修改为唯一标题后再选择'
+          : ''
+      return {
+        id: String(widget.id),
+        title: title || '未命名状态切换按钮',
+        titleIssue,
+        selected: selectedIds.has(String(widget.id))
+      }
+    })
 })
 
 const libraryPreviewWidget = computed(() => {
@@ -1693,7 +1738,7 @@ function previewConfigForType(type, label, customDefinition = null, scadaAsset =
   }
   const base = { title: label, label, titleFontSize: 12, labelFontSize: 12 }
   if (type === 'button') return { ...base, buttonText: label, writeValue: 1 }
-  if (type === 'winccToggleButton') return { ...base, buttonText: label, activeValue: 1, inactiveValue: 0, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [] }
+  if (type === 'winccToggleButton') return { ...base, buttonText: label, writeValue: 1, pressed: false, activeColor: '#18c93a', inactiveTopColor: '#ffffff', inactiveBottomColor: '#e5e7eb', exclusiveEnabled: false, exclusivePeerIds: [], exclusiveLabel: '' }
   if (type === 'stepperControl') return { ...base, defaultValue: 0, min: 0, max: 100, step: 1, decimals: 0, unit: '', minusText: '-', plusText: '+' }
   if (type === 'label') return { ...base, text: label, fontSize: 16, color: '#344054', align: 'center', verticalAlign: 'center', background: 'transparent', borderColor: 'transparent', borderWidth: 0 }
   if (type === 'frameBox') return { ...base, hideName: false, background: '#ffffff', backgroundOpacity: 0, borderColor: '#4f6fb8', borderWidth: 2, borderRadius: 8, borderStyle: 'solid' }
@@ -2808,6 +2853,115 @@ function ensureConfigDraft(widget, force = false) {
     if (!Number.isFinite(Number(configDrafts[widget.id].rotationStep))) configDrafts[widget.id].rotationStep = 90
   }
   return configDrafts[widget.id]
+}
+
+function normalizeExclusivePeerIds(value) {
+  if (!Array.isArray(value)) return []
+  return [...new Set(value
+    .map(peerId => String(peerId || '').trim())
+    .filter(Boolean))]
+}
+
+function updateToggleWidgetConfig(widget, nextConfig, historyKey) {
+  if (!widget) return
+  store.updateWidget(widget.id, { config: cloneConfig(nextConfig) }, historyKey)
+}
+
+function setToggleExclusiveEnabled(enabled) {
+  if (!configWidget.value || configWidget.value.type !== 'winccToggleButton') return
+  const owner = configWidget.value
+  const ownerId = String(owner.id)
+  const draft = activeConfig.value
+  if (enabled) {
+    draft.exclusiveEnabled = true
+    draft.exclusivePeerIds = normalizeExclusivePeerIds(draft.exclusivePeerIds)
+    applyConfig()
+    return
+  }
+
+  // Removing a button from a group must remove both directions of every
+  // relation, otherwise an old one-way link would still reset its color.
+  const linkedIds = new Set(getConnectedToggleButtonIds(ownerId))
+  linkedIds.delete(ownerId)
+  draft.exclusiveEnabled = false
+  draft.exclusivePeerIds = []
+  draft.exclusiveLabel = ''
+  applyConfig()
+  linkedIds.forEach((peerId) => {
+    const peer = store.widgets.find(widget => String(widget.id) === peerId)
+    if (!peer?.config) return
+    const peerConfig = cloneConfig(peer.config)
+    peerConfig.exclusivePeerIds = normalizeExclusivePeerIds(peerConfig.exclusivePeerIds)
+      .filter(id => id !== ownerId)
+    if (!peerConfig.exclusivePeerIds.length) {
+      peerConfig.exclusiveEnabled = false
+      peerConfig.exclusiveLabel = ''
+    }
+    updateToggleWidgetConfig(peer, peerConfig, `toggle-exclusive-remove:${ownerId}`)
+  })
+}
+
+function setToggleExclusivePeer(peerId, selected) {
+  if (!configWidget.value || configWidget.value.type !== 'winccToggleButton') return
+  const owner = configWidget.value
+  const ownerId = String(owner.id)
+  const normalizedPeerId = String(peerId)
+  const peer = store.widgets.find(widget => String(widget.id) === normalizedPeerId)
+  if (!peer || peer.type !== 'winccToggleButton' || !peer.config) return
+
+  const draft = activeConfig.value
+  const ownPeerIds = new Set(normalizeExclusivePeerIds(draft.exclusivePeerIds))
+  const peerConfig = cloneConfig(peer.config)
+  const peerPeerIds = new Set(normalizeExclusivePeerIds(peerConfig.exclusivePeerIds))
+  if (selected) {
+    ownPeerIds.add(normalizedPeerId)
+    peerPeerIds.add(ownerId)
+    draft.exclusiveEnabled = true
+    peerConfig.exclusiveEnabled = true
+  } else {
+    ownPeerIds.delete(normalizedPeerId)
+    peerPeerIds.delete(ownerId)
+    if (!peerPeerIds.size) {
+      peerConfig.exclusiveEnabled = false
+      peerConfig.exclusiveLabel = ''
+    }
+  }
+  draft.exclusivePeerIds = [...ownPeerIds]
+  if (!ownPeerIds.size) {
+    draft.exclusiveEnabled = false
+    draft.exclusiveLabel = ''
+  }
+  peerConfig.exclusivePeerIds = [...peerPeerIds]
+  applyConfig()
+  updateToggleWidgetConfig(peer, peerConfig, `toggle-exclusive-link:${ownerId}`)
+}
+
+function getConnectedToggleButtonIds(widgetId) {
+  const startId = String(widgetId)
+  const toggleButtons = store.widgets.filter(widget => widget?.type === 'winccToggleButton')
+  const knownIds = new Set(toggleButtons.map(widget => String(widget.id)))
+  const visited = new Set([startId])
+  const queue = [startId]
+  while (queue.length) {
+    const currentId = queue.shift()
+    const current = toggleButtons.find(widget => String(widget.id) === currentId)
+    const currentPeers = current?.config?.exclusiveEnabled
+      ? new Set(normalizeExclusivePeerIds(current.config.exclusivePeerIds))
+      : new Set()
+    toggleButtons.forEach((candidate) => {
+      const candidateId = String(candidate.id)
+      if (visited.has(candidateId) || candidateId === currentId) return
+      const candidatePeers = candidate.config?.exclusiveEnabled
+        ? new Set(normalizeExclusivePeerIds(candidate.config.exclusivePeerIds))
+        : new Set()
+      if (currentPeers.has(candidateId) || candidatePeers.has(currentId)) {
+        if (!knownIds.has(candidateId)) return
+        visited.add(candidateId)
+        queue.push(candidateId)
+      }
+    })
+  }
+  return [...visited]
 }
 
 function selectWidget(id) {
@@ -6075,6 +6229,76 @@ onUnmounted(() => {
 }
 .inline-check.name-toggle {
   margin-bottom: var(--sp-sm);
+}
+.mutual-exclusion-config {
+  padding: 10px;
+  border: 1px solid #c8d7fb;
+  border-radius: var(--radius-sm);
+  background: #f7f9ff;
+}
+.mutual-exclusion-config .section-title {
+  color: #3158a4;
+}
+.mutual-exclusion-help {
+  margin: -1px 0 9px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.mutual-exclusion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+.mutual-exclusion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  cursor: pointer;
+}
+.mutual-exclusion-item.selected {
+  border-color: #6387da;
+  background: #eef3ff;
+}
+.mutual-exclusion-item.disabled {
+  cursor: not-allowed;
+  opacity: 0.66;
+}
+.mutual-exclusion-item input {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.mutual-exclusion-item-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.mutual-exclusion-item-text strong,
+.mutual-exclusion-item-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mutual-exclusion-item-text strong {
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.mutual-exclusion-item-text small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.mutual-exclusion-warning {
+  color: var(--danger-text, #b42318) !important;
 }
 .port-config-list {
   display: flex;

@@ -4,7 +4,7 @@
       <header class="designer-header">
         <div>
           <h3>组件配置</h3>
-          <p>自定义工业功能块</p>
+          <p>经典 SCADA 工艺图元 · 自由拼画模块</p>
         </div>
       </header>
 
@@ -103,25 +103,14 @@
                   共 {{ store.customComponents.length }} 个，显示 {{ filteredCustomComponents.length }} 个
                 </div>
               </div>
-              <div class="saved-component-header-actions">
-                <input
-                  ref="importFileInput"
-                  type="file"
-                  accept=".json,application/json"
-                  class="hidden-file-input"
-                  @change="importComponentLibrary"
-                />
-                <button type="button" class="btn btn-sm" @click="triggerImport">导入</button>
-                <button type="button" class="btn btn-sm" @click="exportComponentLibrary">导出</button>
-                <button
-                  v-if="customComponentSearch"
-                  type="button"
-                  class="btn btn-sm"
-                  @click="customComponentSearch = ''"
-                >
-                  清空
-                </button>
-              </div>
+              <button
+                v-if="customComponentSearch"
+                type="button"
+                class="btn btn-sm"
+                @click="customComponentSearch = ''"
+              >
+                清空
+              </button>
             </div>
             <div class="saved-component-tools">
               <input v-model.trim="customComponentSearch" placeholder="搜索功能块名称" />
@@ -173,6 +162,19 @@
               <pattern id="designerGrid" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M20 0H0V20" fill="none" stroke="#e2e8f0" stroke-width="1" />
               </pattern>
+              <linearGradient id="designer-scada-metal" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" /><stop offset="0.17" stop-color="#d8d8d8" />
+                <stop offset="0.48" stop-color="#8a8a8a" /><stop offset="0.7" stop-color="#eeeeee" />
+                <stop offset="1" stop-color="#777777" />
+              </linearGradient>
+              <linearGradient id="designer-scada-metal-v" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#ffffff" /><stop offset="0.22" stop-color="#d5d5d5" />
+                <stop offset="0.56" stop-color="#777777" /><stop offset="0.78" stop-color="#eeeeee" />
+                <stop offset="1" stop-color="#767676" />
+              </linearGradient>
+              <linearGradient id="designer-scada-cyan" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#eaffff" /><stop offset="0.5" stop-color="#75dce1" /><stop offset="1" stop-color="#299aa2" />
+              </linearGradient>
             </defs>
             <rect :width="safeWidth" :height="safeHeight" fill="url(#designerGrid)" />
             <g
@@ -181,15 +183,30 @@
               :transform="shapeTransform(shape)"
               @mousedown.stop.prevent="startShapeDrag(shape, $event)"
             >
+              <g v-if="isScadaSymbol(shape.kind)">
+                <path
+                  v-for="part in scadaSymbolParts(shape)"
+                  :key="part.key"
+                  :d="part.d"
+                  :transform="part.transform"
+                  :fill="scadaPartFill(part, shape)"
+                  :fill-opacity="part.fillOpacity"
+                  :stroke="scadaPartStroke(part, shape)"
+                  :stroke-opacity="part.strokeOpacity"
+                  :stroke-width="part.strokeWidth || Math.max(1, shape.strokeWidth)"
+                  :stroke-linecap="part.strokeLinecap || 'round'"
+                  :stroke-linejoin="part.strokeLinejoin || 'round'"
+                />
+              </g>
               <rect
-                v-if="['rect', 'square', 'round-rect', 'capsule'].includes(shape.kind)"
+                v-else-if="['rect', 'square', 'round-rect', 'capsule'].includes(shape.kind)"
                 :x="shape.x"
                 :y="shape.y"
                 :width="Math.max(0, Number(shape.w) || 0)"
                 :height="Math.max(0, Number(shape.h) || 0)"
                 :rx="shape.kind === 'capsule' ? Math.max(0, shape.h / 2) : shape.radius"
-                :fill="shape.fill"
-                :stroke="shape.stroke"
+                :fill="scadaShapePaint(shape)"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="shape.strokeWidth"
               />
               <ellipse
@@ -198,34 +215,34 @@
                 :cy="shape.y + shape.h / 2"
                 :rx="Math.max(0, shape.w / 2)"
                 :ry="Math.max(0, shape.h / 2)"
-                :fill="shape.fill"
-                :stroke="shape.stroke"
+                :fill="scadaShapePaint(shape)"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="shape.strokeWidth"
               />
               <polygon
                 v-else-if="polygonShapeKinds.includes(shape.kind)"
                 :points="polygonPoints(shape)"
-                :fill="shape.fill"
-                :stroke="shape.stroke"
+                :fill="scadaShapePaint(shape)"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="shape.strokeWidth"
               />
               <path
                 v-else-if="pathShapeKinds.includes(shape.kind)"
                 :d="shapePath(shape)"
                 :fill="pathShapeFill(shape)"
-                :stroke="shape.stroke"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="Math.max(1, shape.strokeWidth)"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
               <g v-else-if="threeDShapeKinds.includes(shape.kind)">
                 <path
-                  v-for="part in threeDShapeParts(shape, shape.fill)"
+                v-for="part in threeDShapeParts(shape, scadaShapePaint(shape))"
                   :key="part.key"
                   :d="part.d"
                   :fill="part.fill"
                   :fill-opacity="part.fillOpacity"
-                  :stroke="part.stroke || shape.stroke"
+                :stroke="part.stroke || scadaShapeStroke(shape)"
                   :stroke-opacity="part.strokeOpacity"
                   :stroke-width="Math.max(1, shape.strokeWidth)"
                   stroke-linejoin="round"
@@ -238,7 +255,7 @@
                 :y1="shape.y + shape.h / 2"
                 :x2="shape.x + shape.w"
                 :y2="shape.y + shape.h / 2"
-                :stroke="shape.stroke"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="Math.max(1, shape.strokeWidth)"
                 stroke-linecap="round"
               />
@@ -248,7 +265,7 @@
                 :y1="shape.y"
                 :x2="shape.x + shape.w / 2"
                 :y2="shape.y + shape.h"
-                :stroke="shape.stroke"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="Math.max(1, shape.strokeWidth)"
                 stroke-linecap="round"
               />
@@ -258,7 +275,7 @@
                 :y1="shape.y + shape.h"
                 :x2="shape.x + shape.w"
                 :y2="shape.y"
-                :stroke="shape.stroke"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="Math.max(1, shape.strokeWidth)"
                 stroke-linecap="round"
               />
@@ -268,7 +285,7 @@
                 :y1="shape.y"
                 :x2="shape.x + shape.w"
                 :y2="shape.y + shape.h"
-                :stroke="shape.stroke"
+                :stroke="scadaShapeStroke(shape)"
                 :stroke-width="Math.max(1, shape.strokeWidth)"
                 stroke-linecap="round"
               />
@@ -278,7 +295,7 @@
                   :y1="shape.y + shape.h / 2"
                   :x2="shape.x + shape.w"
                   :y2="shape.y + shape.h / 2"
-                  :stroke="shape.stroke"
+                  :stroke="scadaShapeStroke(shape)"
                   :stroke-width="Math.max(1, shape.strokeWidth)"
                   stroke-linecap="round"
                 />
@@ -287,7 +304,7 @@
                   :y1="shape.y"
                   :x2="shape.x + shape.w / 2"
                   :y2="shape.y + shape.h"
-                  :stroke="shape.stroke"
+                  :stroke="scadaShapeStroke(shape)"
                   :stroke-width="Math.max(1, shape.strokeWidth)"
                   stroke-linecap="round"
                 />
@@ -377,6 +394,19 @@
               <div class="form-group"><label>线宽</label><input type="number" min="0" max="16" v-model.number="selectedShape.strokeWidth" /></div>
               <div class="form-group"><label>圆角</label><input type="number" min="0" max="80" v-model.number="selectedShape.radius" /></div>
             </div>
+            <div class="config-section scada-style-section">
+              <div class="section-title">经典 SCADA 绘图样式</div>
+              <div class="form-group">
+                <label>样式笔</label>
+                <select v-model="selectedShape.scadaStyle">
+                  <option v-for="style in scadaStyleOptions" :key="style.id" :value="style.id">{{ style.label }}</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn-sm full-width scada-apply-style" @click="applyClassicScadaStyle(selectedShape)">
+                应用银灰描边 SCADA 风格
+              </button>
+              <div class="scada-style-note">管道、弯头、三通、法兰、箭头和盘管保持参考图的黑色细描边与银灰/青色配色；其余模块由这些图元自由拼画。</div>
+            </div>
             <label class="inline-check"><input type="checkbox" v-model="selectedShape.bindStatus" /> 响应开关颜色</label>
             <div class="designer-action-row">
               <button type="button" class="btn btn-sm" @click="copySelectedShape">复制图形</button>
@@ -418,7 +448,11 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useMonitorStore } from '../../store/index.js'
-import api from '../../api/index.js'
+import {
+  SCADA_STYLE_OPTIONS,
+  isScadaSymbol,
+  scadaSymbolParts
+} from '../../services/scadaClassicSymbolService.js'
 
 const store = useMonitorStore()
 const stageRef = ref(null)
@@ -427,9 +461,9 @@ const saveMessage = ref('')
 const copiedShape = ref(null)
 const customComponentSearch = ref('')
 const customComponentSort = ref('name-asc')
-const importFileInput = ref(null)
 const leftPanelWidth = ref(readPanelWidth('left', 300))
 const rightPanelWidth = ref(readPanelWidth('right', 320))
+const scadaStyleOptions = SCADA_STYLE_OPTIONS
 
 const draft = reactive({
   id: null,
@@ -521,6 +555,20 @@ const shapeToolGroups = [
     ]
   },
   {
+    title: 'SCADA 工艺绘图（参考图风格）',
+    tools: [
+      { kind: 'scada-pipe-h', label: '水平金属管', icon: '━' },
+      { kind: 'scada-pipe-v', label: '垂直金属管', icon: '┃' },
+      { kind: 'scada-cylinder-h', label: '卧式圆筒', icon: '▱' },
+      { kind: 'scada-cylinder-v', label: '立式圆筒', icon: '▯' },
+      { kind: 'scada-elbow', label: '金属弯头', icon: '⌟' },
+      { kind: 'scada-tee', label: '金属三通', icon: '┳' },
+      { kind: 'scada-flange', label: '法兰接头', icon: '╫' },
+      { kind: 'scada-flow-arrow', label: '蓝色流向箭头', icon: '➜' },
+      { kind: 'scada-heat-coil', label: '青色盘管', icon: '♨' }
+    ]
+  },
+  {
     title: '流程 / 管道',
     tools: [
       { kind: 'arrow-left', label: '左箭头', icon: '←' },
@@ -599,6 +647,47 @@ function defaultShape() {
   return { id: makeId('shape'), kind: 'rect', x: 24, y: 24, w: 132, h: 72, rotate: 0, fill: '#dbe4ea', stroke: '#263544', strokeWidth: 2, radius: 4, bindStatus: true }
 }
 
+function scadaPaint(paint = 'metal') {
+  if (paint === 'none') return 'none'
+  if (paint === 'outline') return '#111111'
+  if (paint === 'highlight') return '#ffffff'
+  if (paint === 'shade') return '#6e6e6e'
+  if (paint === 'cyan') return 'url(#designer-scada-cyan)'
+  if (paint === 'blue') return '#0000ff'
+  if (paint === 'metal-v') return 'url(#designer-scada-metal-v)'
+  return 'url(#designer-scada-metal)'
+}
+
+function scadaShapePaint(shape) {
+  if (shape?.scadaStyle === 'metal') return scadaPaint('metal')
+  if (shape?.scadaStyle === 'instrument') return scadaPaint('cyan')
+  if (shape?.scadaStyle === 'flow') return scadaPaint('blue')
+  return shape?.fill || 'transparent'
+}
+
+function scadaShapeStroke(shape) {
+  return shape?.scadaStyle && shape.scadaStyle !== 'none'
+    ? scadaPaint('outline')
+    : (shape?.stroke || '#263544')
+}
+
+function scadaPartFill(part) {
+  return scadaPaint(part.paint)
+}
+
+function scadaPartStroke(part) {
+  if (part.stroke === 'none') return 'none'
+  return part.strokePaint ? scadaPaint(part.strokePaint) : scadaPaint('outline')
+}
+
+function applyClassicScadaStyle(shape) {
+  if (!shape) return
+  shape.scadaStyle = ['scada-flow-arrow'].includes(shape.kind) ? 'flow' : 'metal'
+  shape.stroke = '#111111'
+  shape.strokeWidth = Math.min(2, Math.max(1, Number(shape.strokeWidth) || 1))
+  if (shape.scadaStyle === 'metal') shape.fill = '#b8b8b8'
+}
+
 function resetDraft() {
   draft.id = null
   draft.name = '自定义功能块'
@@ -645,7 +734,21 @@ function resetCropBoundary() {
 }
 
 function addShape(kind) {
-  const size = lineShapeKinds.includes(kind)
+  const scadaSymbol = isScadaSymbol(kind)
+  const scadaSize = {
+    'scada-pipe-h': { w: 130, h: 46 },
+    'scada-pipe-v': { w: 46, h: 130 },
+    'scada-cylinder-h': { w: 132, h: 88 },
+    'scada-cylinder-v': { w: 84, h: 146 },
+    'scada-elbow': { w: 96, h: 96 },
+    'scada-tee': { w: 100, h: 96 },
+    'scada-flange': { w: 92, h: 54 },
+    'scada-flow-arrow': { w: 68, h: 34 },
+    'scada-heat-coil': { w: 100, h: 112 }
+  }
+  const size = scadaSymbol
+    ? scadaSize[kind]
+    : lineShapeKinds.includes(kind)
     ? { w: 90, h: 44 }
     : { w: compactShapeKinds.includes(kind) ? 64 : 88, h: compactShapeKinds.includes(kind) ? 64 : 58 }
   const solidArrow = arrowShapeKinds.includes(kind)
@@ -658,11 +761,12 @@ function addShape(kind) {
     y: Math.max(8, Math.round(safeHeight.value / 2 - size.h / 2)),
     ...size,
     fill: lineShapeKinds.includes(kind) ? 'transparent' : (solidArrow ? '#263544' : '#dbe4ea'),
-    stroke: solidArrow ? '#263544' : '#263544',
-    strokeWidth: 2,
+    stroke: scadaSymbol ? '#111111' : (solidArrow ? '#263544' : '#263544'),
+    strokeWidth: scadaSymbol ? 1.2 : 2,
     radius: isCapsule ? 999 : (isRoundedRect ? 14 : (kind === 'rect' ? 4 : 0)),
     rotate: 0,
-    bindStatus: !lineShapeKinds.includes(kind)
+    bindStatus: !lineShapeKinds.includes(kind),
+    scadaStyle: scadaSymbol ? (kind === 'scada-flow-arrow' ? 'flow' : 'metal') : 'none'
   }
   draft.shapes.push(shape)
   selectedShapeId.value = shape.id
@@ -724,7 +828,7 @@ function starPoints(shape) {
 }
 
 function pathShapeFill(shape) {
-  return filledPathShapeKinds.includes(shape.kind) ? (shape.fill || '#263544') : 'none'
+  return filledPathShapeKinds.includes(shape.kind) ? scadaShapePaint(shape) : 'none'
 }
 
 function ellipsePath(cx, cy, rx, ry) {
@@ -955,9 +1059,8 @@ function applyCropBoundary() {
 
 function shapeTransform(shape) {
   const rotate = shapeRotation(shape)
-  if (!rotate) return ''
   const center = shapeCenter(shape)
-  return `rotate(${rotate} ${center.x} ${center.y})`
+  return rotate ? `rotate(${rotate} ${center.x} ${center.y})` : ''
 }
 
 function normalizeSelectedShapeRotation() {
@@ -1235,50 +1338,6 @@ function saveComponent() {
   }
   window.setTimeout(() => { saveMessage.value = '' }, 2200)
 }
-
-function triggerImport() {
-  importFileInput.value?.click()
-}
-
-function exportComponentLibrary() {
-  api.exportCustomComponents()
-    .then(r => {
-      const blob = new Blob([r.data], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'custom-components.json'
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      URL.revokeObjectURL(url)
-      saveMessage.value = '组件库已导出'
-    })
-    .catch(() => {
-      saveMessage.value = '导出失败：后端不可用或组件库为空'
-    })
-    .finally(() => {
-      window.setTimeout(() => { saveMessage.value = '' }, 2400)
-    })
-}
-
-function importComponentLibrary(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = async () => {
-    try {
-      const payload = JSON.parse(String(reader.result))
-      await store.importCustomComponentsFromServer(payload)
-      saveMessage.value = '组件导入成功'
-    } catch {
-      saveMessage.value = '导入失败：请确认是有效的组件 JSON'
-    }
-    window.setTimeout(() => { saveMessage.value = '' }, 2600)
-    event.target.value = ''
-  }
-  reader.readAsText(file, 'utf-8')
-}
 </script>
 
 <style scoped>
@@ -1505,6 +1564,21 @@ function importComponentLibrary(event) {
   padding: 10px 0;
   border-top: 1px solid var(--border-light);
 }
+.scada-style-section {
+  margin-top: 5px;
+}
+.scada-apply-style {
+  border-color: #87939d;
+  background: linear-gradient(180deg, #ffffff, #d9dfe3);
+  color: #1f2933;
+  font-weight: 800;
+}
+.scada-style-note {
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+}
 .section-title {
   margin: 2px 0 8px;
   color: var(--text-primary);
@@ -1553,15 +1627,6 @@ function importComponentLibrary(event) {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 700;
-}
-.saved-component-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.hidden-file-input {
-  display: none;
 }
 .saved-component-tools {
   display: grid;

@@ -1,5 +1,5 @@
 <template>
-  <div class="dialog-overlay" @click.self="$emit('close')">
+  <div class="dialog-overlay" @mousedown.stop @click.self="$emit('close')">
     <div class="dialog confirm-dialog">
       <h3>{{ title }}</h3>
       <p class="confirm-message">{{ message }}</p>

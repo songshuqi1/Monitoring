@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import CanvasPage from '../views/CanvasPage.vue'
 import CommunicationView from '../views/CommunicationView.vue'
+import ParameterView from '../views/ParameterView.vue'
 import DataView from '../views/DataView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import ComponentDesignerView from '../components/custom/ComponentDesignerDialog.vue'
@@ -11,6 +12,7 @@ const routes = [
   { path: '/', redirect: '/canvas' },
   { path: '/canvas',  name: 'Canvas',   component: CanvasPage,   meta: { title: '监控画布' } },
   { path: '/comm',    name: 'Comm',     component: CommunicationView, meta: { title: '通信资源' } },
+  { path: '/parameters', name: 'Parameters', component: ParameterView, meta: { title: '参数下发' } },
   { path: '/data',    name: 'Data',     component: DataView,     meta: { title: '数据视图' } },
   { path: '/settings', name: 'Settings', component: SettingsView, meta: { title: '系统设置' } },
   { path: '/component-config', name: 'ComponentConfig', component: ComponentDesignerView, meta: { title: '组件配置' } },

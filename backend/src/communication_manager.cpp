@@ -7,11 +7,13 @@
 #include <winhttp.h>
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <regex>
 #include <sstream>
 
@@ -163,6 +165,65 @@ static std::vector<ResourceNode> parseNodeArray(const std::string& body) {
     return nodes;
 }
 
+static double jsonExtractDouble(const std::string& body, const std::string& key, double fallback);
+
+static std::vector<ModbusPoint> parseModbusPointArray(const std::string& body) {
+    std::vector<ModbusPoint> points;
+    auto pointsPos = body.find("\"modbusPoints\"");
+    if (pointsPos == std::string::npos) return points;
+    auto arrStart = body.find('[', pointsPos);
+    if (arrStart == std::string::npos) return points;
+    bool inString = false, escaped = false;
+    int depth = 0;
+    size_t arrEnd = std::string::npos;
+    for (size_t i = arrStart; i < body.size(); ++i) {
+        const char ch = body[i];
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (ch == '\\') escaped = true;
+            else if (ch == '"') inString = false;
+            continue;
+        }
+        if (ch == '"') inString = true;
+        else if (ch == '[') ++depth;
+        else if (ch == ']' && --depth == 0) { arrEnd = i; break; }
+    }
+    if (arrEnd == std::string::npos) return points;
+    const std::string arr = body.substr(arrStart + 1, arrEnd - arrStart - 1);
+    size_t pos = 0;
+    while (pos < arr.size()) {
+        const auto start = arr.find('{', pos);
+        if (start == std::string::npos) break;
+        bool objectString = false, objectEscaped = false;
+        int objectDepth = 0;
+        size_t end = std::string::npos;
+        for (size_t i = start; i < arr.size(); ++i) {
+            const char ch = arr[i];
+            if (objectString) {
+                if (objectEscaped) objectEscaped = false;
+                else if (ch == '\\') objectEscaped = true;
+                else if (ch == '"') objectString = false;
+                continue;
+            }
+            if (ch == '"') objectString = true;
+            else if (ch == '{') ++objectDepth;
+            else if (ch == '}' && --objectDepth == 0) { end = i; break; }
+        }
+        if (end == std::string::npos) break;
+        const std::string object = arr.substr(start, end - start + 1);
+        ModbusPoint point;
+        jsonExtractString(object, "name", point.name);
+        point.address = jsonExtractInt(object, "address", 0);
+        jsonExtractString(object, "functionCode", point.functionCode);
+        jsonExtractString(object, "dataType", point.dataType);
+        point.scale = jsonExtractDouble(object, "scale", 1.0);
+        jsonExtractString(object, "unit", point.unit);
+        if (!point.name.empty()) points.push_back(point);
+        pos = end + 1;
+    }
+    return points;
+}
+
 bool CommunicationManager::parseResourceJson(const std::string& json, CommunicationResource& out) {
     if (json.empty()) return false;
     std::string s = trimCopy(json);
@@ -173,22 +234,43 @@ bool CommunicationManager::parseResourceJson(const std::string& json, Communicat
     jsonExtractString(s, "type", out.type);
     jsonExtractString(s, "endpoint", out.endpoint);
     jsonExtractString(s, "address", out.address);
+    jsonExtractString(s, "udpCommandHost", out.udpCommandHost);
     jsonExtractString(s, "sdcUrl", out.sdcUrl);
+    jsonExtractString(s, "modbusHost", out.modbusHost);
     jsonExtractString(s, "scopeId", out.scopeId);
     jsonExtractString(s, "scopeName", out.scopeName);
     out.port = jsonExtractInt(s, "port", 0);
+    out.udpCommandPort = jsonExtractInt(s, "udpCommandPort", 0);
+    out.udpAckTimeoutMs = std::clamp(jsonExtractInt(s, "udpAckTimeoutMs", 2000), 100, 15000);
+    out.udpRequireAck = jsonExtractBool(s, "udpRequireAck", false);
+    out.modbusUnitId = std::clamp(jsonExtractInt(s, "modbusUnitId", 1), 0, 255);
+    out.modbusTimeoutMs = std::clamp(jsonExtractInt(s, "modbusTimeoutMs", 2500), 300, 15000);
     out.pollIntervalMs = jsonExtractInt(s, "pollIntervalMs", 1000);
     out.pollIntervalMs = std::clamp(out.pollIntervalMs, 50, 600000);
     out.enabled = jsonExtractBool(s, "enabled", false);
     out.nodes = parseNodeArray(s);
+    out.modbusPoints = parseModbusPointArray(s);
 
     std::transform(out.type.begin(), out.type.end(), out.type.begin(), [](unsigned char ch) {
         return static_cast<char>(std::toupper(ch));
     });
-    if (out.type != "OPCUA" && out.type != "UDP" && out.type != "SDC") return false;
+    if (out.type != "OPCUA" && out.type != "UDP" && out.type != "SDC" && out.type != "MODBUS") return false;
     if (out.type == "UDP" && (out.port <= 0 || out.port > 65535)) return false;
+    if (out.type == "UDP" && !out.udpCommandHost.empty() &&
+        (out.udpCommandPort <= 0 || out.udpCommandPort > 65535)) return false;
     if (out.type == "OPCUA" && out.endpoint.empty()) return false;
     if (out.type == "SDC" && out.sdcUrl.empty()) return false;
+    if (out.type == "MODBUS") {
+        if (out.modbusHost.empty() || out.port <= 0 || out.port > 65535 || out.modbusPoints.empty()) return false;
+        for (auto& point : out.modbusPoints) {
+            std::transform(point.functionCode.begin(), point.functionCode.end(), point.functionCode.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+            std::transform(point.dataType.begin(), point.dataType.end(), point.dataType.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+            if (point.address < 0 || point.address > 65535 || !std::isfinite(point.scale) || std::abs(point.scale) < 1e-12) return false;
+            if (point.functionCode != "coil" && point.functionCode != "discrete_input" && point.functionCode != "holding_register" && point.functionCode != "input_register") return false;
+            if (point.dataType != "bool" && point.dataType != "uint16" && point.dataType != "int16" && point.dataType != "uint32" && point.dataType != "int32" && point.dataType != "float32" && point.dataType != "float32_swap") return false;
+            if ((point.functionCode == "coil" || point.functionCode == "discrete_input") && point.dataType != "bool") return false;
+        }
+    }
 
     if (out.name.empty()) out.name = out.type == "UDP" ? "UDP 监听" : (out.type == "SDC" ? "软件定义通信" : "OPC UA 采集");
     return !out.type.empty();
@@ -203,6 +285,17 @@ static std::filesystem::path communicationResourcesFilePath() {
     std::error_code ec;
     fs::create_directories(dir, ec);
     return dir / "communication_resources.json";
+}
+
+static double jsonExtractDouble(const std::string& body, const std::string& key, double fallback) {
+    std::string searchKey = "\"" + key + "\"";
+    auto pos = body.find(searchKey);
+    if (pos == std::string::npos) return fallback;
+    auto colon = body.find(':', pos);
+    if (colon == std::string::npos) return fallback;
+    auto start = body.find_first_of("-0123456789", colon);
+    if (start == std::string::npos) return fallback;
+    try { return std::stod(body.substr(start)); } catch (...) { return fallback; }
 }
 
 static size_t findJsonObjectEnd(const std::string& text, size_t objectStart) {
@@ -445,6 +538,8 @@ void CommunicationManager::startTaskUnlocked(const CommunicationResource& res) {
         ctx->worker = std::thread(&CommunicationManager::udpWorker, ctx, res);
     } else if (res.type == "SDC") {
         ctx->worker = std::thread(&CommunicationManager::sdcWorker, ctx, res);
+    } else if (res.type == "MODBUS") {
+        ctx->worker = std::thread(&CommunicationManager::modbusWorker, ctx, res);
     } else {
         ctx->running = false;
         Log(LogLevel::WARN, "Unsupported communication type: " + res.type);
@@ -480,7 +575,7 @@ bool CommunicationManager::stopTask(const std::string& id, bool disableResource)
     ctx->running = false;
 
     // UDP 通过关闭 socket 打断 recvfrom；OPC UA 通过断开客户端打断
-    if (ctx->type == "UDP" && ctx->clientHandle) {
+    if ((ctx->type == "UDP" || ctx->type == "MODBUS") && ctx->clientHandle) {
         closesocket(reinterpret_cast<SOCKET>(ctx->clientHandle));
         ctx->clientHandle = nullptr;
     }
@@ -598,29 +693,37 @@ static void upsertCollectedValue(const std::string& variableName,
 // ==================== OPC UA 工作线程 ====================
 
 static UA_NodeId parseNodeId(const std::string& nodeIdStr) {
-    int ns = 1;
+    UA_UInt16 ns = 1;
     std::string remain = trimCopy(nodeIdStr);
     if (remain.size() >= 4 && remain[0] == 'n' && remain[1] == 's' && remain[2] == '=') {
         auto semi = remain.find(';', 3);
         if (semi != std::string::npos) {
             try {
-                ns = std::stoi(remain.substr(3, semi - 3));
+                const long long parsedNamespace = std::stoll(remain.substr(3, semi - 3));
+                if (parsedNamespace < 0 || parsedNamespace > std::numeric_limits<UA_UInt16>::max()) {
+                    return UA_NODEID_NULL;
+                }
+                ns = static_cast<UA_UInt16>(parsedNamespace);
                 remain = remain.substr(semi + 1);
             } catch (...) {
-                remain = nodeIdStr;
+                return UA_NODEID_NULL;
             }
         }
     }
     if (remain.size() >= 2 && remain[0] == 'i' && remain[1] == '=') {
         try {
-            return UA_NODEID_NUMERIC(ns, std::stoi(remain.substr(2)));
+            const unsigned long long id = std::stoull(remain.substr(2));
+            if (id > std::numeric_limits<UA_UInt32>::max()) return UA_NODEID_NULL;
+            return UA_NODEID_NUMERIC(ns, static_cast<UA_UInt32>(id));
         } catch (...) {
             return UA_NODEID_NULL;
         }
     }
     if (remain.size() >= 2 && remain[0] == 's' && remain[1] == '=') {
+        if (remain.size() == 2) return UA_NODEID_NULL;
         return UA_NODEID_STRING_ALLOC(ns, remain.substr(2).c_str());
     }
+    if (remain.empty()) return UA_NODEID_NULL;
     return UA_NODEID_STRING_ALLOC(ns, remain.c_str());
 }
 
@@ -866,6 +969,476 @@ void CommunicationManager::udpWorker(std::shared_ptr<TaskContext> ctx, Communica
     ctx->running = false;
     g_activeCollectionResource = nullptr;
     Log(LogLevel::INFO, "UDP task stopped: " + res.name);
+}
+
+// ==================== Modbus TCP ====================
+
+static bool modbusSendAll(SOCKET socket, const unsigned char* data, int length) {
+    int sent = 0;
+    while (sent < length) {
+        const int result = send(socket, reinterpret_cast<const char*>(data + sent), length - sent, 0);
+        if (result <= 0) return false;
+        sent += result;
+    }
+    return true;
+}
+
+static bool modbusReceiveAll(SOCKET socket, unsigned char* data, int length) {
+    int received = 0;
+    while (received < length) {
+        const int result = recv(socket, reinterpret_cast<char*>(data + received), length - received, 0);
+        if (result <= 0) return false;
+        received += result;
+    }
+    return true;
+}
+
+static SOCKET openModbusSocket(const std::string& host, int port, int timeoutMs, std::string& error) {
+    if (!ensureWinsock()) { error = "Winsock initialization failed"; return INVALID_SOCKET; }
+    if (host.empty() || port < 1 || port > 65535) { error = "Invalid Modbus host or port"; return INVALID_SOCKET; }
+    addrinfo hints{};
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    addrinfo* addresses = nullptr;
+    if (getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &addresses) != 0) {
+        error = "Unable to resolve Modbus host: " + host;
+        return INVALID_SOCKET;
+    }
+    const int effectiveTimeout = std::clamp(timeoutMs, 300, 15000);
+    SOCKET connected = INVALID_SOCKET;
+    for (auto* address = addresses; address; address = address->ai_next) {
+        SOCKET socket = ::socket(address->ai_family, address->ai_socktype, address->ai_protocol);
+        if (socket == INVALID_SOCKET) continue;
+        u_long nonBlocking = 1;
+        ioctlsocket(socket, FIONBIO, &nonBlocking);
+        const int result = connect(socket, address->ai_addr, static_cast<int>(address->ai_addrlen));
+        bool ok = result == 0;
+        if (!ok && WSAGetLastError() == WSAEWOULDBLOCK) {
+            fd_set writeSet;
+            FD_ZERO(&writeSet);
+            FD_SET(socket, &writeSet);
+            timeval timeout{};
+            timeout.tv_sec = effectiveTimeout / 1000;
+            timeout.tv_usec = (effectiveTimeout % 1000) * 1000;
+            if (select(0, nullptr, &writeSet, nullptr, &timeout) > 0) {
+                int socketError = 0;
+                int socketErrorLength = sizeof(socketError);
+                getsockopt(socket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&socketError), &socketErrorLength);
+                ok = socketError == 0;
+            }
+        }
+        if (!ok) { closesocket(socket); continue; }
+        nonBlocking = 0;
+        ioctlsocket(socket, FIONBIO, &nonBlocking);
+        DWORD timeout = static_cast<DWORD>(effectiveTimeout);
+        setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout));
+        setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout));
+        connected = socket;
+        break;
+    }
+    freeaddrinfo(addresses);
+    if (connected == INVALID_SOCKET) error = "Unable to connect to Modbus TCP device " + host + ":" + std::to_string(port);
+    return connected;
+}
+
+bool CommunicationManager::testModbusEndpoint(const std::string& host, int port, int timeoutMs, std::string& error) const {
+    SOCKET socket = openModbusSocket(host, port, timeoutMs, error);
+    if (socket == INVALID_SOCKET) return false;
+    closesocket(socket);
+    return true;
+}
+
+static int modbusFunction(const std::string& code) {
+    if (code == "coil") return 1;
+    if (code == "discrete_input") return 2;
+    if (code == "holding_register") return 3;
+    if (code == "input_register") return 4;
+    return 0;
+}
+
+static bool readModbusPoint(void*& clientHandle, const CommunicationResource& resource, const ModbusPoint& point,
+                            uint16_t transactionId, double& value, std::string& error) {
+    const int function = modbusFunction(point.functionCode);
+    const int quantity = (function == 1 || function == 2) ? 1 :
+        ((point.dataType == "uint32" || point.dataType == "int32" || point.dataType == "float32" || point.dataType == "float32_swap") ? 2 : 1);
+    if (function == 0 || point.address < 0 || point.address + quantity > 65536) { error = "Invalid Modbus point configuration"; return false; }
+    SOCKET socket = openModbusSocket(resource.modbusHost, resource.port, resource.modbusTimeoutMs, error);
+    if (socket == INVALID_SOCKET) return false;
+    clientHandle = reinterpret_cast<void*>(socket);
+    unsigned char request[12] = {
+        static_cast<unsigned char>((transactionId >> 8) & 0xff), static_cast<unsigned char>(transactionId & 0xff),
+        0, 0, 0, 6, static_cast<unsigned char>(resource.modbusUnitId), static_cast<unsigned char>(function),
+        static_cast<unsigned char>((point.address >> 8) & 0xff), static_cast<unsigned char>(point.address & 0xff),
+        static_cast<unsigned char>((quantity >> 8) & 0xff), static_cast<unsigned char>(quantity & 0xff)
+    };
+    unsigned char header[7]{};
+    bool ok = modbusSendAll(socket, request, sizeof(request)) && modbusReceiveAll(socket, header, sizeof(header));
+    const int responseLength = ok ? ((static_cast<int>(header[4]) << 8) | header[5]) : 0;
+    unsigned char body[260]{};
+    if (ok && (responseLength < 2 || responseLength > 260 || header[0] != request[0] || header[1] != request[1] || header[2] != 0 || header[3] != 0 || header[6] != request[6])) ok = false;
+    if (ok) ok = modbusReceiveAll(socket, body, responseLength - 1);
+    closesocket(socket);
+    clientHandle = nullptr;
+    if (!ok) { error = "Invalid or incomplete Modbus TCP response"; return false; }
+    if (body[0] == static_cast<unsigned char>(function | 0x80)) { error = "Modbus exception " + std::to_string(body[1]); return false; }
+    if (body[0] != function || responseLength < 3) { error = "Unexpected Modbus response function"; return false; }
+    const int byteCount = body[1];
+    if (byteCount != responseLength - 3) { error = "Invalid Modbus response length"; return false; }
+    if (function == 1 || function == 2) {
+        if (byteCount < 1) { error = "Missing Modbus bit value"; return false; }
+        value = (body[2] & 0x01) ? 1.0 : 0.0;
+    } else {
+        const int required = quantity * 2;
+        if (byteCount != required) { error = "Unexpected Modbus register byte count"; return false; }
+        const uint16_t first = static_cast<uint16_t>((static_cast<uint16_t>(body[2]) << 8) | body[3]);
+        if (point.dataType == "uint16") value = first;
+        else if (point.dataType == "bool") value = first != 0 ? 1.0 : 0.0;
+        else if (point.dataType == "int16") value = static_cast<int16_t>(first);
+        else {
+            const uint32_t bits = (static_cast<uint32_t>(body[2]) << 24) | (static_cast<uint32_t>(body[3]) << 16) |
+                                  (static_cast<uint32_t>(body[4]) << 8) | static_cast<uint32_t>(body[5]);
+            if (point.dataType == "uint32") value = static_cast<double>(bits);
+            else if (point.dataType == "int32") { int32_t signedValue; std::memcpy(&signedValue, &bits, sizeof(signedValue)); value = static_cast<double>(signedValue); }
+            else { uint32_t floatBits = bits; if (point.dataType == "float32_swap") floatBits = (bits << 16) | (bits >> 16); float floatValue; std::memcpy(&floatValue, &floatBits, sizeof(floatValue)); value = floatValue; }
+        }
+    }
+    value *= point.scale;
+    if (!std::isfinite(value)) { error = "Modbus value is not finite"; return false; }
+    return true;
+}
+
+static void markModbusResourceBad(const CommunicationResource& resource) {
+    for (const auto& variable : VariableManager::instance().getAllDefinitions()) {
+        if (variable.source == "MODBUS" && variable.resourceId == resource.id) VariableManager::instance().updateValue(variable.id, 0.0, "BAD");
+    }
+}
+
+void CommunicationManager::modbusWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res) {
+    Log(LogLevel::INFO, "Modbus TCP task started: " + res.name + " -> " + res.modbusHost + ":" + std::to_string(res.port));
+    uint16_t transactionId = 1;
+    int failures = 0;
+    while (ctx->running) {
+        bool cycleFailed = false;
+        for (const auto& point : res.modbusPoints) {
+            if (!ctx->running) break;
+            double value = 0.0;
+            std::string error;
+            if (readModbusPoint(ctx->clientHandle, res, point, transactionId++, value, error)) {
+                const std::string binding = "modbus:" + point.functionCode + ":" + std::to_string(point.address) + ":" + point.dataType;
+                upsertCollectedValue(res, point.name, binding, "MODBUS", "Auto-collected from " + res.name, value, "GOOD");
+            } else {
+                cycleFailed = true;
+                Log(LogLevel::WARN, "Modbus task " + res.name + " point " + point.name + " failed: " + error);
+            }
+        }
+        failures = cycleFailed ? failures + 1 : 0;
+        if (failures >= 3) markModbusResourceBad(res);
+        const int interval = std::clamp(res.pollIntervalMs, 50, 600000);
+        for (int waited = 0; ctx->running && waited < interval; waited += 50) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(std::min(50, interval - waited)));
+        }
+    }
+    ctx->clientHandle = nullptr;
+    ctx->running = false;
+    Log(LogLevel::INFO, "Modbus TCP task stopped: " + res.name);
+}
+
+static bool parseModbusBinding(const std::string& binding, std::string& functionCode,
+                               int& address, std::string& dataType) {
+    if (binding.compare(0, 7, "modbus:") != 0) return false;
+    const auto first = binding.find(':', 7);
+    const auto second = first == std::string::npos ? std::string::npos : binding.find(':', first + 1);
+    if (first == std::string::npos || second == std::string::npos) return false;
+    functionCode = binding.substr(7, first - 7);
+    dataType = binding.substr(second + 1);
+    try {
+        size_t converted = 0;
+        address = std::stoi(binding.substr(first + 1, second - first - 1), &converted);
+        if (converted != second - first - 1) return false;
+    } catch (...) {
+        return false;
+    }
+    return address >= 0 && address <= 65535 && !functionCode.empty() && !dataType.empty();
+}
+
+bool CommunicationManager::readModbusValue(const std::string& resourceId, const std::string& binding,
+                                            double& value, std::string& error) const {
+    const CommunicationResource resource = getResource(resourceId);
+    if (resource.id.empty() || resource.type != "MODBUS") {
+        error = "Modbus communication resource not found";
+        return false;
+    }
+    if (!resource.enabled) {
+        error = "Modbus communication resource is disabled";
+        return false;
+    }
+    std::string functionCode;
+    std::string dataType;
+    int address = 0;
+    if (!parseModbusBinding(binding, functionCode, address, dataType)) {
+        error = "Invalid Modbus variable binding";
+        return false;
+    }
+    const auto pointIt = std::find_if(resource.modbusPoints.begin(), resource.modbusPoints.end(),
+        [&](const ModbusPoint& point) {
+            return point.address == address && point.functionCode == functionCode && point.dataType == dataType;
+        });
+    if (pointIt == resource.modbusPoints.end()) {
+        error = "Modbus point is no longer present in the communication resource";
+        return false;
+    }
+    static std::atomic<uint16_t> nextTransaction{0x4000};
+    void* clientHandle = nullptr;
+    return readModbusPoint(clientHandle, resource, *pointIt, nextTransaction.fetch_add(1), value, error);
+}
+
+static void appendModbusU16(std::vector<unsigned char>& out, uint16_t value) {
+    out.push_back(static_cast<unsigned char>((value >> 8) & 0xff));
+    out.push_back(static_cast<unsigned char>(value & 0xff));
+}
+
+bool CommunicationManager::writeModbusValue(const std::string& resourceId, const std::string& binding,
+                                             double value, std::string& error) const {
+    const CommunicationResource resource = getResource(resourceId);
+    if (resource.id.empty() || resource.type != "MODBUS") {
+        error = "Modbus communication resource not found";
+        return false;
+    }
+    if (!resource.enabled) {
+        error = "Modbus communication resource is disabled";
+        return false;
+    }
+    std::string functionCode;
+    std::string dataType;
+    int address = 0;
+    if (!parseModbusBinding(binding, functionCode, address, dataType)) {
+        error = "Invalid Modbus variable binding";
+        return false;
+    }
+    const auto pointIt = std::find_if(resource.modbusPoints.begin(), resource.modbusPoints.end(),
+        [&](const ModbusPoint& point) {
+            return point.address == address && point.functionCode == functionCode && point.dataType == dataType;
+        });
+    if (pointIt == resource.modbusPoints.end()) {
+        error = "Modbus point is no longer present in the communication resource";
+        return false;
+    }
+    const ModbusPoint& point = *pointIt;
+    if (point.functionCode == "discrete_input" || point.functionCode == "input_register") {
+        error = "This Modbus point belongs to a read-only input area";
+        return false;
+    }
+    if (point.functionCode != "coil" && point.functionCode != "holding_register") {
+        error = "Unsupported Modbus write area";
+        return false;
+    }
+    if (!std::isfinite(value)) {
+        error = "Modbus write value must be finite";
+        return false;
+    }
+
+    std::vector<unsigned char> values;
+    if (!std::isfinite(point.scale) || std::abs(point.scale) < 1e-12) {
+        error = "Modbus point scale is invalid";
+        return false;
+    }
+    const double scale = point.scale;
+    const double rawValue = value / scale;
+    if (!std::isfinite(rawValue)) {
+        error = "Modbus write value is out of range after applying the point scale";
+        return false;
+    }
+    bool multipleRegisters = false;
+    if (point.functionCode == "coil") {
+        appendModbusU16(values, rawValue != 0.0 ? 0xff00 : 0x0000);
+    } else if (point.dataType == "bool") {
+        appendModbusU16(values, rawValue != 0.0 ? 1 : 0);
+    } else if (point.dataType == "uint16") {
+        const double rounded = std::round(rawValue);
+        if (rounded < 0.0 || rounded > 65535.0) { error = "Modbus uint16 value out of range"; return false; }
+        appendModbusU16(values, static_cast<uint16_t>(rounded));
+    } else if (point.dataType == "int16") {
+        const double rounded = std::round(rawValue);
+        if (rounded < -32768.0 || rounded > 32767.0) { error = "Modbus int16 value out of range"; return false; }
+        appendModbusU16(values, static_cast<uint16_t>(static_cast<int16_t>(rounded)));
+    } else {
+        uint32_t bits = 0;
+        if (point.dataType == "uint32") {
+            const double rounded = std::round(rawValue);
+            if (rounded < 0.0 || rounded > 4294967295.0) { error = "Modbus uint32 value out of range"; return false; }
+            bits = static_cast<uint32_t>(rounded);
+        } else if (point.dataType == "int32") {
+            const double rounded = std::round(rawValue);
+            if (rounded < -2147483648.0 || rounded > 2147483647.0) { error = "Modbus int32 value out of range"; return false; }
+            bits = static_cast<uint32_t>(static_cast<int32_t>(rounded));
+        } else if (point.dataType == "float32" || point.dataType == "float32_swap") {
+            const float rawFloat = static_cast<float>(rawValue);
+            if (!std::isfinite(rawFloat)) { error = "Modbus float32 value out of range"; return false; }
+            std::memcpy(&bits, &rawFloat, sizeof(bits));
+            if (point.dataType == "float32_swap") bits = (bits << 16) | (bits >> 16);
+        } else {
+            error = "Unsupported Modbus data type";
+            return false;
+        }
+        appendModbusU16(values, static_cast<uint16_t>((bits >> 16) & 0xffff));
+        appendModbusU16(values, static_cast<uint16_t>(bits & 0xffff));
+        multipleRegisters = true;
+    }
+
+    static std::atomic<uint16_t> nextTransaction{1};
+    const uint16_t transaction = nextTransaction.fetch_add(1);
+    const unsigned char function = point.functionCode == "coil" ? 5 : (multipleRegisters ? 16 : 6);
+    std::vector<unsigned char> request;
+    request.reserve(17);
+    appendModbusU16(request, transaction);
+    appendModbusU16(request, 0);
+    const uint16_t pduLength = multipleRegisters ? 10 : 5;
+    appendModbusU16(request, static_cast<uint16_t>(pduLength + 1));
+    request.push_back(static_cast<unsigned char>(resource.modbusUnitId));
+    request.push_back(function);
+    appendModbusU16(request, static_cast<uint16_t>(point.address));
+    if (multipleRegisters) {
+        appendModbusU16(request, 2);
+        request.push_back(4);
+        request.insert(request.end(), values.begin(), values.end());
+    } else {
+        request.insert(request.end(), values.begin(), values.end());
+    }
+
+    SOCKET socket = openModbusSocket(resource.modbusHost, resource.port, resource.modbusTimeoutMs, error);
+    if (socket == INVALID_SOCKET) return false;
+    unsigned char header[7]{};
+    bool ok = modbusSendAll(socket, request.data(), static_cast<int>(request.size())) &&
+              modbusReceiveAll(socket, header, sizeof(header));
+    const int responseLength = ok ? ((static_cast<int>(header[4]) << 8) | header[5]) : 0;
+    unsigned char response[260]{};
+    if (ok && (responseLength < 2 || responseLength > 260 ||
+               header[0] != request[0] || header[1] != request[1] || header[2] != 0 || header[3] != 0 ||
+               header[6] != request[6])) ok = false;
+    if (ok) ok = modbusReceiveAll(socket, response, responseLength - 1);
+    closesocket(socket);
+    if (!ok) { error = "Invalid or incomplete Modbus write response"; return false; }
+    if (response[0] == static_cast<unsigned char>(function | 0x80)) {
+        error = "Modbus write exception " + std::to_string(response[1]);
+        return false;
+    }
+    if (response[0] != function || responseLength != 6) { error = "Unexpected Modbus write response"; return false; }
+    const uint16_t echoedAddress = static_cast<uint16_t>((static_cast<uint16_t>(response[1]) << 8) | response[2]);
+    const uint16_t echoedValueOrCount = static_cast<uint16_t>((static_cast<uint16_t>(response[3]) << 8) | response[4]);
+    if (echoedAddress != static_cast<uint16_t>(point.address)) {
+        error = "Modbus write response address does not match the requested point";
+        return false;
+    }
+    const uint16_t expectedValueOrCount = multipleRegisters ? 2 :
+        static_cast<uint16_t>((static_cast<uint16_t>(values[0]) << 8) | values[1]);
+    if (echoedValueOrCount != expectedValueOrCount) {
+        error = "Modbus write response does not confirm the requested value";
+        return false;
+    }
+    return true;
+}
+
+static std::string lowerCopy(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
+    return value;
+}
+
+static bool isPositiveUdpAck(const std::string& payload) {
+    const std::string ack = lowerCopy(trimCopy(payload));
+    if (ack.find("\"ok\":false") != std::string::npos ||
+        ack.find("\"success\":false") != std::string::npos ||
+        ack.find("\"accepted\":false") != std::string::npos ||
+        ack.find("\"status\":\"error\"") != std::string::npos ||
+        ack.find("\"status\":\"failed\"") != std::string::npos) return false;
+    return ack == "ok" || ack == "1" || ack.find("\"ok\":true") != std::string::npos ||
+        ack.find("\"success\":true") != std::string::npos || ack.find("\"status\":\"ok\"") != std::string::npos;
+}
+
+bool CommunicationManager::writeUdpValue(const std::string& resourceId, const std::string& variableName,
+                                          double value, std::string& error) const {
+    const CommunicationResource resource = getResource(resourceId);
+    if (resource.id.empty() || resource.type != "UDP") {
+        error = "UDP communication resource not found";
+        return false;
+    }
+    if (!resource.enabled) {
+        error = "UDP communication resource is disabled";
+        return false;
+    }
+    if (resource.udpCommandHost.empty() || resource.udpCommandPort <= 0 || resource.udpCommandPort > 65535) {
+        error = "Configure the UDP command host and command port before writing";
+        return false;
+    }
+    if (!ensureWinsock()) { error = "Unable to initialize UDP socket"; return false; }
+    if (!std::isfinite(value)) { error = "UDP write value must be finite"; return false; }
+    addrinfo hints{};
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+    addrinfo* addresses = nullptr;
+    const std::string portText = std::to_string(resource.udpCommandPort);
+    if (getaddrinfo(resource.udpCommandHost.c_str(), portText.c_str(), &hints, &addresses) != 0 || !addresses) {
+        error = "Unable to resolve UDP command host";
+        return false;
+    }
+    std::string commandName = variableName;
+    if (commandName.compare(0, 4, "udp:") == 0) {
+        const auto nameStart = commandName.find(':', 4);
+        if (nameStart != std::string::npos && nameStart + 1 < commandName.size()) commandName = commandName.substr(nameStart + 1);
+    }
+    commandName = trimCopy(commandName);
+    if (commandName.empty() || commandName.size() > 256) { error = "UDP variable binding is invalid"; return false; }
+    std::ostringstream commandStream;
+    commandStream << "{\"name\":\"" << escapeJson(commandName) << "\",\"value\":"
+                  << std::setprecision(15) << value << "}";
+    const std::string command = commandStream.str();
+    if (command.size() > 1024) { error = "UDP command payload is too large"; return false; }
+    bool sent = false;
+    for (addrinfo* address = addresses; address; address = address->ai_next) {
+        SOCKET socket = ::socket(address->ai_family, address->ai_socktype, address->ai_protocol);
+        if (socket == INVALID_SOCKET) continue;
+        // A connected UDP socket only receives datagrams from this configured
+        // controller.  Without it, any host could forge a positive ACK.
+        if (::connect(socket, address->ai_addr, static_cast<int>(address->ai_addrlen)) != 0) {
+            closesocket(socket);
+            continue;
+        }
+        const int result = send(socket, command.data(), static_cast<int>(command.size()), 0);
+        if (result != static_cast<int>(command.size())) {
+            closesocket(socket);
+            continue;
+        }
+        sent = true;
+        if (resource.udpRequireAck) {
+            const DWORD timeout = static_cast<DWORD>(std::clamp(resource.udpAckTimeoutMs, 100, 15000));
+            setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout));
+            char ackBuffer[1024]{};
+            const int ackLength = recv(socket, ackBuffer, sizeof(ackBuffer) - 1, 0);
+            closesocket(socket);
+            if (ackLength <= 0) {
+                error = "UDP command was sent but controller ACK timed out";
+                sent = false;
+            } else {
+                const std::string ack(ackBuffer, ackLength);
+                if (!isPositiveUdpAck(ack)) {
+                    error = "UDP controller returned an unrecognized ACK: " + ack.substr(0, 180);
+                    sent = false;
+                }
+            }
+        } else {
+            closesocket(socket);
+        }
+        break;
+    }
+    freeaddrinfo(addresses);
+    if (!sent) {
+        if (error.empty()) error = "UDP command datagram could not be sent";
+        return false;
+    }
+    return true;
 }
 
 // ==================== Software Defined Communication (SDC) ====================
@@ -1205,7 +1778,60 @@ static bool parseSdcBinding(const std::string& binding, std::string& resourceId,
     return !variableName.empty();
 }
 
+bool CommunicationManager::readSdcValue(const std::string& binding, double& value, std::string& error) const {
+    std::string resourceId;
+    std::string variableName;
+    if (!parseSdcBinding(binding, resourceId, variableName)) {
+        error = "SDC variable binding is invalid";
+        return false;
+    }
+    const CommunicationResource resource = getResource(resourceId);
+    if (resource.id.empty() || resource.type != "SDC") {
+        error = "SDC communication resource not found";
+        return false;
+    }
+    if (!resource.enabled) {
+        error = "SDC communication resource is disabled";
+        return false;
+    }
+    std::vector<std::pair<std::string, double>> values;
+    if (!fetchSdcValues(resource.sdcUrl, values, error)) return false;
+    const auto valueIt = std::find_if(values.begin(), values.end(), [&](const auto& item) {
+        return item.first == variableName;
+    });
+    if (valueIt == values.end()) {
+        error = "SDC readback variable was not returned by the controller";
+        return false;
+    }
+    value = valueIt->second;
+    return std::isfinite(value);
+}
+
+static bool sdcWriteWasRejected(const std::string& response, std::string& error) {
+    const std::string normalized = lowerCopy(trimCopy(response));
+    if (normalized.empty()) return false; // HTTP 204 is a valid accepted command.
+    const bool explicitFailure = normalized.find("\"ok\":false") != std::string::npos ||
+        normalized.find("\"success\":false") != std::string::npos ||
+        normalized.find("\"accepted\":false") != std::string::npos ||
+        normalized.find("\"status\":\"error\"") != std::string::npos ||
+        normalized.find("\"status\":\"failed\"") != std::string::npos ||
+        normalized.find("\"status\":\"rejected\"") != std::string::npos ||
+        normalized.find("\"result\":\"error\"") != std::string::npos ||
+        normalized.find("\"result\":\"failed\"") != std::string::npos ||
+        normalized.find("\"error\":\"") != std::string::npos ||
+        normalized.find("\"error\":{") != std::string::npos;
+    if (!explicitFailure) return false;
+    error = "SDC controller rejected the write";
+    const auto message = normalized.find("\"message\"");
+    if (message != std::string::npos) error += ": " + response.substr(message, 180);
+    return true;
+}
+
 bool CommunicationManager::writeSdcValue(const std::string& binding, double value, std::string& error) const {
+    if (!std::isfinite(value)) {
+        error = "SDC write value must be finite";
+        return false;
+    }
     std::string resourceId;
     std::string variableName;
     if (!parseSdcBinding(binding, resourceId, variableName)) {
@@ -1217,6 +1843,10 @@ bool CommunicationManager::writeSdcValue(const std::string& binding, double valu
         error = "SDC 通信资源不存在";
         return false;
     }
+    if (!resource.enabled) {
+        error = "SDC communication resource is disabled";
+        return false;
+    }
     std::ostringstream request;
     request << "{\"value\":" << std::setprecision(15) << value << "}";
     std::string response;
@@ -1226,8 +1856,9 @@ bool CommunicationManager::writeSdcValue(const std::string& binding, double valu
         error = "SDC 通信资源地址无效";
         return false;
     }
-    return performSdcHttpRequest(base + "/api/runtime/stream/" + urlEncodePathSegment(variableName), L"POST",
-                                 request.str(), response, status, error);
+    if (!performSdcHttpRequest(base + "/api/runtime/stream/" + urlEncodePathSegment(variableName), L"POST",
+                               request.str(), response, status, error)) return false;
+    return !sdcWriteWasRejected(response, error);
 }
 
 void CommunicationManager::sdcWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res) {

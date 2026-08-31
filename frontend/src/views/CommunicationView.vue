@@ -35,7 +35,7 @@
               <span class="cv-status-dot"></span>
               {{ res.running ? '采集中' : '已停止' }}
             </span>
-            <button v-if="res.type === 'OPCUA' || res.type === 'UDP' || res.type === 'SDC'" class="btn btn-sm" :class="res.running ? 'btn-danger' : 'btn-primary'"
+            <button v-if="res.type === 'OPCUA' || res.type === 'UDP' || res.type === 'SDC' || res.type === 'MODBUS'" class="btn btn-sm" :class="res.running ? 'btn-danger' : 'btn-primary'"
               :disabled="resourceBusyId === res.id" @click="togglePoll(res)">
               {{ resourceBusyId === res.id ? '处理中...' : (res.running ? '停止' : '启动采集') }}
             </button>
@@ -93,6 +93,21 @@
               <span class="cv-detail-label">监听端口</span>
               <code class="cv-detail-val">:{{ res.port }}</code>
             </div>
+            <div class="cv-detail-row">
+              <span class="cv-detail-label">下发目标</span>
+              <code class="cv-detail-val">{{ res.udpCommandHost ? `${res.udpCommandHost}:${res.udpCommandPort}` : '未配置（仅采集）' }}</code>
+            </div>
+          </template>
+
+          <template v-if="res.type === 'MODBUS'">
+            <div class="cv-detail-row"><span class="cv-detail-label">Modbus TCP</span><code class="cv-detail-val">{{ res.modbusHost }}:{{ res.port || 502 }}</code></div>
+            <div class="cv-detail-row"><span class="cv-detail-label">Unit ID</span><code class="cv-detail-val">{{ res.modbusUnitId || 1 }} · {{ (res.modbusPoints || []).length }} points</code></div>
+            <div v-if="res.modbusPoints?.length" class="cv-nodes-list">
+              <div v-for="point in res.modbusPoints" :key="point.name" class="cv-node-row">
+                <div class="cv-node-info"><span class="cv-node-name">{{ point.name }}</span><code class="cv-node-nid">{{ point.functionCode }} @ {{ point.address }} · {{ point.dataType }}</code></div>
+                <div class="cv-node-value" v-if="getNodeValue(point.name) !== null"><span class="cv-nv-val">{{ getNodeValue(point.name) }}</span><span class="quality-dot" :class="getNodeQuality(point.name)"></span></div>
+              </div>
+            </div>
           </template>
 
           <template v-if="res.type === 'SDC'">
@@ -135,6 +150,7 @@
         <div class="form-group">
           <label>类型</label>
           <select v-model="form.type">
+            <option value="MODBUS">Modbus TCP</option>
             <option value="OPCUA">OPC UA (远程读取)</option>
             <option value="UDP">UDP (监听端口)</option>
             <option value="SDC">软件定义通信 (Monitor Agent)</option>
@@ -193,6 +209,25 @@
             <label>监听端口</label>
             <input type="number" v-model.number="form.port" placeholder="8888" />
           </div>
+          <div class="form-group">
+            <label>下发控制器 IP</label>
+            <input v-model.trim="form.udpCommandHost" placeholder="例如：192.168.1.100（留空则只采集）" />
+          </div>
+          <div class="form-row two-col">
+            <div class="form-group"><label>下发端口</label><input type="number" v-model.number="form.udpCommandPort" placeholder="8888" /></div>
+            <div class="form-group"><label>ACK 超时 (ms)</label><input type="number" v-model.number="form.udpAckTimeoutMs" placeholder="2000" /></div>
+          </div>
+          <label class="form-check"><input type="checkbox" v-model="form.udpRequireAck" /> 下发后必须等待控制器 ACK（支持 <code>OK</code>、<code>{&quot;ok&quot;:true}</code>）</label>
+        </template>
+
+        <template v-if="form.type === 'MODBUS'">
+          <div class="form-group"><label>Modbus TCP host</label><input v-model.trim="form.modbusHost" placeholder="192.168.1.100" /></div>
+          <div class="form-row two-col">
+            <div class="form-group"><label>Port</label><input type="number" v-model.number="form.modbusPort" placeholder="502" /></div>
+            <div class="form-group"><label>Unit ID</label><input type="number" v-model.number="form.modbusUnitId" placeholder="1" /></div>
+          </div>
+          <div class="form-group"><label>Points (name,address,function,data type,scale,unit)</label><textarea v-model="form.modbusPointsText" rows="4" placeholder="temperature,0,holding_register,float32,0.1,℃&#10;running,10,coil,bool,1,"></textarea></div>
+          <div class="comm-connect-bar"><button class="btn btn-sm" @click="testModbusConn" :disabled="testLoading">{{ testLoading ? 'Testing...' : 'Test connection' }}</button><span v-if="testMsg" class="test-msg" :class="testMsg.ok ? 'ok' : 'err'">{{ testMsg.text }}</span></div>
         </template>
 
         <template v-if="form.type === 'SDC'">
@@ -289,7 +324,9 @@ export default {
 
     const form = reactive({
       name: '', type: 'OPCUA', endpoint: '', nodesText: '', address: '0.0.0.0', sdcUrl: 'http://127.0.0.1:9100', port: 8888, interval: 1000,
-      scopeType: 'global', projectId: '', applicationName: ''
+      udpCommandHost: '', udpCommandPort: 8888, udpAckTimeoutMs: 2000, udpRequireAck: false,
+      scopeType: 'global', projectId: '', applicationName: '',
+      modbusHost: '', modbusPort: 502, modbusUnitId: 1, modbusTimeoutMs: 2500, modbusPointsText: ''
     })
 
     const scopeOptions = computed(() => {
@@ -380,6 +417,8 @@ export default {
       editingIdx.value = -1
       form.name = ''; form.type = 'OPCUA'; form.endpoint = ''
       form.nodesText = ''; form.address = '0.0.0.0'; form.sdcUrl = 'http://127.0.0.1:9100'; form.port = 8888; form.interval = 1000
+      form.udpCommandHost = ''; form.udpCommandPort = 8888; form.udpAckTimeoutMs = 2000; form.udpRequireAck = false
+      form.modbusHost = ''; form.modbusPort = 502; form.modbusUnitId = 1; form.modbusTimeoutMs = 2500; form.modbusPointsText = ''
       setFormScope(projectStore.currentProject ? { scopeId: `project:${projectStore.currentProject.id}`, scopeName: projectStore.currentProject.name } : null)
       showDialog.value = true
     }
@@ -389,7 +428,13 @@ export default {
       editingIdx.value = idx
       form.name = r.name; form.type = r.type; form.endpoint = r.endpoint || ''
       form.address = r.address || '0.0.0.0'; form.sdcUrl = r.sdcUrl || 'http://127.0.0.1:9100'; form.port = r.port || 8888; form.interval = r.pollIntervalMs || 1000
+      form.udpCommandHost = r.udpCommandHost || ''; form.udpCommandPort = r.udpCommandPort || r.port || 8888; form.udpAckTimeoutMs = r.udpAckTimeoutMs || 2000; form.udpRequireAck = Boolean(r.udpRequireAck)
       form.nodesText = (r.nodes || []).map(n => n.nodeId).join('\n')
+      form.modbusHost = r.modbusHost || ''
+      form.modbusPort = r.port || 502
+      form.modbusUnitId = r.modbusUnitId || 1
+      form.modbusTimeoutMs = r.modbusTimeoutMs || 2500
+      form.modbusPointsText = (r.modbusPoints || []).map(point => [point.name, point.address, point.functionCode, point.dataType, point.scale, point.unit].join(',')).join('\n')
       setFormScope(r)
       showDialog.value = true
     }
@@ -424,6 +469,20 @@ export default {
         .replace(/^nsu=[^;]+;(?:[isgb]=)?/, '')
     }
 
+    function parseModbusPoints(text) {
+      const names = new Set()
+      return String(text || '').split('\n').map((line, index) => {
+        const [nameRaw, addressRaw, functionRaw, dataTypeRaw, scaleRaw, unitRaw] = line.split(',').map(part => part.trim())
+        if (!nameRaw && !addressRaw) return null
+        const name = nameRaw || `modbus_${addressRaw || index + 1}`
+        if (names.has(name)) throw new Error(`Duplicate Modbus point name: ${name}`)
+        names.add(name)
+        const address = Number(addressRaw)
+        if (!Number.isInteger(address) || address < 0 || address > 65535) throw new Error(`Invalid Modbus address: ${addressRaw}`)
+        return { name, address, functionCode: functionRaw || 'holding_register', dataType: dataTypeRaw || 'uint16', scale: Number.isFinite(Number(scaleRaw)) ? Number(scaleRaw) : 1, unit: unitRaw || '' }
+      }).filter(Boolean)
+    }
+
     async function saveResource() {
       if (savingResource.value) return
       savingResource.value = true
@@ -433,6 +492,18 @@ export default {
         const name = nameFromNodeId(nid) || nid
         nodes.push({ name, nodeId: nid, browsePath: '\\Root\\Objects\\' + name })
       })
+
+      let modbusPoints = []
+      try { modbusPoints = parseModbusPoints(form.modbusPointsText) } catch (error) {
+        savingResource.value = false
+        showOperationMsg(false, error.message)
+        return
+      }
+      if (form.type === 'MODBUS' && (!form.modbusHost || !modbusPoints.length)) {
+        savingResource.value = false
+        showOperationMsg(false, 'Modbus TCP host and at least one point are required')
+        return
+      }
 
       const existing = editingIdx.value >= 0 ? resources.value[editingIdx.value] : null
       let scope
@@ -448,7 +519,10 @@ export default {
         name: form.name || (form.type === 'OPCUA' ? 'OPC UA' : form.type),
         type: form.type,
         endpoint: form.endpoint,
-        address: form.address, sdcUrl: form.sdcUrl, port: form.port,
+        address: form.address, sdcUrl: form.sdcUrl, port: form.type === 'MODBUS' ? form.modbusPort : form.port,
+        udpCommandHost: form.udpCommandHost, udpCommandPort: form.udpCommandPort, udpAckTimeoutMs: form.udpAckTimeoutMs, udpRequireAck: form.udpRequireAck,
+        modbusHost: form.modbusHost, modbusUnitId: form.modbusUnitId,
+        modbusTimeoutMs: form.modbusTimeoutMs, modbusPoints,
         pollIntervalMs: form.interval,
         enabled: existing?.enabled || false,
         ...scope,
@@ -565,6 +639,17 @@ export default {
       } finally { testLoading.value = false }
     }
 
+    async function testModbusConn() {
+      testLoading.value = true
+      testMsg.value = null
+      try {
+        const r = await api.testModbus({ host: form.modbusHost, port: form.modbusPort, unitId: form.modbusUnitId, timeoutMs: form.modbusTimeoutMs })
+        testMsg.value = { ok: r.data.connected, text: r.data.connected ? `✅ Modbus TCP connected: ${r.data.host}:${r.data.port}` : `❌ ${r.data.message}` }
+      } catch (e) {
+        testMsg.value = { ok: false, text: '❌ ' + formatConnectionError(e) }
+      } finally { testLoading.value = false }
+    }
+
     function formatConnectionError(e) {
       const msg = e?.response?.data?.message || e?.message || ''
       if (!e?.response && (e?.code === 'ERR_NETWORK' || msg.toLowerCase() === 'network error')) {
@@ -609,7 +694,7 @@ export default {
       loadingResources, resourceLoadFailed, resourceLoadError,
       openAddDialog, editResourceById, saveResource, deleteResourceById,
       confirmDeleteResource, addNodeToResource, confirmAddNode, removeNodeFromResource,
-      addNodeToResourceById, removeNodeFromResourceById, togglePoll, testConn, getNodeValue, getNodeQuality,
+      addNodeToResourceById, removeNodeFromResourceById, togglePoll, testConn, testModbusConn, getNodeValue, getNodeQuality,
       resourceScopeLabel
     }
   }
@@ -635,6 +720,7 @@ export default {
 .cv-card.type-OPCUA { border-left: 3px solid var(--accent); }
 .cv-card.type-UDP { border-left: 3px solid var(--color-warning); }
 .cv-card.type-SDC { border-left: 3px solid var(--color-online); }
+.cv-card.type-MODBUS { border-left: 3px solid var(--color-warning); }
 
 .cv-card-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; background: var(--surface-muted); border-bottom: 1px solid var(--border-light); }
 .cv-card-title { display: flex; align-items: center; gap: 10px; }
@@ -642,6 +728,7 @@ export default {
 .cv-type-badge.OPCUA { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
 .cv-type-badge.UDP { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
 .cv-type-badge.SDC { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+.cv-type-badge.MODBUS { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
 .cv-name { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--text-primary); }
 .cv-scope-tag { display: inline-flex; align-items: center; min-height: 23px; padding: 0 8px; border-radius: var(--radius-full); background: var(--accent-soft); border: 1px solid var(--info-border); color: var(--accent); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
 .cv-card-actions { display: flex; align-items: center; gap: 8px; }

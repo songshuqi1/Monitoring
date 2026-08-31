@@ -325,8 +325,8 @@ MAKEINDEX_COMPILER:FILEPATH=MAKEINDEX_COMPILER-NOTFOUND
 //Path to the MikTex binary directory.
 MIKTEX_BINARY_PATH:PATH=MIKTEX_BINARY_PATH-NOTFOUND
 
-//Path to a file.
-MYSQL_INCLUDE_DIR:PATH=C:/Program Files/MySQL/MySQL Server 9.7/include
+//Build without MySQL support
+MONITOR_DISABLE_MYSQL:BOOL=ON
 
 //Path to a library.
 MYSQL_LIB:FILEPATH=C:/Program Files/MySQL/MySQL Server 9.7/lib/libmysql.lib

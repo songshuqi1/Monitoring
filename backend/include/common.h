@@ -262,6 +262,16 @@ struct ResourceNode {
     std::string browsePath;  // 浏览路径, 如 "\Root\Objects\temperature_1"
 };
 
+// Modbus TCP point definition. Addresses are zero-based protocol addresses.
+struct ModbusPoint {
+    std::string name;
+    int         address = 0;
+    std::string functionCode = "holding_register"; // coil / discrete_input / holding_register / input_register
+    std::string dataType = "uint16";               // bool / uint16 / int16 / uint32 / int32 / float32 / float32_swap
+    double      scale = 1.0;
+    std::string unit;
+};
+
 // 通信资源定义
 struct CommunicationResource {
     std::string id;
@@ -269,13 +279,21 @@ struct CommunicationResource {
     std::string type;        // "OPCUA" / "UDP"
     std::string endpoint;    // OPC UA 端点 URL
     std::string address;     // UDP 绑定地址（默认 0.0.0.0）
+    std::string udpCommandHost; // UDP 下发目标主机；留空时仅采集，不允许下发
     std::string sdcUrl;
+    std::string modbusHost;
     std::string scopeId;
     std::string scopeName;
     int         port     = 0;    // UDP 端口
+    int         udpCommandPort = 0;
+    int         udpAckTimeoutMs = 2000;
+    bool        udpRequireAck = false;
     int         pollIntervalMs = 1000;
+    int         modbusUnitId = 1;
+    int         modbusTimeoutMs = 2500;
     bool        enabled  = false;
     std::vector<ResourceNode> nodes;
+    std::vector<ModbusPoint> modbusPoints;
 
     std::string toJson() const {
         std::stringstream ss;
@@ -284,11 +302,18 @@ struct CommunicationResource {
            << "\",\"type\":\"" << escapeJson(type)
            << "\",\"endpoint\":\"" << escapeJson(endpoint)
            << "\",\"address\":\"" << escapeJson(address)
+           << "\",\"udpCommandHost\":\"" << escapeJson(udpCommandHost)
            << "\",\"sdcUrl\":\"" << escapeJson(sdcUrl)
+           << "\",\"modbusHost\":\"" << escapeJson(modbusHost)
            << "\",\"scopeId\":\"" << escapeJson(scopeId)
            << "\",\"scopeName\":\"" << escapeJson(scopeName)
            << "\",\"port\":" << port
+           << ",\"udpCommandPort\":" << udpCommandPort
+           << ",\"udpAckTimeoutMs\":" << udpAckTimeoutMs
+           << ",\"udpRequireAck\":" << (udpRequireAck ? "true" : "false")
            << ",\"pollIntervalMs\":" << pollIntervalMs
+           << ",\"modbusUnitId\":" << modbusUnitId
+           << ",\"modbusTimeoutMs\":" << modbusTimeoutMs
            << ",\"enabled\":" << (enabled ? "true" : "false")
            << ",\"nodes\":[";
         for (size_t i = 0; i < nodes.size(); ++i) {
@@ -296,6 +321,17 @@ struct CommunicationResource {
                << "\",\"name\":\"" << escapeJson(nodes[i].name)
                << "\",\"browsePath\":\"" << escapeJson(nodes[i].browsePath) << "\"}";
             if (i < nodes.size() - 1) ss << ",";
+        }
+        ss << "],\"modbusPoints\":[";
+        for (size_t i = 0; i < modbusPoints.size(); ++i) {
+            const auto& point = modbusPoints[i];
+            ss << "{\"name\":\"" << escapeJson(point.name)
+               << "\",\"address\":" << point.address
+               << ",\"functionCode\":\"" << escapeJson(point.functionCode)
+               << "\",\"dataType\":\"" << escapeJson(point.dataType)
+               << "\",\"scale\":" << std::setprecision(15) << point.scale
+               << ",\"unit\":\"" << escapeJson(point.unit) << "\"}";
+            if (i < modbusPoints.size() - 1) ss << ",";
         }
         ss << "]}";
         return ss.str();

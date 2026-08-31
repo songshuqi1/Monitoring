@@ -39,6 +39,15 @@ public:
     // 写入变量到远程 OPC UA 服务器
     bool writeVariable(const std::string& nodeId, double value);
 
+    // Use an isolated client for a communication resource write. Resource
+    // collection owns a different client on its worker thread, so a command
+    // must never reuse or race that connection. When requested, the same
+    // isolated command session reads the node back after a successful write.
+    bool writeRemoteValue(const std::string& endpointUrl, const std::string& nodeId,
+                          double value, std::string& error,
+                          double* readbackValue = nullptr,
+                          std::string* readbackError = nullptr);
+
     // 启动轮询（后台线程）
     void startPolling(int intervalMs);
     void stopPolling();
