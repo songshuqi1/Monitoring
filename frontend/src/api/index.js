@@ -117,6 +117,14 @@ const api = {
     return http.post(`/write/${varId}`, { value })
   },
 
+  // ---- 下发审计记录 ----
+  getWriteAudit() {
+    return http.get('/write-audit')
+  },
+  clearWriteAudit() {
+    return http.delete('/write-audit')
+  },
+
   // ---- 报警 ----
   getAlarms() {
     return http.get('/alarms')

@@ -29,7 +29,7 @@
 41	193	8098406776157855	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.h	b2332f393cd0cde
 24	221	8098406776427932	open62541/open62541.c	a87d9bb65f04269d
 24	221	8098406776427932	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.c	a87d9bb65f04269d
-40	431	8098449073515670	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
+24	427	8098455358120533	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
 44	655	8098414701483186	CMakeFiles/MonitoringPlatform.dir/src/udp_manager.cpp.obj	bc5425df52bad2fa
 23	722	8098414701277608	CMakeFiles/MonitoringPlatform.dir/src/main.cpp.obj	712dbad8be554a76
 34	524	8098414701387659	CMakeFiles/MonitoringPlatform.dir/src/database.cpp.obj	ea6a93a64b946c3e
@@ -40,6 +40,7 @@
 29	1021	8098449073404335	CMakeFiles/MonitoringPlatform.dir/src/communication_manager.cpp.obj	8de25a848311f2cf
 221	1736	8098406776497935	open62541/CMakeFiles/open62541-object.dir/open62541.c.obj	dc7d87941e7bac5d
 1736	1881	8098406791656223	bin/open62541.lib	9bb77d5dba043930
-1021	2876	8098449083326929	MonitoringPlatform.exe	cfd7d4a98be3c76c
-24	427	8098455358120533	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
 428	2332	8098455362162509	MonitoringPlatform.exe	cfd7d4a98be3c76c
+22	547	8098466732672755	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
+18	987	8098466732622759	CMakeFiles/MonitoringPlatform.dir/src/http_server.cpp.obj	1befe8da8a11b1ed
+987	2830	8098466742314744	MonitoringPlatform.exe	cfd7d4a98be3c76c

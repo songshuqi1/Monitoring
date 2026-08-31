@@ -177,6 +177,55 @@ static bool writeCustomComponentsJson(const std::string& body) {
     return static_cast<bool>(out);
 }
 
+// The runtime can deliberately operate without MySQL.  Command audit data
+// must still survive a page refresh or a runtime restart, so keep an
+// append-only JSON array beside the other runtime-owned data files.
+static std::mutex g_writeAuditFileMutex;
+static std::atomic<uint64_t> g_writeAuditSequence{0};
+
+static std::filesystem::path writeAuditFilePath() {
+    namespace fs = std::filesystem;
+    fs::path dir = fs::current_path() / "data";
+    std::error_code ec;
+    fs::create_directories(dir, ec);
+    return dir / "write_audit.json";
+}
+
+static std::string readWriteAuditJson() {
+    std::lock_guard lock(g_writeAuditFileMutex);
+    std::string body;
+    if (readFileBinary(writeAuditFilePath(), body) && looksLikeJsonArray(body)) {
+        return trimAsciiWhitespace(body);
+    }
+    return "[]";
+}
+
+static bool appendWriteAuditJson(const std::string& recordJson) {
+    std::lock_guard lock(g_writeAuditFileMutex);
+    std::string body;
+    const auto file = writeAuditFilePath();
+    if (!readFileBinary(file, body) || !looksLikeJsonArray(body)) body = "[]";
+    body = trimAsciiWhitespace(body);
+    const auto close = body.rfind(']');
+    if (close == std::string::npos) return false;
+    const bool empty = body == "[]";
+    body.erase(close);
+    body += empty ? recordJson : "," + recordJson;
+    body += "]";
+    std::ofstream out(file, std::ios::binary | std::ios::trunc);
+    if (!out) return false;
+    out << body;
+    return static_cast<bool>(out);
+}
+
+static bool clearWriteAuditJson() {
+    std::lock_guard lock(g_writeAuditFileMutex);
+    std::ofstream out(writeAuditFilePath(), std::ios::binary | std::ios::trunc);
+    if (!out) return false;
+    out << "[]";
+    return static_cast<bool>(out);
+}
+
 // 从单个 JSON 对象字符串中提取字符串字段值（不含引号）
 static std::string extractJsonStringField(const std::string& obj, const std::string& key) {
     std::string searchKey = "\"" + key + "\"";
@@ -669,9 +718,9 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
     try {
         // ========== 会话认证检查 ==========
         // 对非公开 API 路径进行认证检查（authToken 由调用方从 HTTP 请求头中提取并传入）
+        std::string authenticatedUsername;
         if (parts.size() >= 2 && parts[0] == "api" && !isPublicApiPath(parts)) {
-            std::string username;
-            if (!AuthManager::instance().validateToken(authToken_, username)) {
+            if (!AuthManager::instance().validateToken(authToken_, authenticatedUsername)) {
                 return jsonResponse("{\"error\":\"unauthorized\",\"message\":\"请先登录\"}", 401);
             }
         }
@@ -964,6 +1013,20 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
         }
 
         // ========== API: 写入变量 ==========
+        // GET /api/write-audit -> persistent command audit records
+        // DELETE /api/write-audit -> clear all persistent command audit records
+        if (parts.size() == 2 && parts[0] == "api" && parts[1] == "write-audit") {
+            if (method == "GET") return jsonResponse(readWriteAuditJson());
+            if (method == "DELETE") {
+                if (!clearWriteAuditJson()) {
+                    return jsonResponse("{\"error\":\"could not clear write audit records\"}", 500);
+                }
+                return jsonResponse("{\"status\":\"ok\"}");
+            }
+            return jsonResponse("{\"error\":\"method not allowed\"}", 405);
+        }
+
+        // ========== API: 写入变量 ==========
         if (parts.size() == 3 && parts[0] == "api" && parts[1] == "write") {
             if (method == "POST") {
                 int varId = 0;
@@ -1120,6 +1183,8 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 }
                 if (hasReadbackValue) VariableManager::instance().updateValue(varId, readbackValue, "GOOD");
 
+                const int64_t auditTimestampMs = nowMs();
+                const std::string auditOperator = authenticatedUsername.empty() ? "OPERATOR" : authenticatedUsername;
                 const std::string auditDetail = writeDetail + "; Readback: " + readbackDetail;
                 DatabaseManager::instance().insertWriteRecord(
                     varId,
@@ -1127,10 +1192,32 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                     value,
                     v.opcuaNodeId,
                     writeStatus,
-                    "OPERATOR",
+                    auditOperator,
                     auditDetail,
-                    nowMs()
+                    auditTimestampMs
                 );
+
+                const std::string auditRecord =
+                    "{\"id\":\"" + std::to_string(auditTimestampMs) + "-" +
+                    std::to_string(g_writeAuditSequence.fetch_add(1, std::memory_order_relaxed)) +
+                    "\",\"timestamp\":" + std::to_string(auditTimestampMs) +
+                    ",\"varId\":" + std::to_string(varId) +
+                    ",\"name\":\"" + escapeJson(v.name) +
+                    "\",\"source\":\"" + escapeJson(source) +
+                    "\",\"targetValue\":" + std::to_string(value) +
+                    ",\"writeStatus\":\"" + escapeJson(writeStatus) +
+                    "\",\"readbackStatus\":\"" + escapeJson(readbackStatus) +
+                    "\",\"readbackValue\":" + (hasReadbackValue ? std::to_string(readbackValue) : "null") +
+                    ",\"hasReadbackValue\":" + std::string(hasReadbackValue ? "true" : "false") +
+                    ",\"readbackMessage\":\"" + escapeJson(readbackDetail) +
+                    "\"" +
+                    ",\"ok\":" + std::string(writeOk ? "true" : "false") +
+                    ",\"operator\":\"" + escapeJson(auditOperator) +
+                    "\",\"message\":\"" + escapeJson(writeDetail) +
+                    "\",\"detail\":\"" + escapeJson(auditDetail) + "\"}";
+                if (!appendWriteAuditJson(auditRecord)) {
+                    Log(LogLevel::WARN, "Write audit record could not be persisted");
+                }
 
                 // 记录操作日志
                 OperationLog log;
@@ -1139,7 +1226,7 @@ std::string HttpServer::handleRequest(const std::string& method, const std::stri
                 log.operationType = "SET_VALUE";
                 log.oldValue = oldData.varId == varId ? oldData.value : 0.0;
                 log.newValue = value;
-                log.operator_ = "OPERATOR";
+                log.operator_ = auditOperator;
                 log.detail = "Set variable to " + std::to_string(value) + " (" + writeStatus + "); " + readbackDetail;
                 DatabaseManager::instance().insertOperationLog(log);
 

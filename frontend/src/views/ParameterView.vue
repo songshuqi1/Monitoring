@@ -49,16 +49,26 @@
     </section>
 
     <section class="pv-audit">
-      <h3>本次会话下发记录</h3>
+      <div class="pv-audit-header">
+        <div>
+          <h3>下发审计记录</h3>
+          <p>保留目标值、回读/ACK、操作者、命令号和执行结果。</p>
+        </div>
+        <div class="pv-audit-actions">
+          <button class="btn btn-sm btn-secondary" :disabled="auditLoading || auditClearing" @click="refreshAuditRecords">{{ auditLoading ? '刷新中…' : '刷新记录' }}</button>
+          <button class="btn btn-sm btn-danger" :disabled="!commands.length || auditLoading || auditClearing" @click="clearAuditDialog = true">删除记录</button>
+        </div>
+      </div>
       <table>
-        <thead><tr><th>时间</th><th>变量</th><th>协议</th><th>值</th><th>回读确认</th><th>结果</th></tr></thead>
+        <thead><tr><th>时间</th><th>参数</th><th>协议</th><th>目标值</th><th>回读/ACK</th><th>结果</th><th>操作者</th><th>说明</th></tr></thead>
         <tbody>
           <tr v-for="item in commands" :key="item.id">
             <td>{{ item.time }}</td><td>{{ item.name }}</td><td>{{ protocolLabel(item.source) }}</td><td>{{ item.value }}</td>
             <td :class="readbackClass(item)">{{ readbackLabel(item) }}</td>
-            <td :class="item.ok ? 'command-ok' : 'command-error'">{{ item.message }}</td>
+            <td :class="item.ok ? 'command-ok' : 'command-error'">{{ item.ok ? '成功' : '失败' }}</td>
+            <td>{{ item.operator }}</td><td class="pv-audit-detail" :title="item.detail || item.message">{{ item.detail || item.message }}</td>
           </tr>
-          <tr v-if="!commands.length"><td colspan="6" class="pv-no-logs">暂无下发记录</td></tr>
+          <tr v-if="!commands.length"><td colspan="8" class="pv-no-logs">暂无下发审计记录</td></tr>
         </tbody>
       </table>
     </section>
@@ -71,6 +81,17 @@
       confirm-text="确认下发"
       @close="pendingCommand = null"
       @confirm="executeWrite"
+    />
+    <ConfirmDialog
+      v-if="clearAuditDialog"
+      title="删除下发审计记录"
+      message="确认删除全部下发审计记录吗？"
+      detail="此操作会清空运行包中已保存的下发审计记录，无法恢复。"
+      confirm-text="确认删除"
+      :submitting="auditClearing"
+      danger
+      @close="clearAuditDialog = false"
+      @confirm="clearAuditRecords"
     />
   </div>
 </template>
@@ -90,6 +111,9 @@ const submittingId = ref(null)
 const selectedScope = ref('all')
 const pendingCommand = ref(null)
 const commands = ref([])
+const auditLoading = ref(false)
+const auditClearing = ref(false)
+const clearAuditDialog = ref(false)
 const draftValues = reactive({})
 const message = reactive({ ok: true, text: '' })
 const collectedSources = new Set(['OPCUA', 'MODBUS', 'UDP', 'SDC'])
@@ -123,6 +147,34 @@ function resourceName(id) {
 function formatValue(value) {
   const number = Number(value)
   return Number.isFinite(number) ? Number(number.toFixed(6)) : (value ?? '-')
+}
+
+function formatAuditTime(timestamp) {
+  const value = Number(timestamp)
+  if (!Number.isFinite(value) || value <= 0) return '-'
+  return new Date(value).toLocaleString('zh-CN', { hour12: false })
+}
+
+function normalizeAuditRecord(record, index) {
+  const hasReadbackValue = Boolean(record?.hasReadbackValue) && Number.isFinite(Number(record?.readbackValue))
+  const writeStatus = String(record?.writeStatus || '')
+  return {
+    id: record?.id || `${record?.timestamp || 'audit'}-${index}`,
+    time: formatAuditTime(record?.timestamp),
+    name: String(record?.name || `变量 ${record?.varId ?? '-'}`),
+    source: String(record?.source || ''),
+    value: formatValue(record?.targetValue),
+    ok: record?.ok === true || (record?.ok !== false && writeStatus === 'SUCCESS'),
+    operator: String(record?.operator || '系统'),
+    message: String(record?.message || writeStatus || '下发完成'),
+    detail: String(record?.detail || record?.message || writeStatus || ''),
+    readback: {
+      status: String(record?.readbackStatus || 'NOT_EXECUTED'),
+      value: record?.readbackValue,
+      hasValue: hasReadbackValue,
+      message: String(record?.readbackMessage || '')
+    }
+  }
 }
 
 function readbackLabel(command) {
@@ -188,6 +240,38 @@ async function loadAll() {
   }
 }
 
+async function refreshAuditRecords() {
+  if (auditLoading.value) return
+  auditLoading.value = true
+  try {
+    const response = await api.getWriteAudit()
+    const records = Array.isArray(response.data) ? response.data : []
+    commands.value = records.map(normalizeAuditRecord).reverse()
+  } catch (error) {
+    message.ok = false
+    message.text = `刷新下发审计记录失败：${error?.message || '后端不可用'}`
+  } finally {
+    auditLoading.value = false
+  }
+}
+
+async function clearAuditRecords() {
+  if (auditClearing.value) return
+  auditClearing.value = true
+  try {
+    await api.clearWriteAudit()
+    commands.value = []
+    clearAuditDialog.value = false
+    message.ok = true
+    message.text = '下发审计记录已删除'
+  } catch (error) {
+    message.ok = false
+    message.text = `删除下发审计记录失败：${error?.message || '后端不可用'}`
+  } finally {
+    auditClearing.value = false
+  }
+}
+
 function requestWrite(parameter) {
   const blockReason = commandBlockReason(parameter)
   if (blockReason) {
@@ -220,26 +304,30 @@ async function executeWrite() {
     }
     if (readback.hasValue) command.parameter.value = Number(payload.readbackValue)
     await loadAll()
+    await refreshAuditRecords()
     message.ok = true
     message.text = `“${command.parameter.name}”已通过 ${protocolLabel(command.parameter.source)} 下发；${readbackLabel({ readback })}。`
-    commands.value.unshift({ id: `${Date.now()}-${command.parameter.id}`, time: new Date().toLocaleString('zh-CN', { hour12: false }), name: command.parameter.name, source: command.parameter.source, value: command.value, ok: true, message: '下发成功', readback })
   } catch (error) {
+    await refreshAuditRecords()
     message.ok = false
     message.text = `下发失败：${error?.message || '控制器未确认写入'}`
-    commands.value.unshift({ id: `${Date.now()}-${command.parameter.id}`, time: new Date().toLocaleString('zh-CN', { hour12: false }), name: command.parameter.name, source: command.parameter.source, value: command.value, ok: false, message: error?.message || '下发失败', readback: { status: 'NOT_EXECUTED', hasValue: false, message: '下发未成功，未执行回读' } })
   } finally {
     submittingId.value = null
   }
 }
 
-onMounted(loadAll)
+onMounted(async () => {
+  await Promise.all([loadAll(), refreshAuditRecords()])
+})
 </script>
 
 <style scoped>
 .parameter-view { height: calc(100vh - var(--header-height) - var(--statusbar-height)); overflow: auto; padding: 24px 28px 42px; background: var(--bg-secondary); color: var(--text-primary); }
-.pv-header, .pv-notice, .pv-filter, .pv-grid, .pv-empty, .pv-audit, .pv-message { max-width: 1320px; margin-left: auto; margin-right: auto; }.pv-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }.pv-header h2 { margin: 0 0 6px; font-size: var(--fs-2xl); }.pv-header p { margin: 0; color: var(--text-muted); }.pv-notice, .pv-filter, .pv-audit, .pv-empty { border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); }.pv-notice { padding: 12px 14px; line-height: 1.6; color: var(--text-secondary); }.pv-filter { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 14px; }.pv-filter span { color: var(--text-muted); font-size: var(--fs-sm); }.pv-filter select { min-width: 230px; }.pv-message { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--success-border); border-radius: var(--radius-md); background: var(--success-bg); color: var(--success-text); }.pv-message.error { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-text); }.pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }.pv-card { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: var(--shadow-xs); }.pv-card-title { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }.pv-protocol { padding: 3px 8px; border-radius: 999px; background: var(--surface-muted); color: var(--text-secondary); font-size: 11px; }.pv-protocol.opcua { background: #e7f0ff; color: #245bab; }.pv-protocol.modbus { background: #f7edda; color: #8d5b12; }.pv-protocol.udp { background: #efe7ff; color: #6a43a3; }.pv-protocol.sdc { background: #dff4ec; color: #1e7855; }.pv-meta { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; margin: 7px 0; font-size: var(--fs-sm); }.pv-meta > span { color: var(--text-muted); }.pv-meta code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.pv-meta b.good { color: var(--success-text); }.pv-meta b.bad { color: var(--danger-text); }.pv-current { margin-top: 12px; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); }.pv-current strong { margin: 0 5px; font-family: var(--font-mono); color: var(--text-primary); }.pv-command { display: flex; gap: 8px; margin-top: 12px; }.pv-command input { flex: 1; min-width: 0; }.pv-readonly { display: block; margin-top: 8px; color: var(--danger-text); }.pv-empty { margin-top: 14px; padding: 42px; text-align: center; }.pv-empty h3 { margin: 0 0 8px; }.pv-empty p { margin: 0; color: var(--text-muted); }.pv-audit { margin-top: 18px; overflow: auto; }.pv-audit h3 { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--border-light); font-size: var(--fs-lg); }.pv-audit table { width: 100%; border-collapse: collapse; min-width: 680px; }.pv-audit th, .pv-audit td { padding: 10px 14px; border-bottom: 1px solid var(--border-light); text-align: left; font-size: var(--fs-sm); }.pv-audit th { background: var(--surface-muted); color: var(--text-muted); }.command-ok { color: var(--success-text); }.command-error { color: var(--danger-text); }.pv-no-logs { color: var(--text-muted); text-align: center !important; }
+.pv-header, .pv-notice, .pv-filter, .pv-grid, .pv-empty, .pv-audit, .pv-message { max-width: 1320px; margin-left: auto; margin-right: auto; }
+.pv-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }.pv-header h2 { margin: 0 0 6px; font-size: var(--fs-2xl); }.pv-header p { margin: 0; color: var(--text-muted); }.pv-notice, .pv-filter, .pv-audit, .pv-empty { border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); }.pv-notice { padding: 12px 14px; line-height: 1.6; color: var(--text-secondary); }.pv-filter { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 14px; }.pv-filter span { color: var(--text-muted); font-size: var(--fs-sm); }.pv-filter select { min-width: 230px; }.pv-message { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--success-border); border-radius: var(--radius-md); background: var(--success-bg); color: var(--success-text); }.pv-message.error { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-text); }.pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }.pv-card { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: var(--shadow-xs); }.pv-card-title { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }.pv-protocol { padding: 3px 8px; border-radius: 999px; background: var(--surface-muted); color: var(--text-secondary); font-size: 11px; }.pv-protocol.opcua { background: #e7f0ff; color: #245bab; }.pv-protocol.modbus { background: #f7edda; color: #8d5b12; }.pv-protocol.udp { background: #efe7ff; color: #6a43a3; }.pv-protocol.sdc { background: #dff4ec; color: #1e7855; }.pv-meta { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; margin: 7px 0; font-size: var(--fs-sm); }.pv-meta > span { color: var(--text-muted); }.pv-meta code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.pv-meta b.good { color: var(--success-text); }.pv-meta b.bad { color: var(--danger-text); }.pv-current { margin-top: 12px; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); }.pv-current strong { margin: 0 5px; font-family: var(--font-mono); color: var(--text-primary); }.pv-command { display: flex; gap: 8px; margin-top: 12px; }.pv-command input { flex: 1; min-width: 0; }.pv-readonly { display: block; margin-top: 8px; color: var(--danger-text); }.pv-empty { margin-top: 14px; padding: 42px; text-align: center; }.pv-empty h3 { margin: 0 0 8px; }.pv-empty p { margin: 0; color: var(--text-muted); }
+.pv-audit { margin-top: 18px; overflow: auto; }.pv-audit-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border-light); }.pv-audit h3 { margin: 0; font-size: var(--fs-lg); }.pv-audit-header p { margin: 4px 0 0; color: var(--text-muted); font-size: var(--fs-sm); }.pv-audit-actions { display: flex; flex: 0 0 auto; gap: 8px; }.pv-audit table { width: 100%; border-collapse: collapse; min-width: 1060px; }.pv-audit th, .pv-audit td { padding: 10px 14px; border-bottom: 1px solid var(--border-light); text-align: left; font-size: var(--fs-sm); }.pv-audit th { background: var(--surface-muted); color: var(--text-muted); }.pv-audit-detail { min-width: 230px; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.command-ok { color: var(--success-text); }.command-error { color: var(--danger-text); }.pv-no-logs { color: var(--text-muted); text-align: center !important; }
 .readback-match { color: var(--success-text); }
 .readback-error { color: var(--danger-text); }
 .readback-neutral { color: var(--text-muted); }
-@media (max-width: 720px) { .parameter-view { padding: 18px 14px; }.pv-header, .pv-filter { align-items: stretch; flex-direction: column; }.pv-filter select { min-width: 0; }.pv-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .parameter-view { padding: 18px 14px; }.pv-header, .pv-filter, .pv-audit-header { align-items: stretch; flex-direction: column; }.pv-filter select { min-width: 0; }.pv-audit-actions { justify-content: flex-end; }.pv-grid { grid-template-columns: 1fr; } }
 </style>
