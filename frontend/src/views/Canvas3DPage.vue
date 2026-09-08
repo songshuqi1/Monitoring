@@ -3,14 +3,28 @@
     <input ref="importInput" type="file" accept=".json,application/json" hidden @change="importScene" />
     <div ref="workspaceHost" class="scene-workspace">
       <aside v-if="!applicationMode" ref="libraryAside" class="scene-library" :style="{ width: `${leftWidth}px`, flexBasis: `${leftWidth}px` }">
-        <button class="panel-heading section-toggle" :aria-expanded="libraryOpen" :aria-label="`${libraryOpen ? '折叠' : '展开'}工业组件库`" @click="libraryOpen = !libraryOpen; hideModelPreview()"><span class="heading-title"><i>{{ libraryOpen ? '▾' : '▸' }}</i><strong>工业组件库</strong></span><span class="heading-meta">点击添加 · 拖入场景</span></button>
+        <section class="library-group component-library-group">
+        <div class="library-header">
+          <div class="library-header-row">
+            <h3>组件库</h3>
+            <button class="library-collapse" type="button" :aria-expanded="libraryOpen" :aria-label="`${libraryOpen ? '折叠' : '展开'}工业组件库`" @click="libraryOpen = !libraryOpen; hideModelPreview()">{{ libraryOpen ? '▾' : '▸' }}</button>
+          </div>
+          <p>按行业场景和公共组件组织</p>
+        </div>
+        <div v-show="libraryOpen" class="library-search">
+          <input v-model="librarySearch" type="search" placeholder="搜索组件、分类或场景" @keydown.stop @keyup.stop />
+          <button v-if="librarySearch" type="button" title="清空搜索" @click="librarySearch = ''">清除</button>
+        </div>
         <div v-show="libraryOpen" class="library-section-body">
         <div class="model-library">
-          <button v-for="model in MODEL_LIBRARY" :key="model.type" class="model-card" draggable="true" @mouseenter="showModelPreview(model, $event)" @mouseleave="hideModelPreview" @focus="showModelPreview(model, $event)" @blur="hideModelPreview" @dragstart="hideModelPreview(); dragModel($event, model.type)" @click="addModel(model.type)">
+          <button v-for="model in filteredModelLibrary" :key="model.type" class="model-card" draggable="true" @mouseenter="showModelPreview(model, $event)" @mouseleave="hideModelPreview" @focus="showModelPreview(model, $event)" @blur="hideModelPreview" @dragstart="hideModelPreview(); dragModel($event, model.type)" @click="addModel(model.type)">
             <span class="model-icon" :style="{ color: model.color }">{{ model.icon }}</span><span>{{ model.name }}</span>
           </button>
         </div>
+        <div v-if="!filteredModelLibrary.length" class="muted-empty component-empty">没有匹配的组件</div>
         </div>
+        </section>
+        <section class="library-group device-library-group">
         <button class="panel-heading tree-heading section-toggle" :aria-expanded="devicesOpen" :aria-label="`${devicesOpen ? '折叠' : '展开'}场景设备`" @click="devicesOpen = !devicesOpen"><span class="heading-title"><i>{{ devicesOpen ? '▾' : '▸' }}</i><strong>场景设备</strong></span><span class="heading-meta">{{ scene.nodes.length }}</span></button>
         <div v-show="devicesOpen" class="scene-devices-body">
         <input v-model="search" class="scene-search" placeholder="搜索设备名称或编号" aria-label="搜索场景设备" />
@@ -23,6 +37,7 @@
           </div>
         </div>
         </div>
+        </section>
       </aside>
       <PaneResizeHandle v-if="!applicationMode" v-model="leftWidth" :min="140" :max="maxLeftWidth" label="拖动调整 3D 左侧组件栏宽度" @resize-start="engine?.setResizing(true)" @resize-end="engine?.setResizing(false)" />
       <SceneModelPreview v-if="!applicationMode && previewModel" :model="previewModel" :style="{ left: `${leftWidth + 12}px`, top: `${previewTop}px` }" />
@@ -139,7 +154,7 @@ import { MODEL_LIBRARY, createSceneNode, emptyScene, copyScene, sceneId, effecti
 const store = useMonitorStore(), projects = useProjectStore(), router = useRouter()
 const scene = computed(() => store.scene3d)
 const applicationMode = computed({ get: () => store.canvasApplicationMode, set: value => { store.canvasApplicationMode = value } })
-const stageHost = ref(null), importInput = ref(null), sceneNameInput = ref(null), selectedId = ref(null), selectedNameDraft = ref(''), search = ref(''), variableSearch = ref(''), notice = ref(''), renderError = ref('')
+const stageHost = ref(null), importInput = ref(null), sceneNameInput = ref(null), selectedId = ref(null), selectedNameDraft = ref(''), librarySearch = ref(''), search = ref(''), variableSearch = ref(''), notice = ref(''), renderError = ref('')
 const workspaceHost = ref(null), centerHost = ref(null), libraryAside = ref(null)
 const libraryOpen = ref(true), devicesOpen = ref(true), previewModel = ref(null), previewTop = ref(8)
 const leftWidth = usePanelSize('monitoring.scene3d.leftWidth', 224)
@@ -173,6 +188,11 @@ function showNotice(message) {
 const selected = computed(() => scene.value.nodes.find(node => node.id === selectedId.value))
 const linkedWidgets = computed(() => store.widgets.filter(widget => widget.config && Object.hasOwn(widget.config, 'varId')))
 const bindings = computed(() => selected.value ? effectiveBindings(selected.value, store.widgets) : {})
+const filteredModelLibrary = computed(() => {
+  const keyword = librarySearch.value.trim().toLowerCase()
+  if (!keyword) return MODEL_LIBRARY
+  return MODEL_LIBRARY.filter(model => `${model.name} ${model.type} ${model.category || ''}`.toLowerCase().includes(keyword))
+})
 const filteredNodes = computed(() => scene.value.nodes.filter(node => `${node.name} ${node.deviceId}`.toLowerCase().includes(search.value.toLowerCase())))
 const filteredVariables = computed(() => store.variables.filter(v => `${v.name} ${v.id}`.toLowerCase().includes(variableSearch.value.toLowerCase())))
 const monitoredNodes = computed(() => scene.value.nodes.filter(node => !['platform', 'building'].includes(node.type)))
@@ -354,20 +374,34 @@ onBeforeUnmount(() => { clearNotice(); engine?.dispose(); engine = null; documen
 .scene-notice { position: absolute; z-index: 12; top: 0; left: 0; right: 0; padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #edf6faf2; border-bottom: 1px solid #cfdfeb; box-shadow: 0 3px 10px #38566b14; font-size: 12px; color: #3e6883; }
 .scene-notice button { border: 0; background: transparent; color: inherit; font-size: 20px; cursor: pointer; }
 .scene-workspace { position: relative; min-height: 0; flex: 1; display: flex; overflow: hidden; }
-.scene-library { width: 224px; flex: 0 0 224px; background: #f8fafc; border-right: 1px solid var(--scene-border); display: flex; flex-direction: column; min-height: 0; }
-.panel-heading { padding: 18px 16px 14px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }.panel-heading strong { font-size: 13px; }.panel-heading>.heading-meta,.scene-inspector .panel-heading>span { font-size: 10px; color: #93a1ae; }
+.scene-library { width: 224px; flex: 0 0 224px; box-sizing: border-box; background: #f8fafc; border-right: 1px solid var(--scene-border); display: flex; flex-direction: column; min-height: 0; overflow: hidden; box-shadow: 8px 0 18px #0f172a09; }
+.library-group { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: transparent; }
+.component-library-group { flex: 0 1 auto; }
+.device-library-group { flex: 1 1 180px; border-top: 1px solid #dfe6ed; }
+.library-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #e2e8ee; background: #fff; }
+.library-header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.library-header h3 { margin: 0; color: #25394b; font-size: 18px; font-weight: 700; }
+.library-header p { margin: 7px 0 0; color: #7f909d; font-size: 13px; line-height: 1.5; }
+.library-collapse { width: 28px; height: 28px; flex: 0 0 28px; border: 0; border-radius: 6px; background: transparent; color: #6d8799; font-size: 16px; cursor: pointer; }
+.library-collapse:hover { background: #eef4f8; }
+.library-search { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e5ebf2; }
+.library-search input { flex: 1; min-width: 0; height: 34px; padding: 0 11px; border: 1px solid #d7e0e8; border-radius: 7px; background: #f8fafc; color: #25394b; font-size: 13px; outline: none; transition: border-color .18s, box-shadow .18s, background .18s; }
+.library-search input:focus { background: #fff; border-color: #7aa8c3; box-shadow: 0 0 0 3px #7aa8c31f; }
+.library-search button { height: 30px; padding: 0 9px; border: 1px solid #d7e0e8; border-radius: 7px; background: #fff; color: #526577; font-size: 13px; font-weight: 700; cursor: pointer; }
+.library-search button:hover { background: #eef4f8; color: #2c6488; }
+.panel-heading { min-height: 48px; box-sizing: border-box; padding: 13px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }.panel-heading strong { font-size: 13px; }.panel-heading>.heading-meta,.scene-inspector .panel-heading>span { font-size: 10px; color: #93a1ae; }
 .section-toggle { width: 100%; flex-shrink: 0; background: transparent; text-align: left; transition: background .15s, color .15s; }
 .section-toggle:hover { background: #eef4f8; }
 .section-toggle:focus-visible { box-shadow: inset 0 0 0 2px #7aa8c3; }
 .heading-title { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; color: #25394b; white-space: nowrap; }
 .heading-meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .heading-title i { width: 12px; color: #6d8799; font-size: 13px; font-style: normal; text-align: center; }
-.library-section-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 10px; }
-.scene-devices-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-.model-library { padding: 0 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.model-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 72px; background: #fff; border: 1px solid #e2e8ee; border-radius: 8px; color: #526577; font-size: 11px; cursor: grab; transition: background .15s, border-color .15s; }.model-card:hover { background: #f0f7fb; border-color: #a1c5d9; }.model-icon { font-size: 31px; line-height: 1; }
-.tree-heading { border-top: 1px solid var(--scene-border); margin-top: 14px; }.scene-search { width: calc(100% - 24px); margin: 0 12px 10px; height: 32px; min-height: 32px; border-radius: 6px; border: 1px solid #dce4eb; padding: 0 9px; background: #fff; font-size: 11px; }
-.scene-tree { flex: 1; min-height: 80px; overflow-y: auto; padding: 0 8px 12px; }.tree-row { display: flex; align-items: center; height: 35px; gap: 3px; border-radius: 5px; }.tree-row.selected { background: #e6eff6; }.tree-row.hidden { opacity: .55; }.tree-row button { background: transparent; border: 0; cursor: pointer; font-size: 12px; color: #7e92a3; padding: 4px; }.tree-select { min-width: 0; flex: 1; display: flex; align-items: center; gap: 7px; text-align: left; }.tree-select span:last-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #4c6072; font-size: 11px; }
+.library-section-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 12px 0 16px; }
+.scene-devices-body { display: flex; flex: 1; flex-direction: column; min-height: 0; border-top: 1px solid #edf1f4; padding-top: 10px; }
+.model-library { padding: 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.model-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 72px; background: #f9fbfc; border: 1px solid #dfe7ed; border-radius: 8px; color: #526577; font-size: 11px; cursor: grab; transition: transform .15s, background .15s, border-color .15s, box-shadow .15s; }.model-card:hover { transform: translateY(-1px); background: #f0f7fb; border-color: #9bbfd3; box-shadow: 0 4px 10px #3e647b14; }.model-icon { font-size: 31px; line-height: 1; }
+.tree-heading { border: 0; margin: 0; background: #fff; }.scene-search { width: calc(100% - 20px); margin: 0 10px 9px; height: 32px; min-height: 32px; border-radius: 6px; border: 1px solid #dce4eb; padding: 0 9px; background: #f9fbfc; font-size: 11px; }
+.scene-tree { flex: 1; min-height: 80px; overflow-y: auto; padding: 0 6px 12px; scrollbar-gutter: stable; }.tree-row { display: flex; align-items: center; height: 35px; gap: 3px; border-radius: 6px; }.tree-row:hover { background: #f3f7fa; }.tree-row.selected { background: #e6eff6; }.tree-row.hidden { opacity: .55; }.tree-row button { background: transparent; border: 0; cursor: pointer; font-size: 12px; color: #7e92a3; padding: 4px; }.tree-select { min-width: 0; flex: 1; display: flex; align-items: center; gap: 7px; text-align: left; }.tree-select span:last-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #4c6072; font-size: 11px; }
 .library-foot { border-top: 1px solid var(--scene-border); padding: 13px 10px; font-size: 10px; color: #91a0ad; text-align: center; }
 .scene-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }.scene-stage { flex: 1; min-height: 160px; position: relative; overflow: hidden; background: #e7edf1; }.scene-render-host { position: absolute; inset: 0; }
 .viewport-toolbar { position: absolute; left: 16px; top: 15px; display: flex; gap: 8px; flex-wrap: wrap; right: 85px; }.viewport-tool-group { display: flex; padding: 3px; border: 1px solid #ffffffa8; border-radius: 7px; background: #ffffffd9; box-shadow: 0 3px 12px #233e5210; backdrop-filter: blur(10px); }.viewport-tool-group button { border: 0; background: transparent; color: #627586; font-size: 14px; padding: 7px 11px; border-radius: 4px; cursor: pointer; }.viewport-tool-group button.active { background: #e0ebf3; color: #2c6488; }
@@ -408,7 +442,7 @@ onBeforeUnmount(() => { clearNotice(); engine?.dispose(); engine = null; documen
 :deep(.industrial-device-label[data-state="stale"]),:deep(.industrial-device-label[data-state="missing"]) { border-left-color: #c28b3b; }
 .theme-dark :deep(.industrial-device-label) { background: #21394df0; border-color: #456178; color: #d6e5ef; }.theme-dark :deep(.industrial-device-label span) { color: #a4bbc9; }
 @media (max-width: 1200px) { .scene-library { width: 190px; flex-basis: 190px; }.scene-inspector { width: 232px; flex-basis: 232px; }.shared-data-note { display: none; } }
-@media (max-width: 900px) { .scene-library { width: 152px; flex-basis: 152px; }.model-library { padding: 0 7px; gap: 5px; }.model-card { height: 63px; font-size: 10px; }.scene-inspector { width: 212px; flex-basis: 212px; }.inspector-scroll { padding: 0 12px 20px; }.scene-legend { display: none; }.viewport-toolbar { left: 8px; top: 9px; }.viewport-tool-group button { padding: 6px 8px; }.panel-heading>.heading-meta { display: none; } }
+@media (max-width: 900px) { .scene-library { width: 152px; flex-basis: 152px; }.library-header { padding-inline: 14px; }.library-search { padding-inline: 8px; }.model-library { padding: 0 8px; gap: 5px; }.model-card { height: 63px; font-size: 10px; }.scene-inspector { width: 212px; flex-basis: 212px; }.inspector-scroll { padding: 0 12px 20px; }.scene-legend { display: none; }.viewport-toolbar { left: 8px; top: 9px; }.viewport-tool-group button { padding: 6px 8px; }.panel-heading>.heading-meta { display: none; } }
 /* Sidebar text stays readable independently of panel width and scene zoom. */
 .scene-library, .scene-inspector { font-size: 14px; }
 .scene-library .panel-heading strong, .scene-inspector .panel-heading strong { font-size: 15px; }
