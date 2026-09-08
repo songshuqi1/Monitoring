@@ -44,3 +44,50 @@
 26	575	8098787698742369	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
 20	1143	8098787698682397	CMakeFiles/MonitoringPlatform.dir/src/http_server.cpp.obj	1befe8da8a11b1ed
 1143	3166	8098787709913641	MonitoringPlatform.exe	cfd7d4a98be3c76c
+14	1341	8101380535189429	CMakeFiles/MonitoringPlatform.dir/src/communication_manager.cpp.obj	8de25a848311f2cf
+1342	4408	8101380548472633	MonitoringPlatform.exe	cfd7d4a98be3c76c
+15	1610	8101403660700183	CMakeFiles/MonitoringPlatform.dir/src/communication_manager.cpp.obj	8de25a848311f2cf
+1611	4662	8101403676659933	MonitoringPlatform.exe	cfd7d4a98be3c76c
+11	86	8101408610914905	clean	7209f45fe94cb64e
+45	131	8101408613005701	open62541/src_generated/open62541/statuscodes.h	14d4f02594fe390f
+45	131	8101408613005701	open62541/src_generated/open62541/statuscodes.c	14d4f02594fe390f
+45	131	8101408613005701	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/statuscodes.h	14d4f02594fe390f
+45	131	8101408613005701	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/statuscodes.c	14d4f02594fe390f
+39	152	8101408613135869	open62541/src_generated/open62541/nodeids.h	6e1ed948e912e0ee
+39	152	8101408613135869	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/nodeids.h	6e1ed948e912e0ee
+22	219	8101408613874862	open62541/src_generated/open62541/types_generated.c	8f9416c367ae3ef2
+22	219	8101408613874862	open62541/src_generated/open62541/types_generated.h	8f9416c367ae3ef2
+22	219	8101408613874862	open62541/src_generated/open62541/types_generated_handling.h	8f9416c367ae3ef2
+22	219	8101408613874862	open62541/src_generated/open62541/types_generated_encoding_binary.h	8f9416c367ae3ef2
+22	219	8101408613874862	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated.c	8f9416c367ae3ef2
+22	219	8101408613874862	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated.h	8f9416c367ae3ef2
+22	219	8101408613874862	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated_handling.h	8f9416c367ae3ef2
+22	219	8101408613874862	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated_encoding_binary.h	8f9416c367ae3ef2
+31	220	8101408613859875	open62541/src_generated/open62541/transport_generated.c	431b03457ca3fa6a
+31	220	8101408613859875	open62541/src_generated/open62541/transport_generated.h	431b03457ca3fa6a
+31	220	8101408613859875	open62541/src_generated/open62541/transport_generated_handling.h	431b03457ca3fa6a
+31	220	8101408613859875	open62541/src_generated/open62541/transport_generated_encoding_binary.h	431b03457ca3fa6a
+31	220	8101408613859875	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/transport_generated.c	431b03457ca3fa6a
+31	220	8101408613859875	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/transport_generated.h	431b03457ca3fa6a
+31	220	8101408613859875	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/transport_generated_handling.h	431b03457ca3fa6a
+31	220	8101408613859875	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/transport_generated_encoding_binary.h	431b03457ca3fa6a
+53	227	8101408613889884	open62541/src_generated/open62541/namespace0_generated.c	ccee0719ae79c660
+53	227	8101408613889884	open62541/src_generated/open62541/namespace0_generated.h	ccee0719ae79c660
+53	227	8101408613889884	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/namespace0_generated.c	ccee0719ae79c660
+53	227	8101408613889884	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/namespace0_generated.h	ccee0719ae79c660
+243	377	8101408615471188	open62541/open62541.h	b2332f393cd0cde
+243	377	8101408615471188	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.h	b2332f393cd0cde
+228	446	8101408616157169	open62541/open62541.c	a87d9bb65f04269d
+228	446	8101408616157169	C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/open62541.c	a87d9bb65f04269d
+459	1197	8101408616385877	CMakeFiles/MonitoringPlatform.dir/src/database.cpp.obj	ea6a93a64b946c3e
+488	1208	8101408616670873	CMakeFiles/MonitoringPlatform.dir/generated/frontend_assets.cpp.obj	519603f4b651eb0d
+468	1367	8101408616477230	CMakeFiles/MonitoringPlatform.dir/src/udp_manager.cpp.obj	bc5425df52bad2fa
+450	1472	8101408616297399	CMakeFiles/MonitoringPlatform.dir/src/main.cpp.obj	712dbad8be554a76
+478	1581	8101408616571473	CMakeFiles/MonitoringPlatform.dir/src/auth_manager.cpp.obj	dca49fc07e786abc
+455	1601	8101408616342514	CMakeFiles/MonitoringPlatform.dir/src/variable_manager.cpp.obj	6095f1da129620c7
+464	1779	8101408616437193	CMakeFiles/MonitoringPlatform.dir/src/opcua_manager.cpp.obj	562487d03d6d8271
+482	2077	8101408616615770	CMakeFiles/MonitoringPlatform.dir/src/http_server.cpp.obj	1befe8da8a11b1ed
+473	2129	8101408616517227	CMakeFiles/MonitoringPlatform.dir/src/communication_manager.cpp.obj	8de25a848311f2cf
+446	2450	8101408616252405	open62541/CMakeFiles/open62541-object.dir/open62541.c.obj	dc7d87941e7bac5d
+2451	2573	8101408636300551	bin/open62541.lib	9bb77d5dba043930
+2573	5715	8101408637516833	MonitoringPlatform.exe	cfd7d4a98be3c76c

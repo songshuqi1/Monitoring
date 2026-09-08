@@ -23,20 +23,20 @@
           <span v-if="item.icon" class="tab-icon" v-html="item.icon"></span>
           <span>{{ item.label }}</span>
         </router-link>
-        <div class="view-switch" aria-label="监控视图切换">
+        <div v-if="$route.path === '/canvas'" class="view-switch" aria-label="监控视图切换">
           <button
             type="button"
             class="view-switch-tab"
-            :class="{ active: viewMode === '2d' }"
-            @click="viewMode = '2d'"
+            :class="{ active: store.canvasViewMode === '2d' }"
+            @click="store.canvasViewMode = '2d'"
           >
             2D
           </button>
           <button
             type="button"
             class="view-switch-tab"
-            :class="{ active: viewMode === '3d' }"
-            @click="viewMode = '3d'"
+            :class="{ active: store.canvasViewMode === '3d' }"
+            @click="store.canvasViewMode = '3d'"
           >
             3D
           </button>
@@ -59,16 +59,12 @@
 
     <!-- 主内容区 -->
     <main class="app-main">
-      <template v-if="viewMode === '2d'">
-        <router-view />
-      </template>
-      <div v-else id="three-container">
-        🔮 3D 元宇宙监控预留接口
-      </div>
+      <router-view />
     </main>
 
     <!-- 底部状态栏 -->
     <footer class="app-statusbar">
+      <span v-if="store.layoutStorageError" role="alert" style="color: var(--danger-text)">{{ store.layoutStorageError }}</span>
       <div class="status-left">
         <span class="status-item">
           <span class="s-dot" :class="store.systemStatus.opcuaServer ? 'on' : ''"></span>
@@ -101,7 +97,6 @@ const projectStore = useProjectStore()
 const clock = ref('')
 const mobileMenuOpen = ref(false)
 const authUsername = ref(localStorage.getItem('auth_username') || 'admin')
-const viewMode = ref('2d')
 
 const navItems = [
   { path: '/canvas',   label: '监控画布', icon: '&#9632;' },
@@ -146,7 +141,9 @@ function startDataLoading() {
     store.connectWebSocket()
     store.startTrendSampler()
     projectStore.fetchProjects().catch(() => {})
-    projectStore.restoreCurrentProject().catch(() => {})
+    projectStore.restoreCurrentProject().then(project => {
+      if (project && store.draftProjectId !== project.id) store.activateProject(project)
+    }).catch(() => {})
     runtimeStarted = true
   }
   store.fetchStatus()

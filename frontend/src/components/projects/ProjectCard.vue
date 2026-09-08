@@ -9,6 +9,7 @@
       <div class="project-meta">
         <span>{{ layoutWidgetCount(project.layout) }} 个组件</span>
         <span>{{ layoutConnectionCount(project.layout) }} 条线</span>
+        <span>{{ project.layout?.scene3d?.nodes?.length || 0 }} 个 3D 组件</span>
         <span>更新 {{ formatDate(project.updatedAt) }}</span>
       </div>
     </div>
@@ -51,11 +52,12 @@ function layoutConnectionCount(layout) {
 
 <style scoped>
 .project-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
+  gap: 20px;
+  min-height: 112px;
+  padding: 18px 20px;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   background: var(--bg-primary);
@@ -99,27 +101,37 @@ function layoutConnectionCount(layout) {
 }
 .project-meta {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
   margin-top: 8px;
   color: var(--text-placeholder);
   font-size: var(--fs-xs);
   font-family: var(--font-mono);
 }
+.project-meta span {
+  white-space: nowrap;
+}
 .project-actions {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 920px) {
   .project-card {
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
-    flex-direction: column;
+    gap: 14px;
   }
   .project-actions {
     justify-content: flex-start;
   }
+}
+@media (max-width: 560px) {
+  .project-card { padding: 16px; }
+  .project-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; }
+  .project-actions { flex-wrap: wrap; }
 }
 </style>

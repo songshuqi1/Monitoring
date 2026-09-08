@@ -91,54 +91,56 @@
             </span>
           </button>
 
-          <table v-show="!isVariableGroupCollapsed(group.key)" class="dv-table variable-table">
-            <thead>
-              <tr>
-                <th>变量名</th>
-                <th>自定义分组</th>
-                <th>描述</th>
-                <th>值</th>
-                <th>单位</th>
-                <th>质量</th>
-                <th>项目 / 应用</th>
-                <th>通信资源</th>
-                <th>来源</th>
-                <th>OPC UA 节点路径</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="v in group.items" :key="v.id">
-                <td>
-                  <span class="var-name-dot" :style="{ background: v.color || '#4f6fb8' }"></span>
-                  <span class="var-name-text" :title="v.name">{{ v.name }}</span>
-                </td>
-                <td class="td-group-editor">
-                  <input
-                    :value="variableGroupMap[v.id] || ''"
-                    placeholder="未分组"
-                    @change="setVariableGroup(v.id, $event.target.value)"
-                  />
-                </td>
-                <td class="td-muted">{{ v.description || '-' }}</td>
-                <td class="td-value" :style="{ color: getReadableColor(v.color) }">{{ getDisplayValue(v.id) }}</td>
-                <td class="td-muted">{{ v.unit || '-' }}</td>
-                <td>
-                  <span class="quality-badge" :class="getQuality(v.id)">
-                    <span class="q-dot"></span>{{ getQualityText(v.id) }}
-                  </span>
-                </td>
-                <td class="td-muted">{{ variableScopeLabel(v) }}</td>
-                <td><span class="resource-tag">{{ variableResourceLabel(v) }}</span></td>
-                <td><span class="source-tag">{{ v.source || '-' }}</span></td>
-                <td class="td-mono">\Root\Objects\{{ v.name }}</td>
-                <td class="td-actions">
-                  <button class="btn-action" @click="openWriteDialog(v)">写入</button>
-                  <button class="btn-action btn-action-del" @click="deleteVariable(v)">删除</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-show="!isVariableGroupCollapsed(group.key)" class="variable-table-scroll">
+            <table class="dv-table variable-table">
+              <thead>
+                <tr>
+                  <th>变量名</th>
+                  <th>自定义分组</th>
+                  <th>描述</th>
+                  <th>值</th>
+                  <th>单位</th>
+                  <th>质量</th>
+                  <th>项目 / 应用</th>
+                  <th>通信资源</th>
+                  <th>来源</th>
+                  <th>OPC UA 节点路径</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="v in group.items" :key="v.id">
+                  <td>
+                    <span class="var-name-dot" :style="{ background: v.color || '#4f6fb8' }"></span>
+                    <span class="var-name-text" :title="v.name">{{ v.name }}</span>
+                  </td>
+                  <td class="td-group-editor">
+                    <input
+                      :value="variableGroupMap[v.id] || ''"
+                      placeholder="未分组"
+                      @change="setVariableGroup(v.id, $event.target.value)"
+                    />
+                  </td>
+                  <td class="td-muted">{{ v.description || '-' }}</td>
+                  <td class="td-value" :style="{ color: getReadableColor(v.color) }">{{ getDisplayValue(v.id) }}</td>
+                  <td class="td-muted">{{ v.unit || '-' }}</td>
+                  <td>
+                    <span class="quality-badge" :class="getQuality(v.id)">
+                      <span class="q-dot"></span>{{ getQualityText(v.id) }}
+                    </span>
+                  </td>
+                  <td class="td-muted">{{ variableScopeLabel(v) }}</td>
+                  <td><span class="resource-tag">{{ variableResourceLabel(v) }}</span></td>
+                  <td><span class="source-tag">{{ v.source || '-' }}</span></td>
+                  <td class="td-mono">\Root\Objects\{{ v.name }}</td>
+                  <td class="td-actions">
+                    <button class="btn-action" @click="openWriteDialog(v)">写入</button>
+                    <button class="btn-action btn-action-del" @click="deleteVariable(v)">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>
@@ -612,7 +614,7 @@ export default {
 </script>
 
 <style scoped>
-.data-view { padding: 24px 28px; height: calc(100vh - var(--header-height) - var(--statusbar-height)); overflow-y: auto; background: var(--bg-secondary); }
+.data-view { padding: 24px 12px; height: calc(100vh - var(--header-height) - var(--statusbar-height)); overflow-y: auto; background: var(--bg-secondary); }
 .dv-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; max-width: var(--content-max-width); margin: 0 auto 18px; }
 .dv-header h2 { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-primary); line-height: var(--lh-tight); }
 .dv-actions { display: flex; align-items: center; gap: 12px; }
@@ -702,7 +704,22 @@ export default {
 .group-toggle { width: 16px; color: var(--text-placeholder); font-size: var(--fs-sm); }
 .group-title { color: var(--text-primary); font-size: var(--fs-md); font-weight: var(--fw-bold); }
 .group-summary { margin-left: auto; color: var(--text-tertiary); font-size: var(--fs-sm); }
-.variable-table { min-width: 1360px; border-radius: 0; }
+.variable-table-scroll { overflow-x: scroll; overflow-y: hidden; }
+.variable-table { width: 1500px; min-width: 1500px; table-layout: fixed; border-radius: 0; }
+.variable-table th,
+.variable-table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.variable-table th:nth-child(1) { width: 155px; }
+.variable-table th:nth-child(2) { width: 170px; }
+.variable-table th:nth-child(3) { width: 155px; }
+.variable-table th:nth-child(4) { width: 70px; }
+.variable-table th:nth-child(5) { width: 55px; }
+.variable-table th:nth-child(6) { width: 80px; }
+.variable-table th:nth-child(7) { width: 175px; }
+.variable-table th:nth-child(8) { width: 105px; }
+.variable-table th:nth-child(9) { width: 85px; }
+.variable-table th:nth-child(10) { width: 160px; }
+.variable-table th:nth-child(11) { width: 125px; }
+.dv-header, .dv-tabs, .dv-section { max-width: 1800px; }
 .dv-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-md); }
 .dv-table thead th { padding: 11px 12px; text-align: left; font-weight: var(--fw-semibold); color: var(--text-secondary); font-size: var(--fs-sm); letter-spacing: 0; border-bottom: 1px solid var(--border-light); background: var(--surface-muted); position: sticky; top: 0; }
 .dv-table tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }

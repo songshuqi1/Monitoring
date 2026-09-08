@@ -21,7 +21,7 @@
         </label>
 
         <div class="form-summary">
-          <span>将保存 {{ layoutWidgetCount(effectiveLayout) }} 个组件 / {{ layoutConnectionCount(effectiveLayout) }} 条连接线</span>
+          <span>将保存 {{ layoutWidgetCount(effectiveLayout) }} 个 2D 组件 / {{ layoutConnectionCount(effectiveLayout) }} 条连接线 / {{ effectiveLayout?.scene3d?.nodes?.length || 0 }} 个 3D 组件</span>
         </div>
 
         <div class="dialog-actions">

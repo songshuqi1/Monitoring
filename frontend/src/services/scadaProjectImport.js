@@ -2,6 +2,8 @@
 // It intentionally produces only normal Monitoring-T layout data, so imported files
 // remain editable without a Neuiai backend or asset service.
 
+import { normalizeScene } from './scene3dService.js'
+
 const isObject = value => value && typeof value === 'object' && !Array.isArray(value)
 const asJson = value => {
   if (typeof value !== 'string') return value
@@ -34,7 +36,7 @@ function walk(value, visitor, depth = 0, seen = new Set()) {
 }
 
 function hasLayout(value) {
-  return isObject(value) && (Array.isArray(value.widgets) || Array.isArray(value.connections))
+  return isObject(value) && (Array.isArray(value.widgets) || Array.isArray(value.connections) || isObject(value.scene3d))
 }
 
 function findLayout(value) {
@@ -203,12 +205,14 @@ function normalizeImportedLayout(layout) {
   return {
     ...layout,
     widgets,
-    connections: Array.isArray(layout.connections) ? layout.connections : []
+    connections: Array.isArray(layout.connections) ? layout.connections : [],
+    scene3d: normalizeScene(layout.scene3d)
   }
 }
 
 export function normalizeScadaProjectImport(payload, fallbackName = '导入项目') {
   const content = asJson(payload)
+  if (content?.type === 'monitoring-platform-project' && ![1, 2].includes(Number(content.version))) throw new Error('不支持此项目文件版本')
   const layout = findLayout(content)
   const graph = layout ? null : findGraph(content)
   if (!layout && !graph) throw new Error('文件中没有可识别的组态内容（需要 widgets/connections 或 graph.cells/cells）')

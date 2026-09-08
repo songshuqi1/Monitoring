@@ -1,3 +1,5 @@
 {
-    "cmake.sourceDirectory": "C:/Users/NEU/Desktop/Monitoring/backend"
+    "cmake.sourceDirectory": "${workspaceFolder}/backend",
+    "cmake.buildDirectory": "${workspaceFolder}/backend/build-runtime",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/backend/build-runtime/compile_commands.json"
 }

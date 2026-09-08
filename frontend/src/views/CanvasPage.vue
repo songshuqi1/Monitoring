@@ -112,20 +112,20 @@
 
     <!-- 中间：画布-->
     <div class="canvas-container">
-      <div class="canvas-toolbar-mini">
-        <button class="btn btn-sm" @click="resetLayout" title="重置布局">↺重置</button>
-        <button class="btn btn-sm" @click="openProjectDialog" title="项目管理">📁 项目</button>
+      <div class="canvas-toolbar-mini canvas-action-toolbar">
+        <button class="btn btn-sm" aria-label="重置" @click="resetLayout" title="重置布局"><span class="toolbar-action-icon">↺</span>重置</button>
+        <button class="btn btn-sm" aria-label="项目" @click="openProjectDialog" title="项目管理"><span class="toolbar-action-icon">📁</span>项目</button>
         <button
           class="btn btn-sm"
           :class="{ 'btn-primary': connectionMode }"
           @click="toggleConnectionMode"
           title="点击两个模块创建连接线"
         >
-          {{ connectionMode ? '退出连线' : '连线' }}
+          <span class="toolbar-action-icon">⌁</span>{{ connectionMode ? '退出连线' : '连线' }}
         </button>
-        <button class="btn btn-sm btn-danger" :disabled="!selectedConnectionId" @click="removeSelectedConnection" title="删除选中的连接线">删除线</button>
-        <button class="btn btn-sm" :disabled="!selectedConnectionId" @click="resetSelectedConnectionRoute" title="清除手动拐点并重新计算最短路径">自动布线</button>
-        <button class="btn btn-sm btn-primary" @click="enterApplicationMode" title="只显示画布并锁定布局">应用模式</button>
+        <button class="btn btn-sm btn-danger" :disabled="!selectedConnectionId" @click="removeSelectedConnection" title="删除选中的连接线"><span class="toolbar-action-icon">×</span>删除线</button>
+        <button class="btn btn-sm" :disabled="!selectedConnectionId" @click="resetSelectedConnectionRoute" title="清除手动拐点并重新计算最短路径"><span class="toolbar-action-icon">↯</span>自动布线</button>
+        <button class="btn btn-sm btn-primary" aria-label="应用模式" @click="enterApplicationMode" title="只显示画布并锁定布局"><span class="toolbar-action-icon">▶</span>应用模式</button>
         <span v-if="connectionMode" class="connection-hint">
           拖拽端口连线；Alt 直线斜连；Shift+端口进入逐点路径；Ctrl 自由端点或分支
         </span>
@@ -340,7 +340,8 @@
     </div>
 
     <!-- 右侧：配置面板-->
-    <aside v-if="configWidget" :key="configWidget.id" class="config-pane">
+    <PaneResizeHandle v-if="configWidget || selectedConnection" v-model="configPaneWidth" :min="160" :max="configPaneMaxWidth" reverse label="拖动调整 2D 右侧属性栏宽度" />
+    <aside v-if="configWidget" :key="configWidget.id" class="config-pane" :style="{ width: `${configPaneWidth}px` }">
       <div class="config-header">
         <div>
           <h3>属性 — {{ typeLabel(configWidget.type) }}</h3>
@@ -350,8 +351,8 @@
       </div>
       <div class="config-body">
         <div class="form-group">
-          <label>标题</label>
-          <input v-model="activeConfig.title" @input="applyConfig" />
+          <label>组件名称</label>
+          <input v-model="componentName" aria-label="组件名称" maxlength="100" @keydown.enter="$event.currentTarget.blur()" />
         </div>
         <label v-if="configWidget.type !== 'label'" class="inline-check name-toggle">
           <input type="checkbox" v-model="activeConfig.hideName" @change="applyConfig" />
@@ -380,7 +381,7 @@
           </div>
         </div>
         <div v-if="isProcessConfig" class="form-group">
-          <label>显示名称</label>
+          <label>画面标签（可与组件名称不同）</label>
           <input v-model="activeConfig.label" @input="applyConfig" placeholder="例如：1号回水泵" />
         </div>
         <div v-if="isProcessConfig && configWidget.type !== 'processValueTag'" class="form-group">
@@ -630,7 +631,7 @@
         </div>
       </div>
     </aside>
-    <aside v-else-if="selectedConnection" :key="selectedConnection.id" class="config-pane">
+    <aside v-else-if="selectedConnection" :key="selectedConnection.id" class="config-pane" :style="{ width: `${configPaneWidth}px` }">
       <div class="config-header">
         <div>
           <h3>属性 — 连接线</h3>
@@ -725,6 +726,7 @@
     <div v-if="applicationMode" class="application-overlay">
       <div class="application-toolbar">
         <span class="application-title">应用模式</span>
+        <button class="btn btn-sm" @click="store.canvasViewMode = '3d'">切换 3D</button>
         <div class="application-zoom-controls">
           <button class="application-zoom-button" title="缩小 1%" @click="zoomApplicationBy(-1)">−</button>
           <label class="application-zoom-value" title="输入 25% 至 400%，回车或失焦后生效">
@@ -867,6 +869,8 @@ import WidgetFactory from '../components/canvas/WidgetFactory.vue'
 import BottomDock from '../components/BottomDock.vue'
 import ProjectManagerDialog from '../components/projects/ProjectManagerDialog.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
+import PaneResizeHandle from '../components/common/PaneResizeHandle.vue'
+import { usePanelSize } from '../composables/usePanelSize.js'
 import { vectorAnchor, vectorBounds, vectorCenter, vectorObstacleBounds, vectorPort } from '../services/vectorModelService.js'
 
 const store = useMonitorStore()
@@ -877,7 +881,7 @@ const configDrafts = reactive({})
 const canvasAreaRef = ref(null)
 const canvasAreaSize = ref({ width: 0, height: 0 })
 const applicationCanvasRef = ref(null)
-const applicationMode = ref(false)
+const applicationMode = computed({ get: () => store.canvasApplicationMode, set: value => { store.canvasApplicationMode = value } })
 const applicationZoom = ref(1)
 const applicationZoomInput = ref(100)
 const applicationCanvasSize = ref({ width: 0, height: 0 })
@@ -926,6 +930,10 @@ const LIBRARY_WIDTH_MAX = 460
 const BOTTOM_DOCK_HEIGHT_MIN = 96
 const BOTTOM_DOCK_HEIGHT_MAX = 430
 const libraryWidth = ref(readStoredNumber('monitoring.libraryWidth.v2', 272, LIBRARY_WIDTH_MIN, LIBRARY_WIDTH_MAX))
+const configPaneWidth = usePanelSize('monitoring.configPaneWidth', 292)
+const configPaneMaxWidth = () => Math.max(160, window.innerWidth - libraryWidth.value - 160)
+function fitConfigPane() { configPaneWidth.value = Math.max(160, Math.min(configPaneWidth.value, configPaneMaxWidth())) }
+watch(libraryWidth, fitConfigPane)
 const bottomDockHeight = ref(readStoredNumber('monitoring.bottomDockHeight', 180, BOTTOM_DOCK_HEIGHT_MIN, BOTTOM_DOCK_HEIGHT_MAX))
 const libraryResizing = ref(false)
 const bottomDockResizing = ref(false)
@@ -1040,6 +1048,30 @@ const activeConfig = computed(() => {
   if (!configWidget.value) return {}
   return ensureConfigDraft(configWidget.value)
 })
+
+const componentName = computed({
+  get() {
+    const config = activeConfig.value
+    const type = configWidget.value?.type
+    if (type === 'label') return config.text || config.title || ''
+    if (type === 'button' || type === 'winccToggleButton') return config.buttonText || config.title || ''
+    if (String(type || '').startsWith('process') || type === 'customShape' || type === 'scadaSvg') return config.label || config.title || ''
+    return config.title || config.label || ''
+  },
+  set(value) { setComponentName(value) }
+})
+
+function setComponentName(value) {
+  if (!configWidget.value) return
+  const name = String(value || '').slice(0, 100)
+  const type = configWidget.value.type
+  const config = activeConfig.value
+  config.title = name
+  config.label = name
+  if (type === 'label') config.text = name
+  if (type === 'button' || type === 'winccToggleButton') config.buttonText = name
+  applyConfig()
+}
 
 const toggleExclusivePeerOptions = computed(() => {
   if (!configWidget.value || configWidget.value.type !== 'winccToggleButton') return []
@@ -2001,9 +2033,14 @@ function findScadaAsset(id) {
 }
 
 // ============ 画布平移 (transform) & 缩放 ============
-const panX = ref(0)
-const panY = ref(0)
-const zoom = ref(1)
+const panX = ref(store.viewport2d.panX)
+const panY = ref(store.viewport2d.panY)
+const zoom = ref(store.viewport2d.zoom)
+watch(() => store.draftProjectId, () => {
+  panX.value = 0
+  panY.value = 0
+  zoom.value = 1
+})
 provide('canvasZoom', zoom)
 const isZooming = ref(false)
 provide('isCanvasZooming', isZooming)
@@ -5305,6 +5342,7 @@ async function saveCurrentCanvas() {
       description: current.description || '',
       layout: store.layoutSnapshot
     })
+    store.markProjectSaved(updated.id)
     showConnectionNotice(`已更新保存“${updated.name}”`)
   } catch (error) {
     if (error?.code === 'PROJECT_NOT_FOUND') {
@@ -5456,7 +5494,10 @@ function exitApplicationMode() {
 }
 
 onMounted(() => {
+  fitConfigPane()
+  window.addEventListener('resize', fitConfigPane)
   updateCanvasAreaSize()
+  if (applicationMode.value) requestAnimationFrame(centerApplicationViewport)
   requestAnimationFrame(updateCanvasAreaSize)
   document.addEventListener('keydown', handleKeyDown)
   document.addEventListener('contextmenu', openPlatformContextMenu)
@@ -5468,6 +5509,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('resize', fitConfigPane)
+  store.viewport2d = { panX: panX.value, panY: panY.value, zoom: zoom.value }
+  store.persistLayout()
   cancelWaypointConnection(false)
   document.removeEventListener('keydown', handleKeyDown)
   document.removeEventListener('contextmenu', openPlatformContextMenu)
@@ -5893,7 +5937,6 @@ onUnmounted(() => {
 /* 画布 */
 .canvas-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-canvas); min-width: 0; }
 .canvas-and-dock { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.canvas-toolbar-mini { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 6px 14px; border-bottom: 1px solid var(--border-light); background: var(--bg-primary); flex-shrink: 0; box-shadow: var(--shadow-xs); }
 .canvas-info { margin-left: auto; font-size: var(--fs-sm); color: var(--text-placeholder); }
 .canvas-area {
   flex: 1; position: relative; overflow: hidden; min-height: 300px;

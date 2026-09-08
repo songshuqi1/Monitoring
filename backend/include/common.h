@@ -267,9 +267,10 @@ struct ModbusPoint {
     std::string name;
     int         address = 0;
     std::string functionCode = "holding_register"; // coil / discrete_input / holding_register / input_register
-    std::string dataType = "uint16";               // bool / uint16 / int16 / uint32 / int32 / float32 / float32_swap
+    std::string dataType = "uint16";               // bool / uint16 / int16 / uint32 / int32 / float32 / float32_swap / json_utf8
     double      scale = 1.0;
     std::string unit;
+    int         jsonRegisterCount = 64;             // json_utf8: consecutive 16-bit registers (1-125)
 };
 
 // 通信资源定义
@@ -330,7 +331,8 @@ struct CommunicationResource {
                << ",\"functionCode\":\"" << escapeJson(point.functionCode)
                << "\",\"dataType\":\"" << escapeJson(point.dataType)
                << "\",\"scale\":" << std::setprecision(15) << point.scale
-               << ",\"unit\":\"" << escapeJson(point.unit) << "\"}";
+               << ",\"unit\":\"" << escapeJson(point.unit)
+               << "\",\"jsonRegisterCount\":" << point.jsonRegisterCount << "}";
             if (i < modbusPoints.size() - 1) ss << ",";
         }
         ss << "]}";

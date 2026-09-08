@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import api from '../api/index.js'
+import { emptyScene, normalizeScene, copyScene } from '../services/scene3dService.js'
 
 const STORAGE_KEY = 'monitor-widget-layout'
 const CUSTOM_COMPONENT_STORAGE_KEY = 'monitor-custom-components'
@@ -234,7 +235,8 @@ function normalizeLayoutPayload(payload) {
   if (payload && typeof payload === 'object') {
     return {
       widgets: Array.isArray(payload.widgets) ? payload.widgets : [],
-      connections: Array.isArray(payload.connections) ? payload.connections : []
+      connections: Array.isArray(payload.connections) ? payload.connections : [],
+      scene3d: normalizeScene(payload.scene3d)
     }
   }
   return { widgets: [], connections: [] }
@@ -467,6 +469,39 @@ export const useMonitorStore = defineStore('monitor', () => {
     // ============ Widget 布局 (像素坐标) ============
   const widgets = ref([])
   const connections = ref([])
+  const scene3d = ref(emptyScene())
+  const canvasViewMode = ref('2d')
+  const canvasApplicationMode = ref(false)
+  const viewport2d = ref({ panX: 0, panY: 0, zoom: 1 })
+  const draftProjectId = ref(null)
+  const layoutStorageError = ref('')
+  const sceneUndo = ref([])
+  const sceneRedo = ref([])
+  const canUndoScene = computed(() => sceneUndo.value.length > 0)
+  const canRedoScene = computed(() => sceneRedo.value.length > 0)
+
+  function replaceScene(next, record = true) {
+    const normalized = normalizeScene(next)
+    if (record) {
+      sceneUndo.value.push(copyScene(scene3d.value))
+      if (sceneUndo.value.length > 60) sceneUndo.value.shift()
+      sceneRedo.value = []
+    }
+    scene3d.value = normalized
+  }
+  function undoScene() {
+    if (!sceneUndo.value.length) return
+    sceneRedo.value.push(copyScene(scene3d.value))
+    scene3d.value = sceneUndo.value.pop()
+  }
+  function redoScene() {
+    if (!sceneRedo.value.length) return
+    sceneUndo.value.push(copyScene(scene3d.value))
+    scene3d.value = sceneRedo.value.pop()
+  }
+  function setSceneCamera(camera) {
+    scene3d.value.camera = normalizeScene({ ...scene3d.value, camera }).camera
+  }
   const nextId  = ref(Date.now())
   const nextConnectionId = ref(Date.now())
   let layoutPersistTimer = null
@@ -626,7 +661,10 @@ export const useMonitorStore = defineStore('monitor', () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        const layout = normalizeLayoutPayload(JSON.parse(saved))
+        const raw = JSON.parse(saved)
+        const layout = normalizeLayoutPayload(raw)
+        draftProjectId.value = raw && Object.hasOwn(raw, 'projectId') ? (raw.projectId || null) : (localStorage.getItem('monitor-current-project-id') || null)
+        scene3d.value = layout.scene3d || emptyScene()
         widgets.value = layout.widgets.map(normalizeWidget).filter(Boolean)
         connections.value = layout.connections.map(normalizeConnection).filter(Boolean)
         widgets.value.forEach(w => {
@@ -654,11 +692,39 @@ export const useMonitorStore = defineStore('monitor', () => {
 
   const layoutSnapshot = computed(() => ({
     widgets: clone(widgets.value),
-    connections: clone(connections.value)
+    connections: clone(connections.value),
+    scene3d: copyScene(scene3d.value)
   }))
 
   function persistLayout() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(layoutSnapshot.value))
+    try {
+      const snapshot = { ...layoutSnapshot.value, projectId: draftProjectId.value }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot))
+      if (draftProjectId.value) localStorage.setItem(`monitor-project-draft:${draftProjectId.value}`, JSON.stringify(snapshot))
+      layoutStorageError.value = ''
+      return true
+    } catch {
+      layoutStorageError.value = '本地草稿保存失败，存储空间可能不足。请立即导出项目 JSON 备份。'
+      return false
+    }
+  }
+
+  function markProjectSaved(id) {
+    draftProjectId.value = id
+    persistLayout()
+  }
+
+  function activateProject(project) {
+    if (!persistLayout()) throw new Error(layoutStorageError.value)
+    let next = project.layout
+    const saved = localStorage.getItem(`monitor-project-draft:${project.id}`)
+    if (saved) {
+      try { next = normalizeLayoutPayload(JSON.parse(saved)) } catch { /* use the saved project */ }
+    }
+    replaceLayout(next)
+    draftProjectId.value = project.id
+    viewport2d.value = { panX: 0, panY: 0, zoom: 1 }
+    persistLayout()
   }
 
   function scheduleLayoutPersist() {
@@ -669,7 +735,7 @@ export const useMonitorStore = defineStore('monitor', () => {
     }, 160)
   }
 
-  watch([widgets, connections], () => {
+  watch([widgets, connections, scene3d], () => {
     scheduleLayoutPersist()
   }, { deep: true })
 
@@ -1073,10 +1139,17 @@ export const useMonitorStore = defineStore('monitor', () => {
   }
 
   function replaceLayout(layout) {
-    recordHistory('replace-layout')
     const normalized = normalizeLayoutPayload(layout)
     widgets.value = clone(normalized.widgets).map(normalizeWidget).filter(Boolean)
     connections.value = clone(normalized.connections).map(normalizeConnection).filter(Boolean)
+    scene3d.value = normalized.scene3d || emptyScene()
+    // Project boundaries must not be crossed by an undo in either editor.
+    undoStack.length = 0
+    redoStack.length = 0
+    sceneUndo.value = []
+    sceneRedo.value = []
+    lastHistoryKey = null
+    syncHistoryState()
   }
 
     // ============ 计算属性 ============
@@ -1261,6 +1334,9 @@ export const useMonitorStore = defineStore('monitor', () => {
       residentReady, dataClockMs,
       trendBuffers, appendTrendData, sampleTrendData, startTrendSampler, stopTrendSampler, pruneTrendData, TREND_MAX_POINTS,
     widgets, connections, layoutSnapshot, canUndo, canRedo,
+    scene3d, canvasViewMode, canvasApplicationMode, viewport2d, draftProjectId, layoutStorageError,
+    replaceScene, undoScene, redoScene, canUndoScene, canRedoScene, setSceneCamera,
+    persistLayout, activateProject, markProjectSaved,
     loadCustomComponents, refreshCustomComponentsFromServer, importCustomComponentsFromServer,
     saveCustomComponent, removeCustomComponent,
     loadLayout, addWidget, duplicateWidget, duplicateWidgetsWithConnections, updateWidget, removeWidget, removeWidgets, moveWidget, resizeWidget,

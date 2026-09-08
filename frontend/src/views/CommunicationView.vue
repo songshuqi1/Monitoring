@@ -139,8 +139,8 @@
     </div>
 
     <!-- 添加/编辑对话框 -->
-    <div v-if="showDialog" class="dialog-overlay" @click.self="showDialog = false">
-      <div class="dialog dialog-lg" @click.stop>
+    <div v-if="showDialog" class="dialog-overlay" @pointerdown="trackBackdropPointerDown('resource', $event)" @click.self="closeFromBackdrop('resource')">
+      <div class="dialog dialog-lg communication-resource-dialog" @click.stop>
         <h3>{{ editingIdx >= 0 ? '编辑通信资源' : '添加通信资源' }}</h3>
 
         <div class="form-group">
@@ -226,7 +226,11 @@
             <div class="form-group"><label>Port</label><input type="number" v-model.number="form.modbusPort" placeholder="502" /></div>
             <div class="form-group"><label>Unit ID</label><input type="number" v-model.number="form.modbusUnitId" placeholder="1" /></div>
           </div>
-          <div class="form-group"><label>Points (name,address,function,data type,scale,unit)</label><textarea v-model="form.modbusPointsText" rows="4" placeholder="temperature,0,holding_register,float32,0.1,℃&#10;running,10,coil,bool,1,"></textarea></div>
+          <div class="form-group">
+            <label>点位（名称,地址,功能区,数据类型,比例,单位,JSON 寄存器数）</label>
+            <textarea v-model="form.modbusPointsText" rows="4" placeholder="temperature,0,holding_register,float32,0.1,℃&#10;running,10,coil,bool,1,&#10;payload,100,holding_register,json_utf8,1,,64"></textarea>
+            <p class="form-hint"><code>json_utf8</code> 用于连续保持/输入寄存器中的 UTF-8 JSON；最后一列填写寄存器数（1–125），JSON 内的数值字段会自动创建为变量。</p>
+          </div>
           <div class="comm-connect-bar"><button class="btn btn-sm" @click="testModbusConn" :disabled="testLoading">{{ testLoading ? 'Testing...' : 'Test connection' }}</button><span v-if="testMsg" class="test-msg" :class="testMsg.ok ? 'ok' : 'err'">{{ testMsg.text }}</span></div>
         </template>
 
@@ -257,7 +261,7 @@
     </div>
 
     <!-- 添加节点到资源对话框 -->
-    <div v-if="showNodeDialog" class="dialog-overlay" @click.self="showNodeDialog = false">
+    <div v-if="showNodeDialog" class="dialog-overlay" @pointerdown="trackBackdropPointerDown('node', $event)" @click.self="closeFromBackdrop('node')">
       <div class="dialog" @click.stop>
         <h3>添加读取节点</h3>
         <div class="form-group">
@@ -321,6 +325,7 @@ export default {
     const loadingResources = ref(false)
     const resourceLoadFailed = ref(false)
     const resourceLoadError = ref('')
+    const backdropPointerDown = reactive({ resource: false, node: false })
 
     const form = reactive({
       name: '', type: 'OPCUA', endpoint: '', nodesText: '', address: '0.0.0.0', sdcUrl: 'http://127.0.0.1:9100', port: 8888, interval: 1000,
@@ -434,9 +439,24 @@ export default {
       form.modbusPort = r.port || 502
       form.modbusUnitId = r.modbusUnitId || 1
       form.modbusTimeoutMs = r.modbusTimeoutMs || 2500
-      form.modbusPointsText = (r.modbusPoints || []).map(point => [point.name, point.address, point.functionCode, point.dataType, point.scale, point.unit].join(',')).join('\n')
+      form.modbusPointsText = (r.modbusPoints || []).map(point => [point.name, point.address, point.functionCode, point.dataType, point.scale, point.unit, point.jsonRegisterCount || ''].join(',')).join('\n')
       setFormScope(r)
       showDialog.value = true
+    }
+
+    // A text-selection drag can finish on the overlay and emit a click there.
+    // Only treat it as a close request when the pointer also started on the overlay.
+    function trackBackdropPointerDown(dialog, event) {
+      backdropPointerDown[dialog] = event.target === event.currentTarget
+    }
+
+    function closeFromBackdrop(dialog) {
+      const startedOnBackdrop = backdropPointerDown[dialog]
+      backdropPointerDown[dialog] = false
+      if (!startedOnBackdrop) return
+
+      if (dialog === 'resource') showDialog.value = false
+      if (dialog === 'node') showNodeDialog.value = false
     }
 
     function resourceIndexById(id) {
@@ -472,14 +492,23 @@ export default {
     function parseModbusPoints(text) {
       const names = new Set()
       return String(text || '').split('\n').map((line, index) => {
-        const [nameRaw, addressRaw, functionRaw, dataTypeRaw, scaleRaw, unitRaw] = line.split(',').map(part => part.trim())
+        const [nameRaw, addressRaw, functionRaw, dataTypeRaw, scaleRaw, unitRaw, jsonRegisterCountRaw] = line.split(',').map(part => part.trim())
         if (!nameRaw && !addressRaw) return null
         const name = nameRaw || `modbus_${addressRaw || index + 1}`
         if (names.has(name)) throw new Error(`Duplicate Modbus point name: ${name}`)
         names.add(name)
         const address = Number(addressRaw)
         if (!Number.isInteger(address) || address < 0 || address > 65535) throw new Error(`Invalid Modbus address: ${addressRaw}`)
-        return { name, address, functionCode: functionRaw || 'holding_register', dataType: dataTypeRaw || 'uint16', scale: Number.isFinite(Number(scaleRaw)) ? Number(scaleRaw) : 1, unit: unitRaw || '' }
+        const jsonRegisterCount = Number(jsonRegisterCountRaw)
+        return {
+          name,
+          address,
+          functionCode: functionRaw || 'holding_register',
+          dataType: dataTypeRaw || 'uint16',
+          scale: Number.isFinite(Number(scaleRaw)) ? Number(scaleRaw) : 1,
+          unit: unitRaw || '',
+          jsonRegisterCount: Number.isInteger(jsonRegisterCount) && jsonRegisterCount >= 1 && jsonRegisterCount <= 125 ? jsonRegisterCount : 64
+        }
       }).filter(Boolean)
     }
 
@@ -694,7 +723,7 @@ export default {
       openAddDialog, editResourceById, saveResource, deleteResourceById,
       confirmDeleteResource, addNodeToResource, confirmAddNode, removeNodeFromResource,
       addNodeToResourceById, removeNodeFromResourceById, togglePoll, testConn, testModbusConn, getNodeValue, getNodeQuality,
-      resourceScopeLabel
+      resourceScopeLabel, trackBackdropPointerDown, closeFromBackdrop
     }
   }
 }
@@ -770,6 +799,7 @@ export default {
 .test-msg { font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
 .test-msg.ok { color: var(--success-text); }
 .test-msg.err { color: var(--danger-text); }
+.communication-resource-dialog { width: min(760px, 92vw); height: min(92vh, 840px); max-height: 92vh; box-sizing: border-box; }
 
 @media (max-width: 760px) {
   .comm-view { padding: 16px 12px; }

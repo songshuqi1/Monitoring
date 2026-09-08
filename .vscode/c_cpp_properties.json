@@ -1,14 +1,16 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "x64",
+            "compileCommands": "${workspaceFolder}/backend/build-runtime/compile_commands.json",
             "includePath": [
                 "${workspaceFolder}/backend/include",
                 "${workspaceFolder}/open62541-1.0/include",
                 "${workspaceFolder}/open62541-1.0/plugins/include",
                 "${workspaceFolder}/open62541-1.0/deps",
-                "${workspaceFolder}/backend/build/open62541/src_generated",
-                "${workspaceFolder}/backend/build/open62541",
+                "${workspaceFolder}/backend/build-runtime/open62541",
+                "${workspaceFolder}/backend/build-runtime/open62541/src_generated",
+                "${workspaceFolder}/backend/build-runtime/open62541/src_generated/open62541",
                 "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/include",
                 "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/atlmfc/include",
                 // "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt",
@@ -16,7 +18,10 @@
                 // "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared",
                 "C:/Program Files/MySQL/MySQL Server 9.7/include",
                 "${workspaceFolder}/open62541-1.0/include",
-                "${workspaceFolder}/open62541-1.0/plugins/include"
+                "${workspaceFolder}/open62541-1.0/plugins/include",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared"
             ],
             "defines": [
                 "_DEBUG",

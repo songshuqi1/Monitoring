@@ -13572,7 +13572,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/generate_datatypes.py
- * on host DESKTOP-969MD5T by user dell at 2026-08-26 10:36:28 */
+ * on host DESKTOP-969MD5T by user dell at 2026-09-03 08:14:21 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -15845,7 +15845,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "C:/Users/dell/Desktop/Monitoring - T/backend/build-runtime/open62541/src_generated/open62541/types_generated_handling.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script C:/Users/dell/Desktop/Monitoring - T/open62541-1.0/tools/generate_datatypes.py
- * on host DESKTOP-969MD5T by user dell at 2026-08-26 10:36:28 */
+ * on host DESKTOP-969MD5T by user dell at 2026-09-03 08:14:21 */
 
 
 

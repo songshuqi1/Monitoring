@@ -121,6 +121,7 @@ function draw() {
 
     let yMin, yMax, allEmpty = true
     const cfg = props.widget.config
+    const chartFontSize = Math.max(9, Math.min(18, Number(cfg.chartFontSize) || 10))
     const hasManualY = typeof cfg.yMin === 'number' && typeof cfg.yMax === 'number'
     if (hasManualY) {
       yMin = cfg.yMin
@@ -165,7 +166,7 @@ function draw() {
 
   // Y axis
   ctx.fillStyle = '#98a2b3'
-  ctx.font = `${10*dpr}px "Consolas", monospace`
+  ctx.font = `${chartFontSize*dpr}px "Times New Roman", "SimSun", "宋体", serif`
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
   for (let i = 0; i <= 4; i++) {
@@ -197,7 +198,7 @@ function draw() {
 
   // X axis time
   ctx.fillStyle = '#98a2b3'
-  ctx.font = `${9*dpr}px "Consolas", monospace`
+  ctx.font = `${Math.max(9, chartFontSize - 1)*dpr}px "Times New Roman", "SimSun", "宋体", serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'top'
   for (let i = 0; i <= 4; i++) {
@@ -290,7 +291,7 @@ canvas { display: block; width: 100%; height: 100%; }
   color: var(--text-tertiary);
 }
 .tl-value {
-  font-family: var(--font-mono, Consolas, monospace);
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: var(--fw-semibold, 600);
   text-align: right;

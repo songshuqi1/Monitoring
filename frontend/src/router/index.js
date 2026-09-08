@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
-import CanvasPage from '../views/CanvasPage.vue'
+import CanvasPage from '../views/CanvasWorkspace.vue'
 import CommunicationView from '../views/CommunicationView.vue'
 import ParameterView from '../views/ParameterView.vue'
 import DataView from '../views/DataView.vue'

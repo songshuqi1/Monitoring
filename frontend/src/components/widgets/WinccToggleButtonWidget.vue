@@ -148,7 +148,7 @@ async function handleClick() {
     linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.18) 48%, rgba(0,0,0,0.08) 50%, rgba(255,255,255,0.24)),
     linear-gradient(180deg, var(--wincc-inactive-top), var(--wincc-inactive-bottom));
   color: #111827;
-  font-family: "Microsoft YaHei", Arial, sans-serif;
+  font-family: var(--font-family);
   font-size: clamp(12px, 33%, 20px);
   font-weight: 800;
   line-height: 1.1;

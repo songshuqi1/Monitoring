@@ -16,6 +16,7 @@
 #include <limits>
 #include <regex>
 #include <sstream>
+#include <utility>
 
 CommunicationManager& CommunicationManager::instance() {
     static CommunicationManager inst;
@@ -218,6 +219,7 @@ static std::vector<ModbusPoint> parseModbusPointArray(const std::string& body) {
         jsonExtractString(object, "dataType", point.dataType);
         point.scale = jsonExtractDouble(object, "scale", 1.0);
         jsonExtractString(object, "unit", point.unit);
+        point.jsonRegisterCount = jsonExtractInt(object, "jsonRegisterCount", 64);
         if (!point.name.empty()) points.push_back(point);
         pos = end + 1;
     }
@@ -267,8 +269,11 @@ bool CommunicationManager::parseResourceJson(const std::string& json, Communicat
             std::transform(point.dataType.begin(), point.dataType.end(), point.dataType.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
             if (point.address < 0 || point.address > 65535 || !std::isfinite(point.scale) || std::abs(point.scale) < 1e-12) return false;
             if (point.functionCode != "coil" && point.functionCode != "discrete_input" && point.functionCode != "holding_register" && point.functionCode != "input_register") return false;
-            if (point.dataType != "bool" && point.dataType != "uint16" && point.dataType != "int16" && point.dataType != "uint32" && point.dataType != "int32" && point.dataType != "float32" && point.dataType != "float32_swap") return false;
+            if (point.dataType != "bool" && point.dataType != "uint16" && point.dataType != "int16" && point.dataType != "uint32" && point.dataType != "int32" && point.dataType != "float32" && point.dataType != "float32_swap" && point.dataType != "json_utf8") return false;
             if ((point.functionCode == "coil" || point.functionCode == "discrete_input") && point.dataType != "bool") return false;
+            if (point.dataType == "json_utf8" &&
+                ((point.functionCode != "holding_register" && point.functionCode != "input_register") ||
+                 point.jsonRegisterCount < 1 || point.jsonRegisterCount > 125)) return false;
         }
     }
 
@@ -756,6 +761,194 @@ static std::vector<std::pair<std::string, double>> parseNumericDictionary(const 
     return values;
 }
 
+// Small self-contained JSON reader for values transported inside Modbus registers.
+// It intentionally keeps strings as metadata, while flattening number and boolean
+// leaves to variable names such as "channels.0.value" and "alarms.high_temperature".
+struct JsonScalarValue {
+    enum class Type { Null, Number, Boolean, String, Object, Array } type = Type::Null;
+    double number = 0.0;
+    bool boolean = false;
+    std::vector<std::pair<std::string, JsonScalarValue>> object;
+    std::vector<JsonScalarValue> array;
+};
+
+class JsonScalarParser {
+public:
+    explicit JsonScalarParser(const std::string& input) : input_(input) {}
+
+    bool parse(JsonScalarValue& value) {
+        skipWhitespace();
+        if (!parseValue(value)) return false;
+        skipWhitespace();
+        return position_ == input_.size();
+    }
+
+private:
+    const std::string& input_;
+    size_t position_ = 0;
+
+    void skipWhitespace() {
+        while (position_ < input_.size() && std::isspace(static_cast<unsigned char>(input_[position_]))) ++position_;
+    }
+
+    bool consume(char expected) {
+        skipWhitespace();
+        if (position_ >= input_.size() || input_[position_] != expected) return false;
+        ++position_;
+        return true;
+    }
+
+    bool parseValue(JsonScalarValue& value) {
+        skipWhitespace();
+        if (position_ >= input_.size()) return false;
+        const char ch = input_[position_];
+        if (ch == '{') return parseObject(value);
+        if (ch == '[') return parseArray(value);
+        if (ch == '"') {
+            std::string ignored;
+            if (!parseString(ignored)) return false;
+            value.type = JsonScalarValue::Type::String;
+            return true;
+        }
+        if (ch == 't' && consumeLiteral("true")) {
+            value.type = JsonScalarValue::Type::Boolean;
+            value.boolean = true;
+            return true;
+        }
+        if (ch == 'f' && consumeLiteral("false")) {
+            value.type = JsonScalarValue::Type::Boolean;
+            value.boolean = false;
+            return true;
+        }
+        if (ch == 'n' && consumeLiteral("null")) {
+            value.type = JsonScalarValue::Type::Null;
+            return true;
+        }
+        return parseNumber(value);
+    }
+
+    bool consumeLiteral(const char* literal) {
+        const size_t length = std::strlen(literal);
+        if (input_.compare(position_, length, literal) != 0) return false;
+        position_ += length;
+        return true;
+    }
+
+    bool parseString(std::string& value) {
+        if (!consume('"')) return false;
+        value.clear();
+        while (position_ < input_.size()) {
+            const char ch = input_[position_++];
+            if (ch == '"') return true;
+            if (static_cast<unsigned char>(ch) < 0x20) return false;
+            if (ch != '\\') {
+                value.push_back(ch);
+                continue;
+            }
+            if (position_ >= input_.size()) return false;
+            const char escaped = input_[position_++];
+            switch (escaped) {
+            case '"': value.push_back('"'); break;
+            case '\\': value.push_back('\\'); break;
+            case '/': value.push_back('/'); break;
+            case 'b': value.push_back('\b'); break;
+            case 'f': value.push_back('\f'); break;
+            case 'n': value.push_back('\n'); break;
+            case 'r': value.push_back('\r'); break;
+            case 't': value.push_back('\t'); break;
+            case 'u':
+                if (position_ + 4 > input_.size()) return false;
+                for (int index = 0; index < 4; ++index) {
+                    if (!std::isxdigit(static_cast<unsigned char>(input_[position_ + index]))) return false;
+                }
+                position_ += 4;
+                value.push_back('?');
+                break;
+            default: return false;
+            }
+        }
+        return false;
+    }
+
+    bool parseNumber(JsonScalarValue& value) {
+        const char* start = input_.c_str() + position_;
+        char* end = nullptr;
+        const double parsed = std::strtod(start, &end);
+        if (end == start || !std::isfinite(parsed)) return false;
+        position_ += static_cast<size_t>(end - start);
+        value.type = JsonScalarValue::Type::Number;
+        value.number = parsed;
+        return true;
+    }
+
+    bool parseObject(JsonScalarValue& value) {
+        if (!consume('{')) return false;
+        value.type = JsonScalarValue::Type::Object;
+        value.object.clear();
+        skipWhitespace();
+        if (position_ < input_.size() && input_[position_] == '}') { ++position_; return true; }
+        while (true) {
+            std::string key;
+            JsonScalarValue child;
+            if (!parseString(key) || !consume(':') || !parseValue(child)) return false;
+            value.object.emplace_back(key, std::move(child));
+            skipWhitespace();
+            if (position_ < input_.size() && input_[position_] == '}') { ++position_; return true; }
+            if (!consume(',')) return false;
+        }
+    }
+
+    bool parseArray(JsonScalarValue& value) {
+        if (!consume('[')) return false;
+        value.type = JsonScalarValue::Type::Array;
+        value.array.clear();
+        skipWhitespace();
+        if (position_ < input_.size() && input_[position_] == ']') { ++position_; return true; }
+        while (true) {
+            JsonScalarValue child;
+            if (!parseValue(child)) return false;
+            value.array.emplace_back(std::move(child));
+            skipWhitespace();
+            if (position_ < input_.size() && input_[position_] == ']') { ++position_; return true; }
+            if (!consume(',')) return false;
+        }
+    }
+};
+
+static void flattenJsonNumericValues(const JsonScalarValue& value, const std::string& path,
+                                     std::vector<std::pair<std::string, double>>& values) {
+    if (value.type == JsonScalarValue::Type::Number) {
+        if (!path.empty()) values.emplace_back(path, value.number);
+        return;
+    }
+    if (value.type == JsonScalarValue::Type::Boolean) {
+        if (!path.empty()) values.emplace_back(path, value.boolean ? 1.0 : 0.0);
+        return;
+    }
+    if (value.type == JsonScalarValue::Type::Object) {
+        for (const auto& item : value.object) {
+            const std::string childPath = path.empty() ? item.first : path + "." + item.first;
+            flattenJsonNumericValues(item.second, childPath, values);
+        }
+        return;
+    }
+    if (value.type == JsonScalarValue::Type::Array) {
+        for (size_t index = 0; index < value.array.size(); ++index) {
+            const std::string childPath = path.empty() ? std::to_string(index) : path + "." + std::to_string(index);
+            flattenJsonNumericValues(value.array[index], childPath, values);
+        }
+    }
+}
+
+static bool parseJsonNumericFields(const std::string& text, std::vector<std::pair<std::string, double>>& values) {
+    JsonScalarValue root;
+    JsonScalarParser parser(text);
+    if (!parser.parse(root)) return false;
+    values.clear();
+    flattenJsonNumericValues(root, "", values);
+    return !values.empty();
+}
+
 void CommunicationManager::opcuaWorker(std::shared_ptr<TaskContext> ctx, CommunicationResource res) {
     UA_Client* client = UA_Client_new();
     if (!client) {
@@ -1108,6 +1301,115 @@ static bool readModbusPoint(void*& clientHandle, const CommunicationResource& re
     return true;
 }
 
+static bool readModbusRegisterBlock(SOCKET socket, const CommunicationResource& resource, int function, int address,
+                                    int quantity, uint16_t transactionId, std::vector<unsigned char>& bytes,
+                                    std::string& error) {
+    if (quantity < 1 || quantity > 125 || address < 0 || address + quantity > 65536) {
+        error = "Invalid Modbus register read range";
+        return false;
+    }
+    unsigned char request[12] = {
+        static_cast<unsigned char>((transactionId >> 8) & 0xff), static_cast<unsigned char>(transactionId & 0xff),
+        0, 0, 0, 6, static_cast<unsigned char>(resource.modbusUnitId), static_cast<unsigned char>(function),
+        static_cast<unsigned char>((address >> 8) & 0xff), static_cast<unsigned char>(address & 0xff),
+        static_cast<unsigned char>((quantity >> 8) & 0xff), static_cast<unsigned char>(quantity & 0xff)
+    };
+    unsigned char header[7]{};
+    bool ok = modbusSendAll(socket, request, sizeof(request)) && modbusReceiveAll(socket, header, sizeof(header));
+    const int responseLength = ok ? ((static_cast<int>(header[4]) << 8) | header[5]) : 0;
+    if (ok && (responseLength < 3 || responseLength > 260 || header[0] != request[0] || header[1] != request[1] ||
+               header[2] != 0 || header[3] != 0 || header[6] != request[6])) ok = false;
+    std::vector<unsigned char> body(ok ? static_cast<size_t>(responseLength - 1) : 0);
+    if (ok) ok = modbusReceiveAll(socket, body.data(), body.size());
+    if (!ok) { error = "Invalid or incomplete Modbus JSON response"; return false; }
+    if (body[0] == static_cast<unsigned char>(function | 0x80)) {
+        error = "Modbus exception " + std::to_string(body.size() > 1 ? body[1] : 0);
+        return false;
+    }
+    if (body.size() < 2 || body[0] != function) { error = "Unexpected Modbus JSON response function"; return false; }
+    const int byteCount = body[1];
+    if (byteCount != quantity * 2 || static_cast<size_t>(byteCount + 2) != body.size()) {
+        error = "Unexpected Modbus JSON register byte count";
+        return false;
+    }
+    bytes.assign(body.begin() + 2, body.end());
+    return true;
+}
+
+// Modbus TCP transports binary registers, not JSON files. This reader supports
+// devices such as modbus_json.py: address - 1 contains the JSON byte length and
+// the UTF-8 document begins at address. It reads the document in legal 125-register
+// Modbus blocks, then expands all numeric and boolean nested fields.
+static bool readModbusJsonPoint(void*& clientHandle, const CommunicationResource& resource, const ModbusPoint& point,
+                                uint16_t transactionId, std::vector<std::pair<std::string, double>>& values,
+                                std::string& error) {
+    const int function = modbusFunction(point.functionCode);
+    const int fallbackRegisterCount = point.jsonRegisterCount;
+    if ((function != 3 && function != 4) || fallbackRegisterCount < 1 || fallbackRegisterCount > 125 ||
+        point.address < 0 || point.address + fallbackRegisterCount > 65536) {
+        error = "Invalid Modbus JSON point configuration";
+        return false;
+    }
+
+    SOCKET socket = openModbusSocket(resource.modbusHost, resource.port, resource.modbusTimeoutMs, error);
+    if (socket == INVALID_SOCKET) return false;
+    clientHandle = reinterpret_cast<void*>(socket);
+    uint16_t requestId = transactionId;
+    std::vector<unsigned char> lengthBytes;
+    if (point.address > 0 && !readModbusRegisterBlock(socket, resource, function, point.address - 1, 1, requestId++, lengthBytes, error)) {
+        closesocket(socket);
+        clientHandle = nullptr;
+        return false;
+    }
+
+    constexpr int maxJsonBytes = 8192;
+    const int reportedLength = lengthBytes.size() == 2
+        ? ((static_cast<int>(lengthBytes[0]) << 8) | lengthBytes[1]) : 0;
+    const bool hasLengthHeader = reportedLength > 0 && reportedLength <= maxJsonBytes;
+    const int totalRegisterCount = hasLengthHeader ? (reportedLength + 1) / 2 : fallbackRegisterCount;
+    if (point.address + totalRegisterCount > 65536) {
+        closesocket(socket);
+        clientHandle = nullptr;
+        error = "Modbus JSON document exceeds the register address range";
+        return false;
+    }
+
+    std::vector<unsigned char> raw;
+    raw.reserve(static_cast<size_t>(totalRegisterCount) * 2);
+    for (int offset = 0; offset < totalRegisterCount; ) {
+        const int blockSize = std::min(125, totalRegisterCount - offset);
+        std::vector<unsigned char> block;
+        if (!readModbusRegisterBlock(socket, resource, function, point.address + offset, blockSize, requestId++, block, error)) {
+            closesocket(socket);
+            clientHandle = nullptr;
+            return false;
+        }
+        raw.insert(raw.end(), block.begin(), block.end());
+        offset += blockSize;
+    }
+    closesocket(socket);
+    clientHandle = nullptr;
+
+    std::string json(reinterpret_cast<const char*>(raw.data()), raw.size());
+    if (hasLengthHeader) json.resize(static_cast<size_t>(reportedLength));
+    else {
+        const auto terminator = json.find('\0');
+        if (terminator != std::string::npos) json.resize(terminator);
+    }
+    if (json.size() >= 3 && static_cast<unsigned char>(json[0]) == 0xef &&
+        static_cast<unsigned char>(json[1]) == 0xbb && static_cast<unsigned char>(json[2]) == 0xbf) json.erase(0, 3);
+    json = trimCopy(json);
+    if (json.empty() || (json.front() != '{' && json.front() != '[')) {
+        error = "Modbus JSON registers do not contain a JSON document";
+        return false;
+    }
+    if (!parseJsonNumericFields(json, values)) {
+        error = "Modbus JSON document is invalid or contains no numeric/boolean fields";
+        return false;
+    }
+    return true;
+}
+
 static void markModbusResourceBad(const CommunicationResource& resource) {
     for (const auto& variable : VariableManager::instance().getAllDefinitions()) {
         if (variable.source == "MODBUS" && variable.resourceId == resource.id) VariableManager::instance().updateValue(variable.id, 0.0, "BAD");
@@ -1122,6 +1424,22 @@ void CommunicationManager::modbusWorker(std::shared_ptr<TaskContext> ctx, Commun
         bool cycleFailed = false;
         for (const auto& point : res.modbusPoints) {
             if (!ctx->running) break;
+            if (point.dataType == "json_utf8") {
+                std::vector<std::pair<std::string, double>> fields;
+                std::string error;
+                if (readModbusJsonPoint(ctx->clientHandle, res, point, transactionId++, fields, error)) {
+                    for (const auto& field : fields) {
+                        const std::string binding = "modbus-json:" + point.functionCode + ":" + std::to_string(point.address) +
+                            ":" + std::to_string(point.jsonRegisterCount) + ":" + field.first;
+                        upsertCollectedValue(res, point.name + "." + field.first, binding, "MODBUS",
+                                             "Auto-collected from JSON registers in " + res.name, field.second, "GOOD");
+                    }
+                } else {
+                    cycleFailed = true;
+                    Log(LogLevel::WARN, "Modbus task " + res.name + " JSON point " + point.name + " failed: " + error);
+                }
+                continue;
+            }
             double value = 0.0;
             std::string error;
             if (readModbusPoint(ctx->clientHandle, res, point, transactionId++, value, error)) {

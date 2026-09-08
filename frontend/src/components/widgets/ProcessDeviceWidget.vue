@@ -1157,7 +1157,7 @@ function startLabelDrag(e) {
   fill: #4b5563;
   font-size: 10px;
   font-weight: 800;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   text-anchor: middle;
   dominant-baseline: central;
 }
@@ -1218,7 +1218,7 @@ function startLabelDrag(e) {
   fill: #1f2937;
   font-size: 12px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 .status-title {
   font-size: 11px;

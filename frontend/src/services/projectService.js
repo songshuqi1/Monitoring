@@ -1,3 +1,5 @@
+import { normalizeScene } from './scene3dService.js'
+
 const PROJECT_KEY = 'monitor-projects'
 
 function delayResult(value) {
@@ -19,7 +21,8 @@ function normalizeLayout(layout) {
   if (layout && typeof layout === 'object') {
     return {
       widgets: Array.isArray(layout.widgets) ? layout.widgets : [],
-      connections: Array.isArray(layout.connections) ? layout.connections : []
+      connections: Array.isArray(layout.connections) ? layout.connections : [],
+      scene3d: normalizeScene(layout.scene3d)
     }
   }
   return { widgets: [], connections: [] }
@@ -34,8 +37,8 @@ function readAll() {
     const raw = localStorage.getItem(PROJECT_KEY)
     const parsed = raw ? JSON.parse(raw) : []
     return parsed.map(normalizeProject)
-  } catch {
-    return []
+  } catch (error) {
+    throw new Error(`项目存储读取失败，原始数据已保留：${error.message}`)
   }
 }
 

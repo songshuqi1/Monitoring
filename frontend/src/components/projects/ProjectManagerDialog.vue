@@ -104,6 +104,7 @@
           <span>描述</span><strong>{{ detailProject.description || '-' }}</strong>
           <span>组件数量</span><strong>{{ layoutWidgetCount(detailProject.layout) }}</strong>
           <span>连接线</span><strong>{{ layoutConnectionCount(detailProject.layout) }}</strong>
+          <span>3D 组件</span><strong>{{ detailProject.layout?.scene3d?.nodes?.length || 0 }}</strong>
           <span>创建时间</span><strong>{{ formatDate(detailProject.createdAt) }}</strong>
           <span>更新时间</span><strong>{{ formatDate(detailProject.updatedAt) }}</strong>
         </div>
@@ -121,6 +122,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useMonitorStore } from '../../store/index.js'
 import { useProjectStore } from '../../store/projectStore.js'
 import { normalizeScadaProjectImport } from '../../services/scadaProjectImport.js'
+import { projectVariableReferences, validateImportedProjectBindings } from '../../services/scene3dService.js'
 import ProjectCard from './ProjectCard.vue'
 import ProjectDeleteConfirm from './ProjectDeleteConfirm.vue'
 import ProjectFormModal from './ProjectFormModal.vue'
@@ -182,6 +184,7 @@ async function saveCurrentLayout() {
       description: current.description || '',
       layout: props.currentLayout
     })
+    monitorStore.markProjectSaved(updated.id)
     fileMessage.value = `已更新「${updated.name}」`
   } catch {
     // projectStore.errorMessage provides the user-facing message.
@@ -209,6 +212,7 @@ async function submitForm(payload) {
     } else {
       const project = await projectStore.createProject(payload)
       projectStore.setCurrentProject(project)
+      monitorStore.markProjectSaved(project.id)
     }
     formOpen.value = false
   } catch {
@@ -252,14 +256,15 @@ function safeFileName(name) {
 function exportPayload(project) {
   return {
     type: 'monitoring-platform-project',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     project: {
       name: project.name,
       description: project.description || '',
       layout: project.layout
     },
-    customComponents: monitorStore.customComponents
+    customComponents: monitorStore.customComponents,
+    variableReferences: projectVariableReferences(project.layout, monitorStore.variables)
   }
 }
 
@@ -303,7 +308,7 @@ async function exportProject(project) {
 
 async function exportCurrentLayout() {
   await exportProject({
-    name: '当前画布',
+    name: projectStore.currentProject?.name || '当前画布',
     description: '从当前画布导出的项目文件',
     layout: props.currentLayout
   })
@@ -334,9 +339,12 @@ async function importProjectFile(event) {
   event.target.value = ''
   if (!file) return
   try {
+    if (file.size > 50 * 1024 * 1024) throw new Error('项目 JSON 超过 50 MB，请精简资源后导入')
     const text = await file.text()
     const data = JSON.parse(text)
     const payload = pickImportedProject(data, file.name.replace(/\.json$/i, ''))
+    const checked = validateImportedProjectBindings(payload.layout, data.variableReferences, monitorStore.variables)
+    payload.layout = checked.layout
     await projectStore.createProject(payload)
     let componentMessage = ''
     if (payload.customComponents.length) {
@@ -347,16 +355,21 @@ async function importProjectFile(event) {
         componentMessage = '；自定义组件库未能合并，请在组件设计器中单独导入'
       }
     }
-    fileMessage.value = `已从 ${payload.format} 导入为「${payload.name}」${componentMessage}`
+    fileMessage.value = `已从 ${payload.format} 导入为「${payload.name}」${componentMessage}${checked.unresolved ? `；${checked.unresolved} 处变量引用需要重新绑定` : ''}`
   } catch (e) {
     fileMessage.value = `导入失败：${e.message || e}`
   }
 }
 
 function loadProject(project) {
-  projectStore.setCurrentProject(project)
-  emit('load-layout', project.layout)
-  emit('close')
+  try {
+    monitorStore.activateProject(project)
+    projectStore.setCurrentProject(project)
+    emit('load-layout', monitorStore.layoutSnapshot)
+    emit('close')
+  } catch (error) {
+    fileMessage.value = error.message || '项目加载失败'
+  }
 }
 
 function changePage(page) {
@@ -379,7 +392,8 @@ function layoutConnectionCount(layout) {
 
 <style scoped>
 .dialog-project-manager {
-  width: min(960px, 94vw);
+  width: min(1120px, 96vw);
+  max-width: 96vw;
   padding: 0;
   overflow: hidden;
 }
